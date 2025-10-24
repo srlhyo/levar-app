@@ -1,0 +1,9 @@
+{
+  "Home": "resources/js/Pages/Home.vue",
+  "Catalogar/Index": "resources/js/Pages/Catalogar/Index.vue",
+  "Decidir/Index": "resources/js/Pages/Decidir/Index.vue",
+  "Pick/Index": "resources/js/Pages/Pick/Index.vue",
+  "Resumo/Index": "resources/js/Pages/Resumo/Index.vue",
+  "Reciclagem/Index": "resources/js/Pages/Reciclagem/Index.vue",
+  "Share/Inbox": "resources/js/Pages/Share/Inbox.vue"
+}
