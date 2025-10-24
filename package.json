@@ -6,8 +6,15 @@
         "build": "vite build",
         "dev": "vite"
     },
+    "dependencies": {
+        "@inertiajs/progress": "^0.2.7",
+        "@inertiajs/vue3": "^1.0.0",
+        "lucide-vue-next": "^0.468.0",
+        "vue": "^3.5.12"
+    },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
+        "@vitejs/plugin-vue": "^6.0.0",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^2.0.0",
