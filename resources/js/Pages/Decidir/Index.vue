@@ -1,109 +1,126 @@
 <template>
     <Head title="Decidir" />
-    <div class="min-h-screen bg-decide-secondary flex flex-col">
-        <PageHeader
-            title="Decidir"
-            :subtitle="items.length ? `${currentIndex + 1} de ${items.length} itens` : 'Nenhum item para decidir'"
-            gradient-class="bg-gradient-decide"
-            @back="router.visit('/')"
-        >
-            <div class="mt-4 h-2 bg-white/20 rounded-full overflow-hidden">
+    <AppLayout>
+        <template #title>Decidir</template>
+        <template #subtitle>Avalie item a item e escolha se vai na mala, fica ou decide depois.</template>
+
+        <Card tone="green" class="space-y-4">
+            <div class="flex items-center justify-between text-sm font-medium text-slate-600">
+                <span>Progresso</span>
+                <span>{{ deckPosition }} / {{ total }}</span>
+            </div>
+            <div class="h-2 rounded-full bg-white/60">
                 <div
-                    class="h-full bg-white transition-all duration-300"
+                    class="h-full rounded-full bg-emerald-500 transition-all duration-300"
                     :style="{ width: `${progress}%` }"
                 />
             </div>
-        </PageHeader>
+            <p class="text-xs text-slate-600 sm:text-sm">
+                Arraste a carta para os lados ou use os botões para tomar a decisão.
+            </p>
+        </Card>
 
-        <div class="flex-1 flex flex-col items-center justify-center p-6">
-            <div v-if="currentItem" class="w-full flex flex-col items-center">
-                <SwipeCard :item="currentItem" @swipe="handleDecision" />
+        <div class="flex flex-col items-center gap-8">
+            <SwipeCard v-if="currentItem" :item="currentItem" @swipe="handleDecision" />
 
-                <div class="flex gap-4 mt-8">
-                    <button
-                        type="button"
-                        class="rounded-full w-16 h-16 border-2 border-destructive text-destructive hover:bg-destructive hover:text-white transition flex items-center justify-center"
-                        @click="handleDecision('discard')"
-                    >
-                        <X class="h-8 w-8" />
-                    </button>
-                    <button
-                        type="button"
-                        class="rounded-full w-16 h-16 border-2 border-summary text-summary hover:bg-summary hover:text-white transition flex items-center justify-center"
-                        @click="handleDecision('later')"
-                    >
-                        <Clock class="h-8 w-8" />
-                    </button>
-                    <button
-                        type="button"
-                        class="rounded-full w-16 h-16 bg-decide hover:bg-decide/90 transition flex items-center justify-center text-white"
-                        @click="handleDecision('keep')"
-                    >
-                        <Heart class="h-8 w-8" />
-                    </button>
-                </div>
-            </div>
-            <div v-else class="text-center space-y-4">
-                <div class="text-6xl">🎉</div>
-                <h2 class="text-2xl font-bold text-decide">Tudo decidido!</h2>
-                <p class="text-muted-foreground">Você já decidiu sobre todos os itens catalogados</p>
+            <div v-if="currentItem" class="flex items-center gap-4">
                 <button
                     type="button"
-                    class="bg-decide hover:bg-decide/90 text-white rounded-xl px-6 py-3 font-semibold"
+                    class="grid h-16 w-16 place-items-center rounded-full border border-rose-200 bg-white/80 text-rose-500 shadow hover:bg-rose-50"
+                    @click="handleDecision('discard')"
+                >
+                    <X class="h-7 w-7" />
+                </button>
+                <button
+                    type="button"
+                    class="grid h-16 w-16 place-items-center rounded-full border border-slate-200 bg-white/80 text-slate-600 shadow hover:bg-slate-50"
+                    @click="handleDecision('later')"
+                >
+                    <Clock class="h-7 w-7" />
+                </button>
+                <button
+                    type="button"
+                    class="grid h-16 w-16 place-items-center rounded-full border border-emerald-200 bg-emerald-500 text-white shadow hover:bg-emerald-400"
+                    @click="handleDecision('keep')"
+                >
+                    <Heart class="h-7 w-7" />
+                </button>
+            </div>
+
+            <div v-else class="text-center space-y-3">
+                <div class="text-5xl">🎉</div>
+                <p class="text-lg font-semibold text-emerald-600">Tudo decidido!</p>
+                <p class="text-sm text-slate-600 sm:text-base">Volte quando novos itens aparecerem na lista.</p>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-400"
                     @click="router.visit('/')"
                 >
-                    Voltar ao Início
+                    Voltar ao início
                 </button>
             </div>
         </div>
-    </div>
+    </AppLayout>
 </template>
 
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Clock, Heart, X } from 'lucide-vue-next';
-import SwipeCard from '@/Components/SwipeCard.vue';
-import PageHeader from '@/Components/PageHeader.vue';
-import { storage } from '@/utils/storage';
-import { toast } from '@/utils/toast';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Card from '@/Components/Card.vue';
+import SwipeCard from '@/Components/SwipeCard.vue';
+import { toast } from '@/utils/toast';
 
-defineOptions({ layout: AppLayout });
+const deck = ref([
+    {
+        id: 'living-room-lamp',
+        name: 'Abajur sala vintage',
+        weight: 1.3,
+        notes: 'Ocupa pouco espaço e ilumina bem',
+        decision: 'pending',
+    },
+    {
+        id: 'coat-blue',
+        name: 'Casaco azul inverno',
+        weight: 1.9,
+        notes: 'Favorito da Lauren • Cabe na mala A',
+        decision: 'pending',
+    },
+    {
+        id: 'coffee-mugs',
+        name: 'Conjunto de canecas viagem',
+        weight: 0.8,
+        notes: '4 peças • Pode quebrar se despachar',
+        decision: 'pending',
+    },
+]);
 
-const items = ref([]);
 const currentIndex = ref(0);
 
-const currentItem = computed(() => items.value[currentIndex.value]);
+const total = computed(() => deck.value.length);
+const currentItem = computed(() => deck.value[currentIndex.value] ?? null);
+const deckPosition = computed(() => Math.min(currentIndex.value + 1, total.value));
+
 const progress = computed(() => {
-    if (!items.value.length) return 100;
-    return Math.min(100, (currentIndex.value / items.value.length) * 100);
+    if (!total.value) return 100;
+    return Math.min(100, (currentIndex.value / total.value) * 100);
 });
 
-const loadItems = () => {
-    const all = storage.getItems();
-    items.value = all.filter((item) => item.decision === 'pending');
-    currentIndex.value = 0;
+const messages = {
+    keep: '✓ Vai na mala!',
+    discard: '✗ Não vai',
+    later: '⏰ Decidir depois',
 };
-
-onMounted(loadItems);
 
 const handleDecision = (decision) => {
     if (!currentItem.value) return;
-
-    storage.updateItem(currentItem.value.id, { decision });
-
-    const messages = {
-        keep: '✓ Vai na mala!',
-        discard: '✗ Não vai',
-        later: '⏰ Decidir depois',
-    };
-
     toast.success(messages[decision] ?? 'Atualizado');
-    currentIndex.value += 1;
 
-    if (currentIndex.value >= items.value.length) {
-        loadItems();
+    if (decision === 'later') {
+        deck.value.push({ ...currentItem.value, id: `${currentItem.value.id}-later-${Date.now()}` });
     }
+
+    currentIndex.value += 1;
 };
 </script>

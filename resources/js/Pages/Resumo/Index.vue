@@ -1,178 +1,180 @@
 <template>
     <Head title="Resumo" />
-    <div class="min-h-screen bg-summary-secondary">
-        <PageHeader
-            title="Resumo"
-            subtitle="Visão geral da sua mudança"
-            gradient-class="bg-gradient-summary"
-            @back="router.visit('/')"
-        />
+    <AppLayout>
+        <template #title>Resumo</template>
+        <template #subtitle>Uma visão geral das malas, pendências e itens que vão com a gente.</template>
 
-        <div class="p-6 space-y-6">
-            <section class="bg-card rounded-xl p-6 shadow-smooth-sm">
-                <h2 class="text-lg font-semibold mb-4">Progresso</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <div class="text-3xl font-bold text-summary">{{ stats.total }}</div>
-                        <div class="text-sm text-muted-foreground">Total de itens</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-bold text-catalog">{{ stats.pending }}</div>
-                        <div class="text-sm text-muted-foreground">Por decidir</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-bold text-decide">{{ stats.keep }}</div>
-                        <div class="text-sm text-muted-foreground">Vai levar</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-bold text-pack">{{ stats.packed }}</div>
-                        <div class="text-sm text-muted-foreground">Embalados</div>
-                    </div>
+        <Card tone="slate">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="space-y-1">
+                    <p class="text-xs uppercase tracking-wide text-slate-600">Total catalogado</p>
+                    <p class="text-2xl font-semibold text-slate-900">{{ stats.total }}</p>
                 </div>
-            </section>
-
-            <section class="bg-card rounded-xl p-6 shadow-smooth-sm">
-                <h2 class="text-lg font-semibold mb-4">Malas</h2>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center p-4 bg-pack-secondary rounded-lg">
-                        <div>
-                            <div class="font-semibold">Mala A</div>
-                            <div class="text-sm text-muted-foreground">{{ stats.luggageA }} itens</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-2xl font-bold text-pack">{{ stats.weightA.toFixed(1) }}kg</div>
-                            <div class="text-xs text-muted-foreground">de 23kg</div>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center p-4 bg-pack-secondary rounded-lg">
-                        <div>
-                            <div class="font-semibold">Mala B</div>
-                            <div class="text-sm text-muted-foreground">{{ stats.luggageB }} itens</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-2xl font-bold text-pack">{{ stats.weightB.toFixed(1) }}kg</div>
-                            <div class="text-xs text-muted-foreground">de 23kg</div>
-                        </div>
-                    </div>
+                <div class="space-y-1">
+                    <p class="text-xs uppercase tracking-wide text-slate-600">Pendentes</p>
+                    <p class="text-2xl font-semibold text-sky-600">{{ stats.pending }}</p>
                 </div>
-            </section>
+                <div class="space-y-1">
+                    <p class="text-xs uppercase tracking-wide text-slate-600">Vai levar</p>
+                    <p class="text-2xl font-semibold text-emerald-600">{{ stats.keep }}</p>
+                </div>
+                <div class="space-y-1">
+                    <p class="text-xs uppercase tracking-wide text-slate-600">Embalados</p>
+                    <p class="text-2xl font-semibold text-amber-600">{{ stats.packed }}</p>
+                </div>
+            </div>
+        </Card>
 
-            <section class="space-y-3">
+        <Card tone="slate" class="space-y-6">
+            <WeightBar
+                :total-kg="stats.totalWeight"
+                :bag-a-used="stats.weightA"
+                :bag-b-used="stats.weightB"
+                :reserved-kg="stats.reservedKg"
+            />
+            <div class="grid gap-3 sm:grid-cols-2">
+                <div class="rounded-2xl bg-white/70 p-4 ring-1 ring-white/40">
+                    <p class="text-sm font-semibold text-slate-800">Mala A</p>
+                    <p class="text-xs text-slate-500">{{ stats.luggageA }} itens • {{ stats.weightA.toFixed(1) }} kg</p>
+                </div>
+                <div class="rounded-2xl bg-white/70 p-4 ring-1 ring-white/40">
+                    <p class="text-sm font-semibold text-slate-800">Mala B</p>
+                    <p class="text-xs text-slate-500">{{ stats.luggageB }} itens • {{ stats.weightB.toFixed(1) }} kg</p>
+                </div>
+            </div>
+        </Card>
+
+        <Card tone="slate" class="space-y-4">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-base font-semibold text-slate-900">Exportar planilha</p>
+                    <p class="text-sm text-slate-600">
+                        Gera CSV com os itens marcados como levar, malas e status de embalagem.
+                    </p>
+                </div>
                 <button
                     type="button"
-                    class="w-full bg-summary hover:bg-summary/90 text-white rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-lg shadow-smooth-md disabled:opacity-50 disabled:cursor-not-allowed"
-                    :disabled="!stats.keep"
-                    @click="exportCSV"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-white/80"
+                    :disabled="!canExport"
+                    :title="canExport ? '' : 'pendentes em aberto'"
+                    @click="handleExport"
                 >
-                    <Download class="h-5 w-5" />
+                    <Download class="h-4 w-4" />
                     Exportar CSV
                 </button>
-                <p v-if="!stats.keep" class="text-center text-sm text-muted-foreground">
-                    Primeiro decida quais itens levar para poder exportar
-                </p>
-            </section>
+            </div>
+            <p v-if="!canExport" class="text-xs text-slate-500">
+                Resolva os itens pendentes antes de exportar.
+            </p>
+        </Card>
 
-            <section v-if="stats.keep" class="bg-card rounded-xl p-6 shadow-smooth-sm">
-                <h2 class="text-lg font-semibold mb-4">Itens a levar</h2>
-                <div class="space-y-3">
-                    <div
-                        v-for="item in keepItems"
-                        :key="item.id"
-                        class="flex items-center gap-3 p-3 bg-background rounded-lg"
-                    >
-                        <img
-                            v-if="item.photo"
-                            :src="item.photo"
-                            :alt="item.name"
-                            class="w-12 h-12 rounded object-cover"
-                        />
-                        <div class="flex-1 min-w-0">
-                            <div class="font-medium">{{ item.name }}</div>
-                            <div class="text-sm text-muted-foreground">
-                                {{ (item.weight ?? 0).toFixed(1) }}kg
-                                <span v-if="item.luggage"> • Mala {{ item.luggage }}</span>
-                                <span v-if="item.packed"> • ✓</span>
-                            </div>
-                        </div>
+        <Card v-if="keepItems.length" tone="slate" class="space-y-4">
+            <p class="text-base font-semibold text-slate-900">Itens a levar</p>
+            <div class="space-y-3">
+                <div
+                    v-for="item in keepItems"
+                    :key="item.id"
+                    class="flex flex-col gap-3 rounded-2xl bg-white/70 p-4 ring-1 ring-white/40 md:flex-row md:items-center md:gap-6"
+                >
+                    <div class="flex-1 space-y-1">
+                        <p class="text-base font-semibold text-slate-900">{{ item.name }}</p>
+                        <p class="text-sm text-slate-600">{{ item.notes }}</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
+                        <span class="rounded-full bg-slate-900 px-3 py-1 text-white">
+                            {{ item.weight.toFixed(1) }} kg
+                        </span>
+                        <span v-if="item.luggage" class="rounded-full bg-white px-3 py-1 text-slate-700 ring-1 ring-black/5">
+                            Mala {{ item.luggage }}
+                        </span>
+                        <span v-if="item.packed" class="rounded-full bg-emerald-500/90 px-3 py-1 text-white">
+                            Pronto
+                        </span>
                     </div>
                 </div>
-            </section>
-        </div>
-    </div>
+            </div>
+        </Card>
+    </AppLayout>
 </template>
 
 <script setup>
-import { Head, router } from '@inertiajs/vue3';
-import { computed, onMounted, ref } from 'vue';
+import { Head } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 import { Download } from 'lucide-vue-next';
-import PageHeader from '@/Components/PageHeader.vue';
-import { storage } from '@/utils/storage';
-import { toast } from '@/utils/toast';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Card from '@/Components/Card.vue';
+import WeightBar from '@/Components/WeightBar.vue';
+import { toast } from '@/utils/toast';
 
-defineOptions({ layout: AppLayout });
-
-const items = ref([]);
-
-const loadItems = () => {
-    items.value = storage.getItems();
-};
-
-onMounted(loadItems);
+const items = ref([
+    {
+        id: 'lamp',
+        name: 'Abajur de leitura',
+        weight: 1.2,
+        decision: 'keep',
+        luggage: 'A',
+        packed: true,
+        notes: 'Vai no canto da sala nova',
+    },
+    {
+        id: 'boardgames',
+        name: 'Boardgames favoritos',
+        weight: 3.5,
+        decision: 'keep',
+        luggage: 'B',
+        packed: false,
+        notes: 'Caixa grande, melhor envolver em roupas',
+    },
+    {
+        id: 'winter-coat',
+        name: 'Casaco impermeável',
+        weight: 2.0,
+        decision: 'pending',
+        luggage: null,
+        packed: false,
+        notes: 'Avaliar se cabe nas malas',
+    },
+    {
+        id: 'coffee-set',
+        name: 'Kit café especial',
+        weight: 0.9,
+        decision: 'keep',
+        luggage: 'A',
+        packed: false,
+        notes: 'Frágil — levar na mochila',
+    },
+]);
 
 const keepItems = computed(() => items.value.filter((item) => item.decision === 'keep'));
-
 const stats = computed(() => {
     const total = items.value.length;
     const pending = items.value.filter((item) => item.decision === 'pending').length;
     const keep = keepItems.value.length;
-    const discard = items.value.filter((item) => item.decision === 'discard').length;
-    const later = items.value.filter((item) => item.decision === 'later').length;
     const packed = items.value.filter((item) => item.packed).length;
     const luggageAItems = items.value.filter((item) => item.luggage === 'A');
     const luggageBItems = items.value.filter((item) => item.luggage === 'B');
-    const weightA = luggageAItems.reduce((sum, item) => sum + (item.weight ?? 0), 0);
-    const weightB = luggageBItems.reduce((sum, item) => sum + (item.weight ?? 0), 0);
+    const weightA = luggageAItems.reduce((sum, item) => sum + item.weight, 0);
+    const weightB = luggageBItems.reduce((sum, item) => sum + item.weight, 0);
+    const totalWeight = 46;
+    const reservedKg = 4;
     return {
         total,
         pending,
         keep,
-        discard,
-        later,
         packed,
         luggageA: luggageAItems.length,
         luggageB: luggageBItems.length,
         weightA,
         weightB,
+        totalWeight,
+        reservedKg,
     };
 });
 
-const exportCSV = () => {
-    if (!keepItems.value.length) return;
+const canExport = computed(() => stats.value.pending === 0 && stats.value.keep > 0);
 
-    const rows = [
-        ['Nome', 'Peso (kg)', 'Mala', 'Embalado', 'Notas'],
-        ...keepItems.value.map((item) => [
-            item.name,
-            item.weight ?? 0,
-            item.luggage ?? 'Não atribuída',
-            item.packed ? 'Sim' : 'Não',
-            item.notes ?? '',
-        ]),
-    ];
-
-    const csvContent = rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `mudanca-${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
-
-    toast.success('CSV exportado!');
+const handleExport = () => {
+    if (!canExport.value) return;
+    toast.success('Export gerado! (mock)');
 };
 </script>

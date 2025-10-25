@@ -8,7 +8,7 @@
         @pointerleave="handlePointerEnd"
         @pointercancel="handlePointerEnd"
     >
-        <div class="bg-card rounded-2xl shadow-smooth-lg overflow-hidden">
+        <div class="overflow-hidden rounded-3xl bg-white/90 shadow-lg/30 shadow-slate-200 ring-1 ring-black/5 backdrop-blur-sm">
             <img
                 v-if="item.photo"
                 :src="item.photo"
@@ -17,17 +17,17 @@
             />
             <div
                 v-else
-                class="w-full h-80 flex items-center justify-center bg-gradient-decide"
+                class="flex h-80 w-full items-center justify-center bg-emerald-100"
             >
-                <Package class="h-24 w-24 text-decide/30" />
+                <Package class="h-24 w-24 text-emerald-400/40" />
             </div>
 
-            <div class="p-6">
-                <h3 class="text-2xl font-bold mb-2">{{ item.name }}</h3>
-                <p v-if="item.weight" class="text-sm text-muted-foreground mb-2">
+            <div class="space-y-2 p-6">
+                <h3 class="text-2xl font-semibold text-slate-900">{{ item.name }}</h3>
+                <p v-if="item.weight" class="text-sm text-slate-600">
                     Peso: {{ Number(item.weight).toFixed(2) }} kg
                 </p>
-                <p v-if="item.notes" class="text-sm text-muted-foreground">
+                <p v-if="item.notes" class="text-sm text-slate-600">
                     {{ item.notes }}
                 </p>
             </div>
@@ -35,13 +35,13 @@
 
         <div
             v-if="positionX > 50"
-            class="absolute top-8 right-8 bg-decide text-white px-6 py-3 rounded-full text-lg font-bold rotate-12"
+            class="absolute top-8 right-8 rotate-12 rounded-full bg-emerald-500 px-6 py-3 text-lg font-semibold text-white shadow"
         >
             LEVAR
         </div>
         <div
             v-if="positionX < -50"
-            class="absolute top-8 left-8 bg-destructive text-white px-6 py-3 rounded-full text-lg font-bold -rotate-12"
+            class="absolute top-8 left-8 -rotate-12 rounded-full bg-rose-500 px-6 py-3 text-lg font-semibold text-white shadow"
         >
             NÃO
         </div>

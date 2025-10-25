@@ -1,98 +1,115 @@
 <template>
     <Head title="Decidir o que Levar" />
-    <div class="min-h-screen bg-background">
-        <div class="p-6 text-center border-b border-border">
-            <h1 class="text-3xl font-bold mb-2">Decidir o que Levar</h1>
-            <p class="text-muted-foreground">Organize sua mudança de forma simples e visual</p>
+    <AppLayout>
+        <template #title>Decidir o que Levar</template>
+        <template #subtitle>Organize sua mudança de forma simples e visual.</template>
+
+        <div class="flex justify-end" aria-hidden="true">
+            <IconPill v-if="adminMode" tone="green">
+                <Unlock class="h-6 w-6" />
+            </IconPill>
         </div>
 
-        <div class="p-6 grid gap-4 max-w-2xl mx-auto">
-            <ModeCard
-                title="Catalogar"
-                subtitle="Tire fotos e adicione itens"
-                bg-class="bg-catalog-secondary"
-                gradient-class="bg-gradient-catalog"
-                text-class="text-catalog"
-                :disabled="!fullModeActive"
-                @click="navigate('/catalogar')"
+        <div class="grid gap-4 sm:gap-5">
+            <Card
+                v-for="mode in modes"
+                :key="mode.key"
+                tag="button"
+                type="button"
+                :tone="mode.tone"
+                :disabled="mode.requiresAdmin && !adminMode"
+                class="w-full text-left transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/40"
+                @click="handleNavigate(mode)"
             >
-                <template #icon>
-                    <Camera class="h-8 w-8 text-white" />
-                </template>
-            </ModeCard>
-
-            <ModeCard
-                title="Decidir"
-                subtitle="Escolha o que levar"
-                bg-class="bg-decide-secondary"
-                gradient-class="bg-gradient-decide"
-                text-class="text-decide"
-                @click="navigate('/decidir')"
-            >
-                <template #icon>
-                    <Heart class="h-8 w-8 text-white" />
-                </template>
-            </ModeCard>
-
-            <ModeCard
-                title="Embalar"
-                subtitle="Organize suas malas"
-                bg-class="bg-pack-secondary"
-                gradient-class="bg-gradient-pack"
-                text-class="text-pack"
-                :disabled="!fullModeActive"
-                @click="navigate('/pick')"
-            >
-                <template #icon>
-                    <Package class="h-8 w-8 text-white" />
-                </template>
-            </ModeCard>
-
-            <ModeCard
-                title="Resumo"
-                subtitle="Veja o progresso"
-                bg-class="bg-summary-secondary"
-                gradient-class="bg-gradient-summary"
-                text-class="text-summary"
-                :disabled="!fullModeActive"
-                @click="navigate('/resumo')"
-            >
-                <template #icon>
-                    <FileText class="h-8 w-8 text-white" />
-                </template>
-            </ModeCard>
+                <div class="flex items-center gap-4">
+                    <IconPill :tone="mode.iconTone">
+                        <component :is="mode.icon" class="h-6 w-6" />
+                    </IconPill>
+                    <div class="flex-1 space-y-1">
+                        <h2 class="text-lg font-semibold text-slate-800 sm:text-xl">{{ mode.title }}</h2>
+                        <p class="text-sm text-slate-600 sm:text-base">{{ mode.subtitle }}</p>
+                    </div>
+                    <ChevronRight class="h-5 w-5 text-slate-500" />
+                </div>
+            </Card>
         </div>
 
-        <div class="p-6 text-center text-sm text-muted-foreground">
+        <footer class="pt-6 text-center text-sm text-slate-500">
             <p class="cursor-pointer select-none" @click="handleFooterClick">
                 UK → Brasil • 2 malas de 23kg cada
             </p>
-        </div>
-    </div>
+        </footer>
+
+        <Toast v-model="toastOpen" />
+    </AppLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
-import { Camera, Heart, Package, FileText } from 'lucide-vue-next';
-import ModeCard from '@/Components/ModeCard.vue';
-import { toast } from '@/utils/toast';
+import { ref } from 'vue';
+import { Camera, ChevronRight, FileText, Heart, Package, Unlock } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Card from '@/Components/Card.vue';
+import IconPill from '@/Components/IconPill.vue';
+import Toast from '@/Components/Toast.vue';
 
-defineOptions({ layout: AppLayout });
+const adminMode = ref(false);
+const tapCount = ref(0);
+const toastOpen = ref(false);
 
-const fullModeActive = ref(false);
-const clickCount = ref(0);
+const modes = [
+    {
+        key: 'catalogar',
+        title: 'Catalogar',
+        subtitle: 'Capture fotos e registre detalhes dos itens.',
+        icon: Camera,
+        tone: 'blue',
+        iconTone: 'blue',
+        href: '/catalogar',
+        requiresAdmin: true,
+    },
+    {
+        key: 'decidir',
+        title: 'Decidir',
+        subtitle: 'Faça o swipe deck e escolha o destino de cada item.',
+        icon: Heart,
+        tone: 'green',
+        iconTone: 'green',
+        href: '/decidir',
+        requiresAdmin: false,
+    },
+    {
+        key: 'pick',
+        title: 'Embalar',
+        subtitle: 'Distribua nas malas A/B e marque como embalado.',
+        icon: Package,
+        tone: 'yellow',
+        iconTone: 'yellow',
+        href: '/pick',
+        requiresAdmin: true,
+    },
+    {
+        key: 'resumo',
+        title: 'Resumo',
+        subtitle: 'Acompanhe os totais, pesos e pendências.',
+        icon: FileText,
+        tone: 'slate',
+        iconTone: 'slate',
+        href: '/resumo',
+        requiresAdmin: true,
+    },
+];
 
-const navigate = (url) => {
-    router.visit(url);
+const handleNavigate = (mode) => {
+    if (mode.requiresAdmin && !adminMode.value) return;
+    router.visit(mode.href);
 };
 
 const handleFooterClick = () => {
-    clickCount.value += 1;
-    if (clickCount.value === 3) {
-        fullModeActive.value = true;
-        toast.success('Modo completo ativado ✨');
+    tapCount.value += 1;
+    if (tapCount.value === 3) {
+        adminMode.value = true;
+        toastOpen.value = true;
     }
 };
 </script>
