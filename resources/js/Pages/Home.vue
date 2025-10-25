@@ -52,12 +52,14 @@
 
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
-import { nextTick, ref } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import { Camera, ChevronRight, FileText, Heart, Package, Unlock } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import IconPill from '@/Components/IconPill.vue';
 import Toast from '@/Components/Toast.vue';
+
+const MODE_KEY = 'mode';
 
 const adminMode = ref(false);
 const tapCount = ref(0);
@@ -104,15 +106,22 @@ const modes = [
 ];
 
 const isEnabled = (mode) => {
-    if (mode.key === 'decidir') {
-        return !adminMode.value;
+    if (mode.key === 'resumo') {
+        return true;
     }
-    return adminMode.value;
+    if (adminMode.value) {
+        return mode.key !== 'decidir';
+    }
+    return mode.key === 'decidir';
+};
+
+const go = (enabled, url) => {
+    if (!enabled) return;
+    router.visit(url);
 };
 
 const handleNavigate = (mode) => {
-    if (!isEnabled(mode)) return;
-    router.visit(mode.href);
+    go(isEnabled(mode), mode.href);
 };
 
 const showToast = (message) => {
@@ -138,4 +147,15 @@ const switchToSimpleMode = () => {
     tapCount.value = 0;
     showToast('Modo simples ativado 💡');
 };
+
+onMounted(() => {
+    if (typeof window === 'undefined') return;
+    const storedMode = window.localStorage.getItem(MODE_KEY);
+    adminMode.value = storedMode === 'manage';
+});
+
+watch(adminMode, (value) => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(MODE_KEY, value ? 'manage' : 'simple');
+});
 </script>
