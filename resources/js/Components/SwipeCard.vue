@@ -12,7 +12,7 @@
             <img
                 v-if="item.photo"
                 :src="item.photo"
-                :alt="item.name"
+                :alt="item.title ?? item.name"
                 class="h-80 w-full object-cover"
             />
             <div v-else class="flex h-80 w-full items-center justify-center bg-emerald-100">
@@ -20,7 +20,7 @@
             </div>
 
             <div class="space-y-2 p-6">
-                <h3 class="text-2xl font-semibold text-slate-900">{{ item.name }}</h3>
+                <h3 class="text-2xl font-semibold text-slate-900">{{ item.title ?? item.name }}</h3>
                 <p v-if="item.weight" class="text-sm text-slate-600">
                     Peso: {{ Number(item.weight).toFixed(2) }} kg
                 </p>

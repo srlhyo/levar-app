@@ -12,7 +12,7 @@
                     class="flex flex-col gap-4 rounded-2xl bg-white/70 p-4 ring-1 ring-white/60 md:flex-row md:items-center md:justify-between"
                 >
                     <div class="space-y-1">
-                        <p class="text-base font-semibold text-slate-900 md:text-lg">{{ item.name }}</p>
+                        <p class="text-base font-semibold text-slate-900 md:text-lg">{{ item.title ?? item.name }}</p>
                         <p class="text-sm text-slate-600">{{ item.location }}</p>
                         <p class="text-xs text-slate-500">Excluído {{ item.deletedAt }} • {{ item.weight.toFixed(1) }} kg</p>
                     </div>
@@ -87,10 +87,10 @@ const trashedItems = ref([
 ]);
 
 const restore = (item) => {
-    toast.success(`Restaurado: ${item.name} (mock)`);
+    toast.success(`Restaurado: ${item.title ?? item.name} (mock)`);
 };
 
 const purge = (item) => {
-    toast.error(`Remoção definitiva agendada para ${item.name} (mock)`);
+    toast.error(`Remoção definitiva agendada para ${item.title ?? item.name} (mock)`);
 };
 </script>

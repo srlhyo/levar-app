@@ -25,7 +25,7 @@
                 ref="swipeCardRef"
                 :item="currentItem"
                 :disabled="isProcessing"
-                @decision="applyAction"
+                @decision="handleDecision"
             />
 
             <div class="flex w-full max-w-md items-center justify-between gap-3 sm:max-w-lg">
@@ -115,6 +115,29 @@
             </div>
         </div>
 
+        <Card
+            v-else-if="bannerProcessedWithPendings"
+            tone="slate"
+            class="space-y-4 text-left sm:text-center"
+        >
+            <div class="text-3xl sm:text-4xl">🗂️</div>
+            <div class="space-y-2">
+                <p class="text-base font-semibold text-slate-800">Há itens pendentes para decidir</p>
+                <p class="text-sm text-slate-600">
+                    Revise no Resumo e reinsira os pendentes no deck para decidir.
+                </p>
+            </div>
+            <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
+                <button
+                    type="button"
+                    class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                    @click="goToResumo"
+                >
+                    Ir para Resumo
+                </button>
+            </div>
+        </Card>
+
         <Card v-else tone="slate" class="space-y-3 text-center">
             <div class="text-4xl">🎉</div>
             <p class="text-base font-semibold text-slate-700">Todos os itens foram processados.</p>
@@ -122,62 +145,53 @@
         </Card>
 
         <Toast v-model="toastOpen" :message="toastMessage" :duration="2600" />
+
+        <div
+            v-if="DEV"
+            class="fixed bottom-4 left-4 z-[9998] flex items-center gap-2 rounded-xl bg-white/90 px-3 py-2 text-xs font-semibold text-slate-600 shadow ring-1 ring-black/5 backdrop-blur"
+        >
+            <span class="text-[0.65rem] uppercase tracking-wider text-slate-400">DEV</span>
+            <button
+                type="button"
+                class="rounded-full bg-emerald-500 px-3 py-1 text-white shadow hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                @click="handleDevSeed"
+            >
+                Seed
+            </button>
+            <button
+                type="button"
+                class="rounded-full bg-slate-200 px-3 py-1 text-slate-700 shadow hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                @click="handleDevClear"
+            >
+                Clear
+            </button>
+        </div>
     </AppLayout>
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import { computed, nextTick, onMounted, reactive, ref } from 'vue';
 import { Clock, Heart, X } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import SwipeCard from '@/Components/SwipeCard.vue';
 import Toast from '@/Components/Toast.vue';
+import { useDecisionStore } from '@/stores/decision';
 
-const items = ref([
-    {
-        id: 'living-room-lamp',
-        name: 'Abajur sala vintage',
-        weight: 1.3,
-        notes: 'Ocupa pouco espaço e ilumina bem',
-        decision: null,
-    },
-    {
-        id: 'coat-blue',
-        name: 'Casaco azul inverno',
-        weight: 1.9,
-        notes: 'Favorito da Lauren • Cabe na mala A',
-        decision: null,
-    },
-    {
-        id: 'coffee-mugs',
-        name: 'Conjunto de canecas viagem',
-        weight: 0.8,
-        notes: '4 peças • Pode quebrar se despachar',
-        decision: null,
-    },
-    {
-        id: 'photo-album',
-        name: 'Álbum de fotos família',
-        weight: 0.6,
-        notes: 'Volume 2015-2020',
-        decision: null,
-    },
-    {
-        id: 'kitchen-kit',
-        name: 'Kit cozinha compacto',
-        weight: 1.5,
-        notes: 'Frigideira + facas essenciais',
-        decision: null,
-    },
-]);
+const DEV = import.meta.env.DEV;
+const page = usePage();
+const decisionStore = useDecisionStore();
 
-const totalCount = computed(() => items.value.length);
-const processedCount = computed(() => items.value.filter((item) => item.decision !== null).length);
-const pendingCount = computed(() => items.value.filter((item) => item.decision === 'pending').length);
-const progressPercent = computed(() => (totalCount.value ? Math.round((processedCount.value / totalCount.value) * 100) : 0));
-const currentIndex = computed(() => items.value.findIndex((item) => item.decision === null));
-const currentItem = computed(() => (currentIndex.value === -1 ? null : items.value[currentIndex.value]));
+const totalCount = computed(() => decisionStore.totalCount);
+const processedCount = computed(() => decisionStore.processedCount);
+const pendingCount = computed(() => decisionStore.pendingCount);
+const progressPercent = computed(() => decisionStore.progressPercent);
+const currentItem = computed(() => decisionStore.currentItem);
+const bannerProcessedWithPendings = computed(
+    () => totalCount.value > 0 && processedCount.value === totalCount.value && pendingCount.value > 0,
+);
 
 const toastOpen = ref(false);
 const toastMessage = ref('');
@@ -207,19 +221,12 @@ const vibrate = (pattern) => {
     }
 };
 
-const applyAction = (type) => {
-    if (!currentItem.value) {
+const handleDecision = (type) => {
+    const item = decisionStore.applyDecision(type);
+    if (!item) {
         isProcessing.value = false;
         return;
     }
-
-    const index = currentIndex.value;
-    if (index === -1) {
-        isProcessing.value = false;
-        return;
-    }
-
-    items.value[index].decision = type;
 
     if (type === 'pending') {
         vibrate([0, 30, 30, 30]);
@@ -258,7 +265,41 @@ const handleTouchHint = (key) => {
     }
 };
 
-onMounted(() => {
+const hydrateStore = async () => {
+    const shouldSeed = DEV && page.url.includes('seed=1');
+    if (shouldSeed) {
+        await decisionStore.forceSeed();
+    } else {
+        await decisionStore.loadMockData();
+        decisionStore.initialize();
+    }
+    if (DEV) {
+        console.info('[decidir] store state', {
+            items: decisionStore.items.length,
+            queue: decisionStore.queue.length,
+        });
+    }
+};
+
+const handleDevSeed = async () => {
+    await decisionStore.forceSeed();
+    isProcessing.value = false;
+    showToast('Mock reimportado ✅');
+};
+
+const handleDevClear = () => {
+    decisionStore.resetAll();
+    isProcessing.value = false;
+    showToast('Mock limpo ♻️');
+};
+
+const goToResumo = () => {
+    const destination = route ? route('resumo.index') : '/resumo';
+    router.visit(destination);
+};
+
+onMounted(async () => {
+    await hydrateStore();
     if (typeof window !== 'undefined') {
         isTouchDevice.value = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         mobileSeen.value = window.localStorage.getItem('seen_decidir_hints') === 'true';

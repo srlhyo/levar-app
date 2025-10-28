@@ -18,7 +18,7 @@
                             <component :is="item.icon" class="h-6 w-6" />
                         </IconPill>
                         <div class="space-y-1">
-                            <p class="text-base font-semibold text-slate-900 sm:text-lg">{{ item.name }}</p>
+                        <p class="text-base font-semibold text-slate-900 sm:text-lg">{{ item.title ?? item.name }}</p>
                             <p class="text-sm text-slate-600">{{ item.subtitle }}</p>
                             <p class="text-xs text-slate-500">{{ item.weight.toFixed(1) }} kg</p>
                         </div>

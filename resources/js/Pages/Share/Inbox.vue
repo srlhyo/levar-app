@@ -44,7 +44,7 @@
                             <component :is="statusConfig[item.status].icon" class="h-4 w-4" />
                         </IconPill>
                         <div>
-                            <p class="text-sm font-semibold text-slate-900">{{ item.name }}</p>
+                            <p class="text-sm font-semibold text-slate-900">{{ item.title ?? item.name }}</p>
                             <p class="text-xs text-slate-500">{{ item.description }}</p>
                         </div>
                     </div>
