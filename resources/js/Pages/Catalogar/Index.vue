@@ -76,15 +76,69 @@
                     </label>
                 </div>
 
-                <label class="space-y-2">
-                    <span class="text-sm font-medium text-slate-700">Notas</span>
-                    <textarea
-                        v-model="notes"
-                        rows="4"
-                        placeholder="Observações importantes..."
-                        class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 resize-none"
-                    />
-                </label>
+                <div class="space-y-2">
+                    <span class="text-sm font-medium text-slate-700">Dimensões (cm)</span>
+                    <div class="grid grid-cols-3 gap-3">
+                        <input
+                            v-model="length"
+                            min="0"
+                            placeholder="Compr."
+                            class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                            type="number"
+                        />
+                        <input
+                            v-model="width"
+                            min="0"
+                            placeholder="Larg."
+                            class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                            type="number"
+                        />
+                        <input
+                            v-model="height"
+                            min="0"
+                            placeholder="Alt."
+                            class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                            type="number"
+                        />
+                    </div>
+                    <p class="text-xs text-slate-500">Preencha em centímetros (opcional). Ex.: 55 × 40 × 23</p>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <label class="space-y-2">
+                        <span class="text-sm font-medium text-slate-700">Categoria</span>
+                        <select
+                            v-model="category"
+                            class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                        >
+                            <option value="">Selecionar...</option>
+                            <option value="cozinha">Cozinha</option>
+                            <option value="sala">Sala</option>
+                            <option value="quarto">Quarto</option>
+                            <option value="escritorio">Escritório</option>
+                            <option value="banheiro">Banheiro</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </label>
+
+                    <label class="space-y-2">
+                        <span class="text-sm font-medium text-slate-700">Fragilidade</span>
+                        <div class="flex h-[42px] items-center justify-between rounded-2xl border border-sky-200 bg-white/80 px-3 shadow-inner shadow-slate-200">
+                            <span class="text-sm text-slate-700">Item frágil?</span>
+                            <button
+                                type="button"
+                                class="relative inline-flex h-6 w-11 items-center rounded-full transition"
+                                :class="fragile ? 'bg-amber-400' : 'bg-slate-300'"
+                                @click="toggleFragile"
+                            >
+                                <span
+                                    class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition"
+                                    :class="fragile ? 'translate-x-5' : 'translate-x-1'"
+                                />
+                            </button>
+                        </div>
+                    </label>
+                </div>
 
                 <div class="flex justify-end">
                     <button
@@ -113,8 +167,12 @@ import { toast } from '@/utils/toast';
 const fileInput = ref(null);
 const photo = ref('');
 const name = ref('');
-const notes = ref('');
 const weight = ref('');
+const length = ref('');
+const width = ref('');
+const height = ref('');
+const category = ref('');
+const fragile = ref(false);
 
 const handlePhotoCapture = (event) => {
     const file = event.target.files?.[0];
@@ -134,8 +192,16 @@ const triggerFilePicker = () => {
 const resetForm = () => {
     photo.value = '';
     name.value = '';
-    notes.value = '';
     weight.value = '';
+    length.value = '';
+    width.value = '';
+    height.value = '';
+    category.value = '';
+    fragile.value = false;
+};
+
+const toggleFragile = () => {
+    fragile.value = !fragile.value;
 };
 
 const handleSubmit = () => {
@@ -144,12 +210,20 @@ const handleSubmit = () => {
         return;
     }
 
+    const dimensionValues = [length.value, width.value, height.value]
+        .map((value) => (value ? Number(value).toString() : ''))
+        .filter(Boolean);
+    const dimensionString =
+        dimensionValues.length === 3 ? `${dimensionValues[0]} × ${dimensionValues[1]} × ${dimensionValues[2]} cm` : undefined;
+
     const newItem = {
         id: Date.now().toString(),
         name: name.value.trim(),
         photo: photo.value || undefined,
-        notes: notes.value.trim() || undefined,
         weight: weight.value ? parseFloat(weight.value) : 0,
+        dimensions: dimensionString,
+        category: category.value || undefined,
+        fragile: fragile.value,
         decision: 'pending',
         packed: false,
         luggage: null,

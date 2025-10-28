@@ -43,15 +43,18 @@
                 :bag-b-used="stats.weightB"
                 :reserved-kg="stats.reservedKg"
             />
-            <div class="grid gap-3 sm:grid-cols-2">
-                <div class="rounded-2xl bg-white/70 p-4 ring-1 ring-white/40">
-                    <p class="text-sm font-semibold text-slate-800">Mala A</p>
-                    <p class="text-xs text-slate-500">{{ stats.luggageA }} itens • {{ stats.weightA.toFixed(1) }} kg</p>
-                </div>
-                <div class="rounded-2xl bg-white/70 p-4 ring-1 ring-white/40">
-                    <p class="text-sm font-semibold text-slate-800">Mala B</p>
-                    <p class="text-xs text-slate-500">{{ stats.luggageB }} itens • {{ stats.weightB.toFixed(1) }} kg</p>
-                </div>
+            <div class="flex flex-col gap-6 sm:flex-row">
+                <Suitcase
+                    v-for="bag in bags"
+                    :key="bag.id"
+                    class="flex-1"
+                    :name="bag.name"
+                    :dims="bag.dims"
+                    :current="bag.current"
+                    :max="bag.max"
+                    :ratio="bag.ratio"
+                    :status="bag.status"
+                />
             </div>
         </Card>
 
@@ -238,6 +241,7 @@ import Tabs from '@/Components/Tabs.vue';
 import ItemRow from '@/Components/ItemRow.vue';
 import Toast from '@/Components/Toast.vue';
 import ToastUndo from '@/Components/ToastUndo.vue';
+import Suitcase from '@/Components/Suitcase.vue';
 import { useDecisionStore } from '@/stores/decision';
 import { toast } from '@/utils/toast';
 
@@ -356,6 +360,39 @@ const stats = computed(() => {
         decided,
         remaining,
     };
+});
+
+const bags = computed(() => {
+    const definitions = [
+        {
+            id: 'A',
+            name: 'Mala A',
+            dims: '78 × 50 × 30 cm',
+            current: stats.value.weightA,
+            max: 23,
+        },
+        {
+            id: 'B',
+            name: 'Mala B',
+            dims: '78 × 50 × 30 cm',
+            current: stats.value.weightB,
+            max: 23,
+        },
+    ];
+
+    return definitions.map((bag) => {
+        const rawRatio = bag.max ? bag.current / bag.max : 0;
+        const clampedRatio = Math.max(0, Math.min(rawRatio, 1));
+        let status = 'Normal';
+        if (rawRatio >= 0.9 && rawRatio <= 1) status = 'Lotado';
+        if (rawRatio > 1) status = 'Fechado';
+
+        return {
+            ...bag,
+            ratio: clampedRatio,
+            status,
+        };
+    });
 });
 
 const hasBlockingDecisions = computed(() => stats.value.pending > 0 || stats.value.undecided > 0);

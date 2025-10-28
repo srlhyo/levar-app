@@ -7,6 +7,7 @@ export const mockItems = [
         bag: 'Mala A',
         decision: 'yes',
         packed: true,
+        dimensions: '45 × 18 × 18 cm',
     },
     {
         id: 2,
@@ -16,6 +17,7 @@ export const mockItems = [
         bag: 'Mala B',
         decision: 'yes',
         packed: false,
+        dimensions: '40 × 30 × 15 cm',
     },
     {
         id: 3,
@@ -25,6 +27,7 @@ export const mockItems = [
         bag: 'Mala A',
         decision: 'yes',
         packed: false,
+        dimensions: '28 × 18 × 14 cm',
     },
     {
         id: 4,
@@ -34,6 +37,7 @@ export const mockItems = [
         bag: null,
         decision: 'pending',
         packed: false,
+        dimensions: '55 × 20 × 20 cm',
     },
     {
         id: 5,
@@ -43,6 +47,7 @@ export const mockItems = [
         bag: null,
         decision: 'no',
         packed: false,
+        dimensions: '120 × 8 × 8 cm',
     },
     {
         id: 6,
@@ -52,5 +57,6 @@ export const mockItems = [
         bag: null,
         decision: null,
         packed: false,
+        dimensions: '20 × 15 × 12 cm',
     },
 ];

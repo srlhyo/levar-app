@@ -24,6 +24,24 @@
                 <p v-if="item.weight" class="text-sm text-slate-600">
                     Peso: {{ Number(item.weight).toFixed(2) }} kg
                 </p>
+                <div class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+                    <span>
+                        Dimensões:
+                        <span class="font-medium text-slate-700">
+                            {{ dimensionsText }}
+                        </span>
+                    </span>
+                    <span v-if="categoryText" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                        {{ categoryText }}
+                    </span>
+                    <span
+                        v-if="props.item.fragile"
+                        class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700"
+                    >
+                        <AlertTriangle class="h-3.5 w-3.5" />
+                        Frágil
+                    </span>
+                </div>
                 <p v-if="item.notes" class="text-sm text-slate-600">
                     {{ item.notes }}
                 </p>
@@ -59,7 +77,7 @@
 
 <script setup>
 import { computed, defineExpose, ref, watch } from 'vue';
-import { Package } from 'lucide-vue-next';
+import { AlertTriangle, Package } from 'lucide-vue-next';
 
 const props = defineProps({
     item: {
@@ -73,6 +91,20 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['decision']);
+
+const dimensionsText = computed(() => {
+    const raw = props.item.dimensions;
+    if (typeof raw === 'string' && raw.trim().length) {
+        return raw.trim();
+    }
+    return 'não informado';
+});
+
+const categoryText = computed(() => {
+    const raw = props.item.category;
+    if (typeof raw !== 'string' || !raw.trim()) return '';
+    return raw.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+});
 
 const positionX = ref(0);
 const positionY = ref(0);

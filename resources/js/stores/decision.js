@@ -36,6 +36,9 @@ const normalizeItem = (item) => ({
     name: item.title ?? item.name ?? 'Item sem título',
     notes: item.notes ?? '',
     weight: typeof item.weight === 'number' ? item.weight : null,
+    dimensions: item.dimensions ?? '',
+    category: item.category ?? '',
+    fragile: Boolean(item.fragile),
     photo: item.photo ?? null,
     bag: normalizeBag(item.bag),
     packed: Boolean(item.packed),
@@ -60,6 +63,7 @@ const defaultItems = () => [
         title: 'Abajur sala vintage',
         notes: 'Ocupa pouco espaço e ilumina bem',
         weight: 1.3,
+        dimensions: '45 × 20 × 20 cm',
         bag: 'A',
         packed: true,
     }),
@@ -68,6 +72,7 @@ const defaultItems = () => [
         title: 'Casaco azul inverno',
         notes: 'Favorito da Lauren • Cabe na mala A',
         weight: 1.9,
+        dimensions: '80 × 35 × 15 cm',
         bag: 'A',
     }),
     normalizeItem({
@@ -75,18 +80,21 @@ const defaultItems = () => [
         title: 'Conjunto de canecas viagem',
         notes: '4 peças • Pode quebrar se despachar',
         weight: 0.8,
+        dimensions: '25 × 25 × 20 cm',
     }),
     normalizeItem({
         id: 'photo-album',
         title: 'Álbum de fotos família',
         notes: 'Volume 2015-2020',
         weight: 0.6,
+        dimensions: '32 × 24 × 5 cm',
     }),
     normalizeItem({
         id: 'kitchen-kit',
         title: 'Kit cozinha compacto',
         notes: 'Frigideira + facas essenciais',
         weight: 1.5,
+        dimensions: '40 × 30 × 18 cm',
         bag: 'B',
     }),
 ];
@@ -167,6 +175,14 @@ export const useDecisionStore = defineStore('decision', {
         },
         leaveList(state) {
             return state.items.filter((item) => !item.deleted && item.decision === 'no');
+        },
+        allPackableIds(state) {
+            return state.items.filter((item) => !item.deleted && item.decision === 'yes').map((item) => item.id);
+        },
+        allPacked() {
+            const ids = this.allPackableIds;
+            if (!ids.length) return false;
+            return ids.every((id) => this.itemsMap[id]?.packed);
         },
         progressPercent() {
             return this.totalCount ? Math.round((this.processedCount / this.totalCount) * 100) : 0;
@@ -314,6 +330,17 @@ export const useDecisionStore = defineStore('decision', {
                 }
             });
             this.recycleBin = this.recycleBin.filter((entry) => !unique.includes(entry.id));
+            this.persist();
+        },
+        markPacked(ids, packed) {
+            const unique = Array.from(new Set(ids));
+            if (!unique.length) return;
+            unique.forEach((id) => {
+                const item = this.itemsMap[id];
+                if (item && !item.deleted) {
+                    item.packed = packed;
+                }
+            });
             this.persist();
         },
         async forceSeed() {
