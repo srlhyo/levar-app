@@ -1,6 +1,6 @@
 <template>
     <div
-        class="relative w-[90%] max-w-md cursor-grab select-none sm:max-w-lg"
+        class="swipe-card relative w-[90%] max-w-md cursor-grab select-none sm:max-w-lg"
         :style="cardStyle"
         @pointerdown="handlePointerDown"
         @pointermove="handlePointerMove"
@@ -8,15 +8,18 @@
         @pointerleave="handlePointerEnd"
         @pointercancel="handlePointerEnd"
     >
-        <div class="overflow-hidden rounded-3xl bg-white/90 shadow-lg/30 shadow-slate-200 ring-1 ring-black/5 backdrop-blur-sm">
-            <img
-                v-if="item.photo"
-                :src="item.photo"
-                :alt="item.title ?? item.name"
-                class="h-80 w-full object-cover"
-            />
-            <div v-else class="flex h-80 w-full items-center justify-center bg-emerald-100">
-                <Package class="h-24 w-24 text-emerald-400/40" />
+        <div class="pointer-events-none overflow-hidden rounded-3xl bg-white/90 shadow-lg/30 shadow-slate-200 ring-1 ring-black/5 backdrop-blur-sm">
+            <div class="flex h-80 w-full items-center justify-center bg-slate-900/5">
+                <img
+                    v-if="hasPhoto"
+                    :src="itemPhoto"
+                    :alt="item.title ?? item.name"
+                    class="max-h-full max-w-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                    @error="handleImageError"
+                />
+                <Package v-else class="h-24 w-24 text-emerald-400/40" />
             </div>
 
             <div class="space-y-2 p-6">
@@ -24,13 +27,10 @@
                 <p v-if="item.weight" class="text-sm text-slate-600">
                     Peso: {{ Number(item.weight).toFixed(2) }} kg
                 </p>
+                <p v-if="volumeLabel" class="text-sm text-slate-600">
+                    Volume: <span class="font-medium text-slate-700">{{ volumeLabel }}</span>
+                </p>
                 <div class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                    <span>
-                        Dimensões:
-                        <span class="font-medium text-slate-700">
-                            {{ dimensionsText }}
-                        </span>
-                    </span>
                     <span v-if="categoryText" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
                         {{ categoryText }}
                     </span>
@@ -51,7 +51,7 @@
         <transition name="fade">
             <div
                 v-if="overlay === 'yes'"
-                class="absolute top-8 right-8 rotate-12 rounded-full bg-emerald-500 px-6 py-3 text-lg font-semibold text-white shadow"
+                class="pointer-events-none absolute top-8 right-8 rotate-12 rounded-full bg-emerald-500 px-6 py-3 text-lg font-semibold text-white shadow"
             >
                 LEVAR
             </div>
@@ -59,7 +59,7 @@
         <transition name="fade">
             <div
                 v-if="overlay === 'no'"
-                class="absolute top-8 left-8 -rotate-12 rounded-full bg-rose-500 px-6 py-3 text-lg font-semibold text-white shadow"
+                class="pointer-events-none absolute top-8 left-8 -rotate-12 rounded-full bg-rose-500 px-6 py-3 text-lg font-semibold text-white shadow"
             >
                 NÃO LEVAR
             </div>
@@ -67,7 +67,7 @@
         <transition name="fade">
             <div
                 v-if="overlay === 'pending'"
-                class="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow"
+                class="pointer-events-none absolute top-8 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow"
             >
                 DECIDIR DEPOIS
             </div>
@@ -92,18 +92,53 @@ const props = defineProps({
 
 const emit = defineEmits(['decision']);
 
-const dimensionsText = computed(() => {
-    const raw = props.item.dimensions;
-    if (typeof raw === 'string' && raw.trim().length) {
-        return raw.trim();
+const numberFormatter = new Intl.NumberFormat('pt-BR');
+
+const rawPhoto = computed(() => props.item?.photo || props.item?.thumbnail_url || props.item?.photo_url || null);
+const sanitizedPhoto = computed(() => {
+    if (!rawPhoto.value) {
+        return null;
     }
-    return 'não informado';
+    if (typeof rawPhoto.value !== 'string') {
+        return null;
+    }
+    const trimmed = rawPhoto.value.trim();
+    if (!trimmed) {
+        return null;
+    }
+    return trimmed;
 });
+
+const imageFailed = ref(false);
+
+const hasPhoto = computed(() => Boolean(sanitizedPhoto.value) && !imageFailed.value);
+const itemPhoto = computed(() => (hasPhoto.value ? sanitizedPhoto.value : null));
+
+const handleImageError = () => {
+    imageFailed.value = true;
+};
+
+watch(
+    () => sanitizedPhoto.value,
+    () => {
+        imageFailed.value = false;
+    },
+);
 
 const categoryText = computed(() => {
     const raw = props.item.category;
     if (typeof raw !== 'string' || !raw.trim()) return '';
     return raw.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+});
+
+const volumeLabel = computed(() => {
+    if (!props.item) return null;
+    const liters = props.item.volume_liters ?? (props.item.volume_cm3 != null ? props.item.volume_cm3 / 1000 : null);
+    if (liters == null || Number.isNaN(liters)) {
+        return null;
+    }
+    const cm3 = props.item.volume_cm3 ?? liters * 1000;
+    return `${Number(liters).toFixed(1)} L (${numberFormatter.format(Math.round(cm3))} cm³)`;
 });
 
 const positionX = ref(0);

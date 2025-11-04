@@ -6,17 +6,45 @@
 
         <Card tone="green" class="space-y-4">
             <div class="flex items-center justify-between text-sm font-medium text-slate-600">
-                <span>Progresso</span>
-                <span>{{ processedCount }} / {{ totalCount }}</span>
+                <span>Restantes na pilha</span>
+                <span>{{ undecidedCount }} / {{ totalCount }}</span>
             </div>
             <div class="h-2 rounded-full bg-white/60">
                 <div class="h-full rounded-full bg-emerald-500 transition-all duration-300" :style="{ width: `${progressPercent}%` }" />
             </div>
-            <p class="rounded-2xl bg-white/70 px-4 py-2 text-xs font-medium text-slate-600">
-                Processados: {{ processedCount }}/{{ totalCount }} • Pendentes: {{ pendingCount }}
-            </p>
+            <div class="rounded-2xl bg-white/70 px-4 py-2 text-xs font-medium text-slate-600 sm:text-sm">
+                <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <span class="inline-flex items-center gap-1">
+                        <span class="font-semibold text-emerald-600">{{ progressPercent }}%</span>
+                        concluído
+                    </span>
+                    <span class="inline-flex items-center gap-1 text-slate-500">
+                        Processados: <span class="font-semibold text-slate-700">{{ processedCount }}</span> / {{ totalCount }}
+                    </span>
+                    <span
+                        v-if="backlogCount"
+                        class="inline-flex items-center gap-1 text-amber-600"
+                    >
+                        Fila pendente: <span class="font-semibold">{{ backlogCount }}</span>
+                    </span>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-white/60 px-4 py-2 text-xs text-slate-600 sm:text-sm">
+                <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-1 text-rose-600">
+                    <X class="h-4 w-4" />
+                    Não levar
+                </span>
+                <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+                    <Clock class="h-4 w-4" />
+                    Decidir depois
+                </span>
+                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-emerald-600">
+                    <Heart class="h-4 w-4" />
+                    Levar
+                </span>
+            </div>
             <p class="text-xs text-slate-600 sm:text-sm">
-                Gestos: direita (Levar) • esquerda (Não levar) • para baixo (Decidir depois). Os botões abaixo fazem o mesmo.
+                Deslize a carta inteira ou toque nos botões para classificar. No celular, mantenha o toque firme para arrastar.
             </p>
         </Card>
 
@@ -28,18 +56,19 @@
                 @decision="handleDecision"
             />
 
-            <div class="flex w-full max-w-md items-center justify-between gap-3 sm:max-w-lg">
+            <div class="flex w-full max-w-md items-stretch justify-between gap-3 sm:max-w-lg">
                 <div class="relative group flex-1">
                     <button
                         type="button"
                         :aria-describedby="tooltipIds.no"
                         aria-label="Não levar"
-                        class="inline-flex h-14 w-full items-center justify-center rounded-full border border-rose-200 bg-white/90 text-rose-500 shadow transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 disabled:cursor-not-allowed disabled:opacity-40 sm:h-16"
+                        class="inline-flex w-full flex-col items-center justify-center gap-1 rounded-full border border-rose-200 bg-white/90 px-4 py-3 text-rose-500 shadow transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-[4.25rem]"
                         :disabled="isProcessing"
                         @click="() => requestDecision('no')"
                         @touchstart="() => handleTouchHint('no')"
                     >
                         <X class="h-6 w-6" />
+                        <span class="text-[11px] font-semibold uppercase tracking-wide text-rose-500 sm:text-xs">Não levar</span>
                     </button>
                     <span
                         :id="tooltipIds.no"
@@ -62,12 +91,13 @@
                         type="button"
                         :aria-describedby="tooltipIds.pending"
                         aria-label="Decidir depois"
-                        class="inline-flex h-14 w-full items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-40 sm:h-16"
+                        class="inline-flex w-full flex-col items-center justify-center gap-1 rounded-full border border-slate-200 bg-white/90 px-4 py-3 text-slate-700 shadow transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-[4.25rem]"
                         :disabled="isProcessing"
                         @click="() => requestDecision('pending')"
                         @touchstart="() => handleTouchHint('pending')"
                     >
                         <Clock class="h-6 w-6" />
+                        <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-600 sm:text-xs">Decidir depois</span>
                     </button>
                     <span
                         :id="tooltipIds.pending"
@@ -90,12 +120,13 @@
                         type="button"
                         :aria-describedby="tooltipIds.yes"
                         aria-label="Levar"
-                        class="inline-flex h-14 w-full items-center justify-center rounded-full border border-emerald-300 bg-emerald-500 text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40 sm:h-16"
+                        class="inline-flex w-full flex-col items-center justify-center gap-1 rounded-full border border-emerald-400 bg-emerald-500 px-4 py-3 text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-[4.25rem]"
                         :disabled="isProcessing"
                         @click="() => requestDecision('yes')"
                         @touchstart="() => handleTouchHint('yes')"
                     >
                         <Heart class="h-6 w-6" />
+                        <span class="text-[11px] font-semibold uppercase tracking-wide text-white sm:text-xs">Levar</span>
                     </button>
                     <span
                         :id="tooltipIds.yes"
@@ -144,57 +175,39 @@
             <p class="text-sm text-slate-500">Você pode revisar o resumo para ver os totais.</p>
         </Card>
 
-        <Toast v-model="toastOpen" :message="toastMessage" :duration="2600" />
-
-        <div
-            v-if="DEV"
-            class="fixed bottom-4 left-4 z-[9998] flex items-center gap-2 rounded-xl bg-white/90 px-3 py-2 text-xs font-semibold text-slate-600 shadow ring-1 ring-black/5 backdrop-blur"
-        >
-            <span class="text-[0.65rem] uppercase tracking-wider text-slate-400">DEV</span>
-            <button
-                type="button"
-                class="rounded-full bg-emerald-500 px-3 py-1 text-white shadow hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-                @click="handleDevSeed"
-            >
-                Seed
-            </button>
-            <button
-                type="button"
-                class="rounded-full bg-slate-200 px-3 py-1 text-slate-700 shadow hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                @click="handleDevClear"
-            >
-                Clear
-            </button>
-        </div>
     </AppLayout>
 </template>
 
 <script setup>
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
-import { computed, nextTick, onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, watchEffect } from 'vue';
 import { Clock, Heart, X } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import SwipeCard from '@/Components/SwipeCard.vue';
-import Toast from '@/Components/Toast.vue';
 import { useDecisionStore } from '@/stores/decision';
+import { toast } from '@/utils/toast';
 
-const DEV = import.meta.env.DEV;
 const page = usePage();
 const decisionStore = useDecisionStore();
 
+const move = computed(() => page.props.move ?? null);
+
+watchEffect(() => {
+    decisionStore.setMove(move.value);
+});
+
 const totalCount = computed(() => decisionStore.totalCount);
 const processedCount = computed(() => decisionStore.processedCount);
-const pendingCount = computed(() => decisionStore.pendingCount);
+const undecidedCount = computed(() => decisionStore.undecidedCount);
+const backlogCount = computed(() => decisionStore.pendingCount);
 const progressPercent = computed(() => decisionStore.progressPercent);
 const currentItem = computed(() => decisionStore.currentItem);
 const bannerProcessedWithPendings = computed(
-    () => totalCount.value > 0 && processedCount.value === totalCount.value && pendingCount.value > 0,
+    () => totalCount.value > 0 && undecidedCount.value === 0 && backlogCount.value > 0,
 );
 
-const toastOpen = ref(false);
-const toastMessage = ref('');
 const isProcessing = ref(false);
 const swipeCardRef = ref(null);
 const tooltipIds = {
@@ -207,41 +220,40 @@ const mobileHint = reactive({ no: false, pending: false, yes: false });
 const mobileSeen = ref(false);
 const isTouchDevice = ref(false);
 
-const showToast = (message) => {
-    toastMessage.value = message;
-    toastOpen.value = false;
-    nextTick(() => {
-        toastOpen.value = true;
-    });
-};
-
 const vibrate = (pattern) => {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         navigator.vibrate(pattern);
     }
 };
 
-const handleDecision = (type) => {
-    const item = decisionStore.applyDecision(type);
-    if (!item) {
+const handleDecision = async (type) => {
+    const active = decisionStore.currentItem;
+    if (!active) {
         isProcessing.value = false;
         return;
     }
 
-    if (type === 'pending') {
-        vibrate([0, 30, 30, 30]);
-        showToast('Item adiado ⏳');
-    } else if (type === 'yes') {
-        vibrate(25);
-        showToast('Marcado para levar 💚');
-    } else if (type === 'no') {
-        vibrate([0, 20, 80, 20]);
-        showToast('Marcado como não levar ❌');
-    }
+    try {
+        await decisionStore.applyDecision(type);
 
-    nextTick(() => {
-        isProcessing.value = false;
-    });
+        if (type === 'pending') {
+            vibrate([0, 30, 30, 30]);
+            toast.info('Item adiado ⏳');
+        } else if (type === 'yes') {
+            vibrate(25);
+            toast.success('Marcado para levar 💚');
+        } else if (type === 'no') {
+            vibrate([0, 20, 80, 20]);
+            toast.info('Marcado como não levar ❌');
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error('Não foi possível atualizar o item ❌');
+    } finally {
+        nextTick(() => {
+            isProcessing.value = false;
+        });
+    }
 };
 
 const requestDecision = (type) => {
@@ -265,41 +277,21 @@ const handleTouchHint = (key) => {
     }
 };
 
-const hydrateStore = async () => {
-    const shouldSeed = DEV && page.url.includes('seed=1');
-    if (shouldSeed) {
-        await decisionStore.forceSeed();
-    } else {
-        await decisionStore.loadMockData();
-        decisionStore.initialize();
-    }
-    if (DEV) {
-        console.info('[decidir] store state', {
-            items: decisionStore.items.length,
-            queue: decisionStore.queue.length,
-        });
-    }
-};
-
-const handleDevSeed = async () => {
-    await decisionStore.forceSeed();
-    isProcessing.value = false;
-    showToast('Mock reimportado ✅');
-};
-
-const handleDevClear = () => {
-    decisionStore.resetAll();
-    isProcessing.value = false;
-    showToast('Mock limpo ♻️');
-};
-
 const goToResumo = () => {
     const destination = route ? route('resumo.index') : '/resumo';
     router.visit(destination);
 };
 
 onMounted(async () => {
-    await hydrateStore();
+    if (move.value?.id) {
+        try {
+            await decisionStore.fetchDeck();
+        } catch (error) {
+            console.error(error);
+            toast.error('Não foi possível carregar os itens ❌');
+        }
+    }
+
     if (typeof window !== 'undefined') {
         isTouchDevice.value = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         mobileSeen.value = window.localStorage.getItem('seen_decidir_hints') === 'true';

@@ -12,12 +12,27 @@
         </label>
 
         <div class="flex flex-1 items-start gap-4">
-            <div class="grid h-14 w-14 flex-shrink-0 place-items-center rounded-2xl bg-slate-200/80 text-slate-500 sm:h-16 sm:w-16">
-                <Package class="h-6 w-6" />
+            <div
+                class="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-200/80 sm:h-16 sm:w-16"
+            >
+                <img
+                    v-if="hasPhoto"
+                    :src="itemPhoto"
+                    :alt="item.title ?? item.name"
+                    class="max-h-full max-w-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                    @error="handleImageError"
+                />
+                <Package v-else class="h-6 w-6 text-slate-500" />
             </div>
             <div class="space-y-1">
                 <p class="text-base font-semibold text-slate-900 sm:text-lg">{{ item.title ?? item.name }}</p>
                 <p v-if="item.notes" class="text-sm text-slate-600">{{ item.notes }}</p>
+                <p v-if="volumeLabel" class="text-xs text-slate-500">
+                    Volume:
+                    <span class="font-medium text-slate-700">{{ volumeLabel }}</span>
+                </p>
                 <div class="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
                     <span v-if="item.weight" class="rounded-full bg-slate-900 px-3 py-1 text-white">
                         {{ Number(item.weight).toFixed(1) }} kg
@@ -91,7 +106,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { CornerUpLeft, Package, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -123,10 +138,47 @@ const isTouchDevice = ref(false);
 const hintVisible = reactive({ requeue: false, delete: false });
 const hintSeen = reactive({ requeue: false, delete: false });
 
+const numberFormatter = new Intl.NumberFormat('pt-BR');
+
 const tooltipIds = computed(() => ({
     requeue: `tooltip-requeue-${props.item.id}`,
     delete: `tooltip-delete-${props.item.id}`,
 }));
+
+const rawPhoto = computed(() => props.item?.photo || props.item?.thumbnail_url || props.item?.photo_url || null);
+const sanitizedPhoto = computed(() => {
+    if (!rawPhoto.value) return null;
+    if (typeof rawPhoto.value !== 'string') return null;
+    const trimmed = rawPhoto.value.trim();
+    return trimmed || null;
+});
+
+const imageFailed = ref(false);
+
+const hasPhoto = computed(() => Boolean(sanitizedPhoto.value) && !imageFailed.value);
+const itemPhoto = computed(() => (hasPhoto.value ? sanitizedPhoto.value : null));
+
+const handleImageError = () => {
+    imageFailed.value = true;
+};
+
+watch(
+    () => sanitizedPhoto.value,
+    () => {
+        imageFailed.value = false;
+    },
+);
+
+const volumeLabel = computed(() => {
+    if (!props.item) return null;
+    const liters = props.item.volume_liters ?? (props.item.volume_cm3 != null ? props.item.volume_cm3 / 1000 : null);
+    if (liters == null || Number.isNaN(liters)) {
+        return null;
+    }
+    const formatted = Number(liters).toFixed(1);
+    const cm3 = props.item.volume_cm3 ?? (liters * 1000);
+    return `${formatted} L (${numberFormatter.format(Math.round(cm3))} cm³)`;
+});
 
 const onToggle = (event) => {
     emit('toggle-select', { id: props.item.id, value: event.target.checked });

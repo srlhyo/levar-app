@@ -4,7 +4,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "seed:fresh": "php artisan migrate:fresh --seed",
+        "test:php": "php artisan test --parallel"
     },
     "dependencies": {
         "@inertiajs/progress": "^0.2.7",

@@ -7,7 +7,8 @@ export const mockItems = [
         bag: 'Mala A',
         decision: 'yes',
         packed: true,
-        dimensions: '45 × 18 × 18 cm',
+        volume_cm3: 14580,
+        volume_liters: 14.58,
     },
     {
         id: 2,
@@ -17,7 +18,8 @@ export const mockItems = [
         bag: 'Mala B',
         decision: 'yes',
         packed: false,
-        dimensions: '40 × 30 × 15 cm',
+        volume_cm3: 18000,
+        volume_liters: 18,
     },
     {
         id: 3,
@@ -27,7 +29,8 @@ export const mockItems = [
         bag: 'Mala A',
         decision: 'yes',
         packed: false,
-        dimensions: '28 × 18 × 14 cm',
+        volume_cm3: 7056,
+        volume_liters: 7.06,
     },
     {
         id: 4,
@@ -37,7 +40,8 @@ export const mockItems = [
         bag: null,
         decision: 'pending',
         packed: false,
-        dimensions: '55 × 20 × 20 cm',
+        volume_cm3: 22000,
+        volume_liters: 22,
     },
     {
         id: 5,
@@ -47,7 +51,8 @@ export const mockItems = [
         bag: null,
         decision: 'no',
         packed: false,
-        dimensions: '120 × 8 × 8 cm',
+        volume_cm3: 7680,
+        volume_liters: 7.68,
     },
     {
         id: 6,
@@ -57,6 +62,7 @@ export const mockItems = [
         bag: null,
         decision: null,
         packed: false,
-        dimensions: '20 × 15 × 12 cm',
+        volume_cm3: 3600,
+        volume_liters: 3.6,
     },
 ];

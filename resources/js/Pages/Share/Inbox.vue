@@ -64,55 +64,39 @@
             v-if="counts.error"
             message="1 upload falhou. Tocar para tentar novamente."
             :duration="6000"
-            @undo="toast.info('Upload reenviado (mock)')"
+            @undo="handleRetry"
         />
     </AppLayout>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { computed, onMounted, watchEffect } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
 import { AlertTriangle, CheckCircle2, Clock, Inbox, UploadCloud } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import IconPill from '@/Components/IconPill.vue';
 import ToastUndo from '@/Components/ToastUndo.vue';
+import { useDecisionStore } from '@/stores/decision';
 import { toast } from '@/utils/toast';
 
-const queue = [
-    {
-        id: 'upload-1',
-        name: 'Sala • Sofa azul.heic',
-        description: 'Tirado no iPhone da Lauren',
-        size: '3.1 MB',
-        status: 'uploading',
-        updatedAt: 'há 12s',
-    },
-    {
-        id: 'upload-2',
-        name: 'Quarto • Roupa de cama.zip',
-        description: '21 arquivos',
-        size: '18.4 MB',
-        status: 'queued',
-        updatedAt: 'há 1 min',
-    },
-    {
-        id: 'upload-3',
-        name: 'Cozinha • Panelas novas.jpg',
-        description: 'Adicionado pelo Pedro',
-        size: '2.6 MB',
-        status: 'done',
-        updatedAt: 'há 5 min',
-    },
-    {
-        id: 'upload-4',
-        name: 'Garage • Ferramentas.mov',
-        description: 'Vídeo 4K • verificar compressão',
-        size: '125 MB',
-        status: 'error',
-        updatedAt: 'há 2 min',
-    },
-];
+const decisionStore = useDecisionStore();
+const page = usePage();
+const move = computed(() => page.props.move ?? null);
+
+watchEffect(() => {
+    decisionStore.setMove(move.value);
+});
+
+onMounted(async () => {
+    if (!move.value?.id) return;
+    try {
+        await decisionStore.fetchUploads();
+    } catch (error) {
+        console.error(error);
+        toast.error('Não foi possível carregar a fila de uploads.');
+    }
+});
 
 const statusConfig = {
     queued: {
@@ -137,10 +121,19 @@ const statusConfig = {
     },
 };
 
-const counts = computed(() => ({
-    queued: queue.filter((item) => item.status === 'queued').length,
-    uploading: queue.filter((item) => item.status === 'uploading').length,
-    done: queue.filter((item) => item.status === 'done').length,
-    error: queue.filter((item) => item.status === 'error').length,
-}));
+const queue = computed(() => decisionStore.uploads.queue ?? []);
+
+const counts = computed(() => {
+    const source = decisionStore.uploads.counts ?? {};
+    return {
+        queued: source.queued ?? queue.value.filter((item) => item.status === 'queued').length,
+        uploading: source.uploading ?? queue.value.filter((item) => item.status === 'uploading').length,
+        done: source.done ?? queue.value.filter((item) => item.status === 'done').length,
+        error: source.error ?? queue.value.filter((item) => item.status === 'error').length,
+    };
+});
+
+const handleRetry = () => {
+    toast.info('Reenvio iniciado. Continue pelo catalogador.');
+};
 </script>

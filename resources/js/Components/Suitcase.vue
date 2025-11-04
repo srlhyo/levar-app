@@ -26,7 +26,7 @@
                 <div class="absolute bottom-2 right-2 h-2 w-2 rounded-full bg-white/70" />
 
                 <div
-                    class="absolute bottom-[10px] left-[6px] right-[6px] rounded-b-[10px] bg-slate-500/15 transition-all duration-700 ease-in-out"
+                    class="absolute bottom-[10px] left-[6px] right-[6px] rounded-b-[10px] bg-amber-400/45 transition-all duration-700 ease-in-out"
                     :style="{ height: `${Math.min(Math.max(ratio, 0), 1.2) * 60}%` }"
                 />
 
@@ -47,7 +47,10 @@
                 {{ name }} — {{ dims }}
             </p>
             <p class="text-xs text-slate-500">
-                {{ current.toFixed(1) }} kg / {{ max }} kg
+                {{ weightSummary }}
+            </p>
+            <p v-if="volumeSummary" class="text-xs text-slate-500">
+                {{ volumeSummary }}
             </p>
             <p class="text-sm font-semibold" :class="statusLabelClass">
                 {{ status }}
@@ -59,6 +62,8 @@
 <script setup>
 import { computed } from 'vue';
 import { Lock } from 'lucide-vue-next';
+
+const numberFormatter = new Intl.NumberFormat('pt-BR');
 
 const props = defineProps({
     name: {
@@ -86,6 +91,10 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    volume: {
+        type: Object,
+        default: null,
+    },
 });
 
 const shellClass = computed(() => {
@@ -97,6 +106,38 @@ const shellClass = computed(() => {
         default:
             return 'from-slate-50 to-slate-100 border-slate-200';
     }
+});
+
+
+const parseDimensions = (raw) => {
+    if (typeof raw !== 'string') return null;
+    const parts = raw
+        .split(/[x×]/i)
+        .map((part) => parseFloat(part.replace(/[^\d.,]/g, '').replace(',', '.')))
+        .filter((value) => !Number.isNaN(value) && value > 0);
+
+    if (parts.length < 3) return null;
+
+    const [length, width, height] = parts;
+    return {
+        length,
+        width,
+        height,
+        volume: length * width * height,
+    };
+};
+
+const capacityFromProps = computed(() => {
+    if (props.volume?.capacity != null) {
+        return Number(props.volume.capacity);
+    }
+
+    if (props.dims) {
+        const parsed = parseDimensions(props.dims);
+        return parsed?.volume ?? null;
+    }
+
+    return null;
 });
 
 const statusLabelClass = computed(() => {
@@ -111,4 +152,56 @@ const statusLabelClass = computed(() => {
 });
 
 const pulseClass = computed(() => (props.status === 'Lotado' || props.status === 'Fechado' ? 'animate-[pulse_1.4s_ease-in-out_1]' : ''));
+
+const formatKg = (value) => `${value.toFixed(1)} kg`;
+
+const toLiters = (value) => `${(value / 1000).toFixed(1)} L`;
+const formatCm3 = (value) => `${numberFormatter.format(Math.round(value))} cm³`;
+
+const weightSummary = computed(() => {
+    const capacity = Number(props.max ?? 0) || 0;
+    const effective = Number(props.weight?.effective ?? props.current ?? 0);
+    const reserved = Number(props.weight?.reserved ?? 0);
+    const remaining = props.weight?.remaining != null ? Number(props.weight.remaining) : null;
+
+    let summary = `${formatKg(effective)} / ${formatKg(capacity)}`;
+    if (reserved > 0.01) {
+        summary += ` (inclui ${formatKg(reserved)} reservado)`;
+    }
+
+    if (remaining != null) {
+        summary += ` • ${formatKg(Math.max(remaining, 0))} livres`;
+    }
+
+    return summary;
+});
+
+const volumeSummary = computed(() => {
+    const capacityCm3 = capacityFromProps.value;
+    const actualCm3 = Number(props.volume?.actual ?? 0);
+    const reservedCm3 = Number(props.volume?.reserved ?? 0);
+    const projectedCm3 = Number(props.volume?.projected ?? 0);
+    const effectiveCm3 = Number(props.volume?.effective ?? props.volume?.current ?? actualCm3 + reservedCm3 + projectedCm3);
+    const usedCm3 = Math.max(effectiveCm3, actualCm3 + reservedCm3);
+    const remainingCm3 = props.volume?.remaining != null
+        ? Number(props.volume.remaining)
+        : capacityCm3 != null
+            ? Math.max(capacityCm3 - usedCm3, 0)
+            : null;
+
+    if (capacityCm3 == null && usedCm3 <= 0) {
+        return '';
+    }
+
+    const usedText = `${toLiters(Math.max(usedCm3, 0))} (${formatCm3(Math.max(usedCm3, 0))})`;
+
+    if (capacityCm3 != null) {
+        const capacityText = `${toLiters(capacityCm3)} (${formatCm3(capacityCm3)})`;
+        const remainingText =
+            remainingCm3 != null ? ` • ${toLiters(Math.max(remainingCm3, 0))} livres` : '';
+        return `Volume: ${usedText} / ${capacityText}${remainingText}`;
+    }
+
+    return `Volume: ${usedText}`;
+});
 </script>

@@ -45,26 +45,22 @@
                 UK → Brasil • 2 malas de 23kg cada
             </p>
         </footer>
-
-        <Toast v-model="toastOpen" :message="toastMessage" />
     </AppLayout>
 </template>
 
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { Camera, ChevronRight, FileText, Heart, Package, Unlock } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import IconPill from '@/Components/IconPill.vue';
-import Toast from '@/Components/Toast.vue';
+import { toast } from '@/utils/toast';
 
 const MODE_KEY = 'mode';
 
 const adminMode = ref(false);
 const tapCount = ref(0);
-const toastOpen = ref(false);
-const toastMessage = ref('Modo completo ativado ✨');
 
 const modes = [
     {
@@ -124,28 +120,20 @@ const handleNavigate = (mode) => {
     go(isEnabled(mode), mode.href);
 };
 
-const showToast = (message) => {
-    toastMessage.value = message;
-    toastOpen.value = false;
-    nextTick(() => {
-        toastOpen.value = true;
-    });
-};
-
 const handleFooterClick = () => {
     if (adminMode.value) return;
     tapCount.value += 1;
     if (tapCount.value === 3) {
         adminMode.value = true;
         tapCount.value = 0;
-        showToast('Modo completo ativado ✨');
+        toast.success('Modo completo ativado ✨');
     }
 };
 
 const switchToSimpleMode = () => {
     adminMode.value = false;
     tapCount.value = 0;
-    showToast('Modo simples ativado 💡');
+    toast.info('Modo simples ativado 💡');
 };
 
 onMounted(() => {
