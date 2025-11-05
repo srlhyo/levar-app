@@ -162,11 +162,52 @@
             </p>
         </div>
 
-                <div
-                    v-for="item in packItems"
-                    :key="item.id"
-                    class="flex flex-col gap-4 rounded-2xl bg-white/70 p-4 ring-1 ring-white/40 sm:flex-row sm:items-center sm:justify-between"
+        <div
+            class="flex flex-wrap items-center gap-3 rounded-2xl bg-white/70 px-3 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm"
+        >
+            <div class="relative flex-1 min-w-[200px] sm:min-w-[260px]">
+                <input
+                    v-model="searchQuery"
+                    type="search"
+                    placeholder="Buscar por nome ou notas…"
+                    class="w-full rounded-full border border-slate-200 bg-white/90 px-3 py-2 text-sm text-slate-700 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                />
+                <span
+                    v-if="searchQuery"
+                    class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] font-medium text-slate-400"
                 >
+                    {{ filteredPackItems.length }} resultado(s)
+                </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button
+                    v-for="option in filterOptions"
+                    :key="option.value"
+                    type="button"
+                    class="rounded-full border px-3 py-1 text-xs font-semibold transition sm:text-sm"
+                    :class="[
+                        activeFilter === option.value
+                            ? 'border-emerald-300 bg-emerald-500 text-white shadow'
+                            : 'border-slate-200 bg-white/80 text-slate-600 hover:bg-white',
+                    ]"
+                    @click="setActiveFilter(option.value)"
+                >
+                    {{ option.label }}
+                </button>
+            </div>
+        </div>
+
+        <div
+            v-if="filteredPackItems.length"
+            ref="listContainer"
+            class="max-h-[65vh] space-y-4 overflow-y-auto pr-1"
+            @scroll="handleListScroll"
+        >
+            <div
+                v-for="item in filteredPackItems"
+                :key="item.id"
+                class="flex flex-col gap-4 rounded-2xl bg-white/70 p-4 ring-1 ring-white/40 sm:flex-row sm:items-center sm:justify-between"
+            >
                     <div class="flex flex-1 items-start gap-3">
                         <div
                             class="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-amber-100/60"
@@ -240,18 +281,38 @@
                             </button>
                         </div>
                     </div>
-                </div>
-            </template>
-            <div v-else class="py-10 text-center text-sm text-slate-600">
-                Nenhum item aguardando embalagem por enquanto.
             </div>
+        </div>
+
+        <div
+            v-else
+            class="rounded-2xl border border-dashed border-slate-300/70 bg-white/60 p-8 text-center text-sm text-slate-500 sm:text-base"
+        >
+            Nenhum item encontrado para a busca atual. Ajuste os filtros para visualizar novamente.
+        </div>
+        </template>
+        <div v-else class="py-10 text-center text-sm text-slate-600">
+            Nenhum item aguardando embalagem por enquanto.
+        </div>
         </Card>
+
+        <transition name="fade">
+            <button
+                v-if="showScrollTop"
+                type="button"
+                class="fixed bottom-6 right-5 z-[9998] inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                @click="scrollListToTop"
+                aria-label="Voltar ao topo"
+            >
+                ↑
+            </button>
+        </transition>
     </AppLayout>
 </template>
 
 <script setup>
 import { Head, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, reactive, ref, watchEffect } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, watch, watchEffect } from 'vue';
 import { Package } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
@@ -275,12 +336,15 @@ watchEffect(() => {
 });
 
 onMounted(async () => {
-    if (!move.value?.id) return;
-    try {
-        await Promise.all([decisionStore.fetchPack(), decisionStore.fetchResumo()]);
-    } catch (error) {
-        console.error(error);
+    if (move.value?.id) {
+        try {
+            await Promise.all([decisionStore.fetchPack(), decisionStore.fetchResumo()]);
+        } catch (error) {
+            console.error(error);
+        }
     }
+
+    nextTick(() => handleListScroll({ target: listContainer.value }));
 });
 
 const packItems = computed(() => decisionStore.pack.items ?? []);
@@ -288,6 +352,91 @@ const rawPackBags = computed(() => decisionStore.pack.bags ?? []);
 const packTotals = computed(() => decisionStore.pack.totals ?? {});
 const failedImages = reactive(new Set());
 const showLegend = ref(false);
+
+const searchQuery = ref('');
+const activeFilter = ref('all');
+const filterOptions = Object.freeze([
+    { value: 'all', label: 'Todos' },
+    { value: 'bag-A', label: 'Mala A' },
+    { value: 'bag-B', label: 'Mala B' },
+    { value: 'unassigned', label: 'Sem mala' },
+    { value: 'packed', label: 'Embalados' },
+    { value: 'unpacked', label: 'Pendentes' },
+]);
+
+const normalize = (value) =>
+    (value ?? '')
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+const matchesFilter = (item, filter) => {
+    const bagCode = (item?.bag ?? item?.bag_code ?? '').toString().toUpperCase();
+    switch (filter) {
+        case 'bag-A':
+            return bagCode === 'A';
+        case 'bag-B':
+            return bagCode === 'B';
+        case 'unassigned':
+            return !bagCode;
+        case 'packed':
+            return Boolean(item?.packed);
+        case 'unpacked':
+            return !item?.packed;
+        default:
+            return true;
+    }
+};
+
+const matchesQuery = (item, query) => {
+    if (!query) return true;
+    const haystack = normalize(
+        `${item?.title ?? item?.name ?? ''} ${item?.notes ?? ''} ${item?.category ?? ''} ${item?.section ?? ''}`,
+    );
+    return haystack.includes(query);
+};
+
+const filteredPackItems = computed(() => {
+    const filter = activeFilter.value;
+    const query = normalize(searchQuery.value);
+    return packItems.value.filter((item) => matchesFilter(item, filter) && matchesQuery(item, query));
+});
+
+const listContainer = ref(null);
+const showScrollTop = ref(false);
+
+const handleListScroll = (event) => {
+    const target = event?.target ?? listContainer.value;
+    if (!target) return;
+    showScrollTop.value = target.scrollTop > 240;
+};
+
+const scrollListToTop = () => {
+    if (!listContainer.value) return;
+    listContainer.value.scrollTo({ top: 0, behavior: 'smooth' });
+    showScrollTop.value = false;
+};
+
+const setActiveFilter = (value) => {
+    if (activeFilter.value === value) return;
+    activeFilter.value = value;
+    nextTick(() => scrollListToTop());
+};
+
+watch(filteredPackItems, (items) => {
+    nextTick(() => {
+        if (!items.length) {
+            showScrollTop.value = false;
+            return;
+        }
+        handleListScroll({ target: listContainer.value });
+    });
+});
+
+watch(searchQuery, () => {
+    nextTick(() => scrollListToTop());
+});
 
 const itemPhoto = (item) => {
     const source =

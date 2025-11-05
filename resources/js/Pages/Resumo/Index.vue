@@ -180,16 +180,9 @@
                                 class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-200 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
                                 :disabled="!selectedCount"
                                 @click="handleBulkRequeue"
+                                title="Devolver a seleção para o deck da tela Decidir"
                             >
-                                ↩ Reinserir seleção
-                            </button>
-                            <button
-                                type="button"
-                                class="inline-flex items-center justify-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
-                                :disabled="!selectedCount"
-                                @click="handleBulkDelete"
-                            >
-                                🗑 Enviar seleção
+                                ↩ Voltar para o deck do Decidir
                             </button>
                             <span v-if="selectedCount" class="text-xs font-medium text-slate-500">
                                 {{ selectedCount }} selecionado(s)
@@ -207,9 +200,8 @@
                             :key="item.id"
                             :item="item"
                             :selected="currentSelection.has(item.id)"
+                            :show-delete="false"
                             @toggle-select="toggleSelection"
-                            @requeue="handleRowRequeue"
-                            @delete="handleRowDelete"
                         />
                     </div>
 
@@ -259,14 +251,7 @@
                                     class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
                                     @click="handleBulkRequeue"
                                 >
-                                    ↩ Reinserir no deck
-                                </button>
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center justify-center gap-2 rounded-full bg-rose-500/90 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
-                                    @click="handleBulkDelete"
-                                >
-                                    🗑 Enviar para Reciclagem
+                                    ↩ Voltar para o deck do Decidir
                                 </button>
                                 <button
                                     type="button"
@@ -279,16 +264,6 @@
                         </div>
                     </transition>
 
-                    <transition name="fade">
-                        <button
-                            v-if="showScrollTop"
-                            type="button"
-                            class="fixed bottom-24 right-5 z-[9998] inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:hidden"
-                            @click="scrollListToTop"
-                        >
-                            ↑
-                        </button>
-                    </transition>
                 </div>
 
                 <div
@@ -301,59 +276,28 @@
             </Tabs>
         </Card>
 
-        <teleport to="body">
-            <transition name="fade">
-                <div
-                    v-if="undo.visible"
-                    class="fixed bottom-16 right-4 z-[9999] max-w-xs sm:bottom-6"
-                >
-                    <ToastUndo :message="undo.message" :duration="undo.duration" @undo="handleUndo" />
-                </div>
-            </transition>
-            <transition name="fade">
-                <div
-                    v-if="confirm.open"
-                    class="fixed inset-0 z-[10000] flex items-end justify-center bg-slate-900/40 px-4 pb-10 sm:items-center"
-                    role="dialog"
-                    aria-modal="true"
-                >
-                    <div class="w-full max-w-sm space-y-4 rounded-3xl bg-white p-6 text-slate-700 shadow-xl">
-                        <div class="space-y-2">
-                            <p class="text-lg font-semibold text-slate-900">Enviar para a Reciclagem?</p>
-                            <p class="text-sm text-slate-600">Você poderá restaurar depois.</p>
-                        </div>
-                        <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
-                            <button
-                                type="button"
-                                class="inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                                @click="closeConfirm"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                class="inline-flex items-center justify-center rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
-                                @click="confirmDelete"
-                            >
-                                Enviar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </transition>
-        </teleport>
+        <transition name="fade">
+            <button
+                v-if="showScrollTop"
+                type="button"
+                class="fixed bottom-6 right-5 z-[9998] inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                @click="scrollListToTop"
+                aria-label="Voltar ao topo"
+            >
+                ↑
+            </button>
+        </transition>
+
     </AppLayout>
 </template>
 
 <script setup>
-import axios from 'axios';
 import { Head, usePage, router } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import Tabs from '@/Components/Tabs.vue';
 import ItemRow from '@/Components/ItemRow.vue';
-import ToastUndo from '@/Components/ToastUndo.vue';
 import { useDecisionStore } from '@/stores/decision';
 import { toast } from '@/utils/toast';
 
@@ -979,26 +923,6 @@ const suitcaseBags = computed(() =>
     }),
 );
 
-const undo = reactive({
-    visible: false,
-    ids: [],
-    timer: null,
-    duration: 10000,
-    message: 'Itens enviados para a Reciclagem 🗑',
-});
-
-const confirm = reactive({
-    open: false,
-    ids: [],
-});
-
-const clearUndoTimer = () => {
-    if (undo.timer) {
-        window.clearTimeout(undo.timer);
-        undo.timer = null;
-    }
-};
-
 const toggleSelection = ({ id, value }) => {
     const set = currentSelection.value;
     if (!set) return;
@@ -1061,13 +985,30 @@ const pruneAllSelection = () => {
 const listContainer = ref(null);
 const showScrollTop = ref(false);
 
+const shouldShowScrollTop = () => {
+    const listScrolled = listContainer.value ? listContainer.value.scrollTop > 240 : false;
+    const windowScrolled = typeof window !== 'undefined' ? window.scrollY > 320 : false;
+    return listScrolled || windowScrolled;
+};
+
 const handleListScroll = (event) => {
-    showScrollTop.value = event.target.scrollTop > 240;
+    if (event?.target) {
+        showScrollTop.value = event.target.scrollTop > 240 || (typeof window !== 'undefined' ? window.scrollY > 320 : false);
+    } else {
+        showScrollTop.value = shouldShowScrollTop();
+    }
+};
+
+const handleWindowScroll = () => {
+    showScrollTop.value = shouldShowScrollTop();
 };
 
 const scrollListToTop = () => {
     if (listContainer.value) {
         listContainer.value.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     showScrollTop.value = false;
 };
@@ -1153,6 +1094,7 @@ watch(currentPage, (value) => {
 
 watch(filteredItems, () => {
     pruneSelection();
+    nextTick(() => handleListScroll({ target: listContainer.value }));
 });
 
 const ensureUndecided = async (ids) => {
@@ -1169,24 +1111,6 @@ const ensureUndecided = async (ids) => {
     }
 
     await decisionStore.decideItems(toReset, 'undecided', { clearBag: true });
-};
-
-const handleRowRequeue = async (id) => {
-    if (!id) return;
-    try {
-        await ensureUndecided([id]);
-        await decisionStore.requeueItems([id]);
-        await Promise.allSettled([
-            decisionStore.fetchResumo(),
-            decisionStore.fetchDeck(),
-            decisionStore.fetchPack(),
-        ]);
-        clearSelection([id]);
-        toast.success('Item reinserido no deck ✅');
-    } catch (error) {
-        console.error(error);
-        toast.error('Não foi possível reinserir o item ❌');
-    }
 };
 
 const handleBulkRequeue = async () => {
@@ -1208,68 +1132,6 @@ const handleBulkRequeue = async () => {
     }
 };
 
-const openConfirm = (ids) => {
-    if (!ids.length) return;
-    confirm.ids = ids;
-    confirm.open = true;
-};
-
-const closeConfirm = () => {
-    confirm.open = false;
-    confirm.ids = [];
-};
-
-const startUndo = (ids) => {
-    undo.ids = ids;
-    undo.visible = true;
-    clearUndoTimer();
-    undo.timer = window.setTimeout(() => {
-        undo.visible = false;
-        undo.ids = [];
-        undo.timer = null;
-    }, undo.duration);
-};
-
-const confirmDelete = async () => {
-    if (!confirm.ids.length) return;
-    const ids = [...confirm.ids];
-    try {
-        await decisionStore.softDeleteItems(ids);
-        clearSelection(ids);
-        toast.info(ids.length > 1 ? 'Itens enviados para a Reciclagem 🗑' : 'Item enviado para a Reciclagem 🗑');
-        startUndo(ids);
-    } catch (error) {
-        console.error(error);
-        toast.error('Não foi possível enviar para a Reciclagem ❌');
-    } finally {
-        closeConfirm();
-    }
-};
-
-const handleRowDelete = (id) => {
-    openConfirm([id]);
-};
-
-const handleBulkDelete = () => {
-    openConfirm(selectedIds.value);
-};
-
-const handleUndo = async () => {
-    if (!undo.ids.length) return;
-    const ids = [...undo.ids];
-    try {
-        await decisionStore.restoreItems(ids);
-        toast.success('Itens restaurados ✅');
-    } catch (error) {
-        console.error(error);
-        toast.error('Não foi possível restaurar os itens ❌');
-    } finally {
-        undo.visible = false;
-        undo.ids = [];
-        clearUndoTimer();
-    }
-};
-
 onMounted(async () => {
     if (!move.value?.id) return;
     try {
@@ -1282,10 +1144,17 @@ onMounted(async () => {
         console.error(error);
         toast.error('Não foi possível carregar o resumo ❌');
     }
+
+    if (typeof window !== 'undefined') {
+        window.addEventListener('scroll', handleWindowScroll, { passive: true });
+        nextTick(() => handleWindowScroll());
+    }
 });
 
 onBeforeUnmount(() => {
-    clearUndoTimer();
+    if (typeof window !== 'undefined') {
+        window.removeEventListener('scroll', handleWindowScroll);
+    }
 });
 </script>
 

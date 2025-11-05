@@ -29,53 +29,23 @@
             <div class="space-y-1">
                 <p class="text-base font-semibold text-slate-900 sm:text-lg">{{ item.title ?? item.name }}</p>
                 <p v-if="item.notes" class="text-sm text-slate-600">{{ item.notes }}</p>
-                <p v-if="volumeLabel" class="text-xs text-slate-500">
-                    Volume:
-                    <span class="font-medium text-slate-700">{{ volumeLabel }}</span>
-                </p>
                 <div class="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
-                    <span v-if="item.weight" class="rounded-full bg-slate-900 px-3 py-1 text-white">
-                        {{ Number(item.weight).toFixed(1) }} kg
+                    <span v-if="weightPillLabel" class="rounded-full bg-slate-900 px-3 py-1 text-white">
+                        {{ weightPillLabel }}
                     </span>
-                    <span v-if="item.bag" class="rounded-full bg-white px-3 py-1 text-slate-700 ring-1 ring-black/5">
-                        Mala {{ item.bag }}
-                    </span>
-                    <span v-if="item.packed" class="rounded-full bg-emerald-500/90 px-3 py-1 text-white">
-                        Pronto
+                    <span
+                        v-if="volumePillLabel"
+                        :title="volumeLabel ?? ''"
+                        class="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 ring-1 ring-emerald-200"
+                    >
+                        {{ volumePillLabel }}
                     </span>
                 </div>
             </div>
         </div>
 
-        <div class="flex items-center gap-2 self-stretch sm:self-center">
-            <div v-if="showRequeue" class="relative group">
-                <button
-                    type="button"
-                    :aria-describedby="tooltipIds.requeue"
-                    aria-label="Reinserir no deck"
-                    class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/80 text-slate-700 ring-1 ring-black/5 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-                    @click="emit('requeue', item.id)"
-                    @touchstart="() => handleHint('requeue')"
-                >
-                    <CornerUpLeft class="h-5 w-5" />
-                </button>
-                <span
-                    :id="tooltipIds.requeue"
-                    class="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 sm:block"
-                >
-                    Reinserir no deck
-                </span>
-                <transition name="fade">
-                    <span
-                        v-if="hintVisible.requeue"
-                        class="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 rounded-full bg-slate-900/90 px-3 py-1 text-xs font-semibold text-white sm:hidden"
-                    >
-                        Reinserir no deck
-                    </span>
-                </transition>
-            </div>
-
-            <div v-if="showDelete" class="relative group">
+        <div v-if="showDelete" class="flex items-center gap-2 self-stretch sm:self-center">
+            <div class="relative group">
                 <button
                     type="button"
                     :aria-describedby="tooltipIds.delete"
@@ -107,7 +77,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { CornerUpLeft, Package, Trash2 } from 'lucide-vue-next';
+import { Package, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps({
     item: {
@@ -122,26 +92,25 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-    showRequeue: {
-        type: Boolean,
-        default: true,
-    },
     showDelete: {
         type: Boolean,
         default: true,
     },
 });
 
-const emit = defineEmits(['toggle-select', 'requeue', 'delete']);
+const emit = defineEmits(['toggle-select', 'delete']);
 
 const isTouchDevice = ref(false);
-const hintVisible = reactive({ requeue: false, delete: false });
-const hintSeen = reactive({ requeue: false, delete: false });
+const hintVisible = reactive({ delete: false });
+const hintSeen = reactive({ delete: false });
 
 const numberFormatter = new Intl.NumberFormat('pt-BR');
+const decimalFormatter = new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+});
 
 const tooltipIds = computed(() => ({
-    requeue: `tooltip-requeue-${props.item.id}`,
     delete: `tooltip-delete-${props.item.id}`,
 }));
 
@@ -169,15 +138,56 @@ watch(
     },
 );
 
-const volumeLabel = computed(() => {
+const volumeInfo = computed(() => {
     if (!props.item) return null;
-    const liters = props.item.volume_liters ?? (props.item.volume_cm3 != null ? props.item.volume_cm3 / 1000 : null);
-    if (liters == null || Number.isNaN(liters)) {
+
+    const rawLiters = props.item.volume_liters;
+    const rawCm3 = props.item.volume_cm3;
+
+    let litersValue = null;
+    if (rawLiters != null) {
+        const numeric = Number(rawLiters);
+        litersValue = Number.isNaN(numeric) ? null : numeric;
+    } else if (rawCm3 != null) {
+        const numeric = Number(rawCm3);
+        litersValue = Number.isNaN(numeric) ? null : numeric / 1000;
+    }
+
+    if (litersValue == null) {
         return null;
     }
-    const formatted = Number(liters).toFixed(1);
-    const cm3 = props.item.volume_cm3 ?? (liters * 1000);
-    return `${formatted} L (${numberFormatter.format(Math.round(cm3))} cm³)`;
+
+    const cm3Value =
+        rawCm3 != null && !Number.isNaN(Number(rawCm3))
+            ? Number(rawCm3)
+            : Math.round(litersValue * 1000);
+
+    return {
+        litersValue,
+        litersFormatted: decimalFormatter.format(litersValue),
+        cm3Value,
+        cm3Formatted: numberFormatter.format(Math.round(cm3Value)),
+    };
+});
+
+const volumeLabel = computed(() => {
+    const info = volumeInfo.value;
+    if (!info) return null;
+    return `${info.litersFormatted} L (${info.cm3Formatted} cm³)`;
+});
+
+const weightPillLabel = computed(() => {
+    const weight = props.item?.weight ?? props.item?.weight_kg ?? null;
+    if (weight == null) return null;
+    const numeric = Number(weight);
+    if (Number.isNaN(numeric)) return null;
+    return `Peso • ${decimalFormatter.format(numeric)} kg`;
+});
+
+const volumePillLabel = computed(() => {
+    const info = volumeInfo.value;
+    if (!info) return null;
+    return `Volume • ${info.litersFormatted} L`;
 });
 
 const onToggle = (event) => {
