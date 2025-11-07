@@ -20,6 +20,8 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => null,
+            'password' => bcrypt('password'),
+            'role' => \App\Models\User::ROLE_USER,
         ];
     }
 

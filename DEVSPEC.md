@@ -18,10 +18,9 @@ The UI is simple, calm and colorful:
 - **Grey** = Resumo  
 
 ## Authentication
-- Uses Laravel Breeze (session-based).  
-- **No Sanctum** or tokens yet.  
-- Login optional; app can run without authentication.  
-- Magic link login can be added later if needed.
+- Sessão tradicional (Laravel Breeze/Inertia) com cadastro e login por email + senha.  
+- Usuários possuem função (`admin` ou `user`) para liberar telas como a Caixa de Entrada de compartilhamento.  
+- Ainda não há suporte a tokens/Sanctum para apps externos.
 
 ## Domain model
 - bags(name: 'A'|'B', capacity_kg, reserved_kg)

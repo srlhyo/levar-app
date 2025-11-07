@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Move;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -37,7 +38,13 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return [
-                'user' => $user->only(['id', 'name', 'email']),
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'is_admin' => $user->isAdmin(),
+                ],
                 'onboarding' => [
                     'history' => (bool) $user->onboarding_history_seen,
                     'tour' => (bool) $user->onboarding_tour_seen,
@@ -78,9 +85,9 @@ class AppServiceProvider extends ServiceProvider
 
         Inertia::share('csrf_token', fn () => csrf_token());
 
-        Inertia::share('pwa', function () {
+        Inertia::share('flash', function () {
             return [
-                'vapidPublicKey' => config('services.webpush.public_key'),
+                'show_onboarding' => session()->pull('show_onboarding', false),
             ];
         });
     }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Item extends Model
 {
@@ -73,5 +74,58 @@ class Item extends Model
     public function getIsPackedAttribute(): bool
     {
         return !is_null($this->packed_at);
+    }
+
+    public function getPhotoUrlAttribute($value): ?string
+    {
+        return $this->resolveMediaUrl($value);
+    }
+
+    public function getThumbnailUrlAttribute($value): ?string
+    {
+        return $this->resolveMediaUrl($value);
+    }
+
+    protected function resolveMediaUrl(?string $value): ?string
+    {
+        $path = $this->normalizeMediaPath($value);
+        if (!$path) {
+            return null;
+        }
+
+        $disk = $this->mediaDisk();
+
+        if (!Storage::disk($disk)->exists($path)) {
+            return null;
+        }
+
+        return Storage::disk($disk)->url($path);
+    }
+
+    protected function normalizeMediaPath(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        $path = parse_url($value, PHP_URL_PATH) ?? $value;
+        if (!$path) {
+            return null;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        return $path;
+    }
+
+    protected function mediaDisk(): string
+    {
+        $defaultDisk = config('filesystems.default', 'public');
+
+        return $defaultDisk === 'local' ? 'public' : $defaultDisk;
     }
 }

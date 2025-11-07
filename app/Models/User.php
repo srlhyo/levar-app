@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use NotificationChannels\WebPush\HasPushSubscriptions;
-use App\Models\MagicLink;
 use App\Models\Move;
 
 class User extends Authenticatable
@@ -17,7 +15,9 @@ class User extends Authenticatable
     use HasApiTokens;
     use HasFactory;
     use Notifiable;
-    use HasPushSubscriptions;
+
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_USER = 'user';
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +27,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'password',
+        'role',
         'onboarding_history_seen',
         'onboarding_tour_seen',
     ];
@@ -36,7 +38,10 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $hidden = [];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -49,17 +54,18 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'onboarding_history_seen' => 'boolean',
             'onboarding_tour_seen' => 'boolean',
+            'password' => 'hashed',
         ];
-    }
-
-    public function magicLinks()
-    {
-        return $this->hasMany(MagicLink::class);
     }
 
     public function moves()
     {
         return $this->hasMany(Move::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
     }
 
 }

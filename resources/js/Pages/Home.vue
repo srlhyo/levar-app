@@ -4,15 +4,6 @@
         <template #title>Decidir o que Levar</template>
         <template #subtitle>Organize sua mudança de forma simples e visual.</template>
 
-        <button
-            v-if="adminMode"
-            type="button"
-            class="fixed right-4 top-[98px] z-40 rounded-2xl bg-white/70 p-3 shadow-md ring-1 ring-black/5 sm:top-[110px]"
-            @click="switchToSimpleMode"
-        >
-            <Unlock class="h-5 w-5 text-emerald-600" />
-        </button>
-
         <div class="grid gap-4 sm:gap-5">
             <Card
                 v-for="mode in modes"
@@ -41,26 +32,21 @@
         </div>
 
         <footer class="pt-6 text-center text-sm text-slate-500">
-            <p class="cursor-pointer select-none" @click="handleFooterClick">
-                UK → Brasil • 2 malas de 23kg cada
-            </p>
+            <p>UK → Brasil • 2 malas de 23kg cada</p>
         </footer>
     </AppLayout>
 </template>
 
 <script setup>
-import { Head, router } from '@inertiajs/vue3';
-import { onMounted, ref, watch } from 'vue';
-import { Camera, ChevronRight, FileText, Heart, Package, Unlock } from 'lucide-vue-next';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Camera, ChevronRight, FileText, Heart, Package } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import IconPill from '@/Components/IconPill.vue';
-import { toast } from '@/utils/toast';
 
-const MODE_KEY = 'mode';
-
-const adminMode = ref(false);
-const tapCount = ref(0);
+const page = usePage();
+const isAdmin = computed(() => Boolean(page.props.auth?.user?.is_admin));
 
 const modes = [
     {
@@ -102,48 +88,12 @@ const modes = [
 ];
 
 const isEnabled = (mode) => {
-    if (mode.key === 'resumo') {
-        return true;
-    }
-    if (adminMode.value) {
-        return mode.key !== 'decidir';
-    }
-    return mode.key === 'decidir';
-};
-
-const go = (enabled, url) => {
-    if (!enabled) return;
-    router.visit(url);
+    if (isAdmin.value) return true;
+    return mode.key !== 'catalogar';
 };
 
 const handleNavigate = (mode) => {
-    go(isEnabled(mode), mode.href);
+    if (!isEnabled(mode)) return;
+    router.visit(mode.href);
 };
-
-const handleFooterClick = () => {
-    if (adminMode.value) return;
-    tapCount.value += 1;
-    if (tapCount.value === 3) {
-        adminMode.value = true;
-        tapCount.value = 0;
-        toast.success('Modo completo ativado ✨');
-    }
-};
-
-const switchToSimpleMode = () => {
-    adminMode.value = false;
-    tapCount.value = 0;
-    toast.info('Modo simples ativado 💡');
-};
-
-onMounted(() => {
-    if (typeof window === 'undefined') return;
-    const storedMode = window.localStorage.getItem(MODE_KEY);
-    adminMode.value = storedMode === 'manage';
-});
-
-watch(adminMode, (value) => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(MODE_KEY, value ? 'manage' : 'simple');
-});
 </script>

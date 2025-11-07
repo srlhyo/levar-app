@@ -28,11 +28,11 @@ AWS_URL=https://cdn.example.com
 
 Thumbnail generation relies on the GD driver bundled with PHP. Ensure the `gd` and `iconv` extensions are enabled in environments outside the sandbox.
 
-### Magic link login (local)
+### Login & Registro
 
-- Submit your email at `/login`.
-- In local/Sail environments the generated URL is written to `storage/logs/laravel.log` (look for “Magic link generated”).
-- Click the URL (or copy it into the same domain as your `APP_URL`) to sign in. The token is single-use and expires after 15 minutes.
+- Cadastre-se em `/register` informando nome, email e senha (mínimo 8 caracteres). O app já cria a mudança demo após o cadastro.
+- Entre em `/login` usando email/senha. Cookies de sessão vêm configurados para domínios locais (`SANCTUM_STATEFUL_DOMAINS`, `SESSION_DOMAIN`).
+- Para ambiente local, o usuário `demo@example.com` (senha `password`) é seeded como admin e pode acessar rotas protegidas como `/share-inbox`.
 
 ## Entities
 
@@ -98,7 +98,7 @@ Run `php artisan storage:link` locally so `Storage::url()` resolves to `http://l
 
 `DatabaseSeeder` provisions:
 
-- Demo user (`demo@example.com` – access via magic link).
+- Demo admin user (`demo@example.com` / password `password`).
 - One move with two sample bags (Mala A, Mala B).
 - 60 items with varied decisions, bag assignments, packed state, media, and decision logs.
 - Random placeholder media copied from `resources/seed-images/placeholder.png`.
@@ -106,7 +106,7 @@ Run `php artisan storage:link` locally so `Storage::url()` resolves to `http://l
 
 Use `npm run seed:fresh` to rebuild the database at any time.
 
-When a brand new user authenticates via magic link, a demo move (bags/items/media) is auto-generated for them, so you do not need to run seeds just to explore the UI.
+When um novo usuário conclui o cadastro, criamos automaticamente uma mudança demo completa (malas, itens, mídia, snapshots) para que ele possa explorar o app sem precisar rodar seeds manualmente.
 
 ## Testing
 

@@ -5,11 +5,11 @@
             <span class="text-slate-900 font-semibold">{{ formatKg(totalAvailableKg) }}</span>
         </div>
 
-        <div class="h-3 w-full overflow-hidden rounded-full bg-slate-200">
+        <div class="flex h-3 w-full overflow-hidden rounded-full bg-slate-200">
             <div
                 v-for="segment in segments"
                 :key="segment.key"
-                :class="[segment.class, 'h-full transition-all duration-500 ease-out']"
+                :class="[segment.class, 'h-full flex-none transition-all duration-500 ease-out']"
                 :style="{ width: `${segment.percentage}%` }"
             />
         </div>

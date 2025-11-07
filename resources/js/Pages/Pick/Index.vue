@@ -121,7 +121,7 @@
             <span class="text-2xl">🎉</span>
             <div>
                 <p class="text-base font-semibold">Tudo embalado!</p>
-                <p class="text-sm">Você pode revisar no Resumo ou exportar a planilha.</p>
+                <p class="text-sm">Você pode revisar no Resumo para ajustar as malas finalizadas.</p>
             </div>
         </div>
 
@@ -133,26 +133,15 @@
             <span class="font-semibold text-slate-700">
                 Embalados: {{ packedCount }} / {{ packItems.length }}
             </span>
-            <div class="flex flex-wrap items-center gap-2">
-                <button
-                    v-if="hasUnpacked"
-                    type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-xs font-semibold text-slate-900 shadow transition hover:bg-amber-400 sm:text-sm"
-                    @click="markAllPacked(true)"
-                    aria-label="Marcar todos os itens como embalados"
-                >
-                    Marcar todos como Embalado
-                </button>
-                <button
-                    v-if="hasPacked"
-                    type="button"
-                    class="inline-flex items-center gap-2 rounded-full border border-amber-200 px-4 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-100 sm:text-sm"
-                    @click="markAllPacked(false)"
-                    aria-label="Desmarcar todos os itens embalados"
-                >
-                    Desmarcar todos
-                </button>
-            </div>
+            <button
+                v-if="hasPacked"
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full border border-amber-200 px-4 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-100 sm:text-sm"
+                @click="markAllPacked(false)"
+                aria-label="Desmarcar todos os itens embalados"
+            >
+                Desmarcar todos
+            </button>
         </div>
 
         <div class="flex items-start gap-2 rounded-2xl bg-white/70 px-3 py-2 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
@@ -651,7 +640,6 @@ const lockedBagsCount = computed(() =>
 const totalBagsCount = computed(() => rawPackBags.value.length);
 
 const packedCount = computed(() => packItems.value.filter((item) => item.packed).length);
-const hasUnpacked = computed(() => packItems.value.some((item) => !item.packed));
 const hasPacked = computed(() => packItems.value.some((item) => item.packed));
 
 const allPackedBanner = computed(() => decisionStore.allPacked && packItems.value.length > 0);
@@ -660,8 +648,12 @@ const markAllPacked = async (value) => {
     if (!packItems.value.length) return;
     const ids = packItems.value.map((item) => item.id);
     try {
-        await decisionStore.markPacked(ids, value);
-        toast.success(value ? 'Itens marcados como embalados ✅' : 'Itens desmarcados como embalados ↩︎');
+        const operations = [decisionStore.markPacked(ids, value)];
+        if (!value) {
+            operations.push(decisionStore.assignBagBulk(ids, ''));
+        }
+        await Promise.all(operations);
+        toast.success(value ? 'Itens marcados como embalados ✅' : 'Todos os itens liberados das malas ↩︎');
     } catch (error) {
         console.error(error);
         toast.error('Não foi possível atualizar os itens ❌');
@@ -669,24 +661,41 @@ const markAllPacked = async (value) => {
 };
 
 const assignBag = async (item, bag) => {
-    if (!item || item.bag === bag) return;
+    if (!item) return;
     if (isBagLocked(bag)) {
         toast.info(bagLockMessage(bag) || 'Esta mala já está cheia');
         return;
     }
+
+    const operations = [];
+    if (item.bag !== bag) {
+        operations.push(decisionStore.assignBag(item.id, bag));
+    }
+    if (!item.packed) {
+        operations.push(decisionStore.markPacked([item.id], true));
+    }
+
+    if (!operations.length) {
+        return;
+    }
+
     try {
-        await decisionStore.assignBag(item.id, bag);
-        toast.success(`Item enviado para mala ${bag}`);
+        await Promise.all(operations);
+        toast.success(`Item preparado na mala ${bag}`);
     } catch (error) {
         console.error(error);
-        toast.error('Não foi possível atualizar a mala ❌');
+        toast.error('Não foi possível atualizar o item ❌');
     }
 };
 
 const onPackedChange = async (item, checked) => {
     try {
-        await decisionStore.markPacked([item.id], checked);
-        toast.success(checked ? 'Marcado como embalado ✅' : 'Item voltou para a lista ↩︎');
+        const operations = [decisionStore.markPacked([item.id], checked)];
+        if (!checked && item.bag) {
+            operations.push(decisionStore.assignBag(item.id, ''));
+        }
+        await Promise.all(operations);
+        toast.success(checked ? 'Marcado como embalado ✅' : 'Item voltou para a fila e saiu da mala ↩︎');
     } catch (error) {
         console.error(error);
         toast.error('Não foi possível atualizar o item ❌');

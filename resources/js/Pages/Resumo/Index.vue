@@ -95,11 +95,21 @@
         </Card>
 
         <Card tone="slate" class="space-y-5">
-            <div>
-                <p class="text-base font-semibold text-slate-900">Itens por decisão</p>
-                <p class="text-sm text-slate-600">
-                    Navegue pelos itens marcados como levar, pendentes ou não levar.
-                </p>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <p class="text-base font-semibold text-slate-900">Itens por decisão</p>
+                    <p class="text-sm text-slate-600">
+                        Navegue pelos itens marcados como levar, pendentes ou não levar.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 self-start rounded-full bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-600 ring-1 ring-sky-200 transition hover:bg-sky-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 sm:text-sm"
+                    @click="goToDecidir"
+                >
+                    Ir para Decidir
+                    <span aria-hidden="true" class="text-base">→</span>
+                </button>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs text-slate-600 sm:text-sm">
                 <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-600">
@@ -281,7 +291,7 @@
                 v-if="showScrollTop"
                 type="button"
                 class="fixed bottom-6 right-5 z-[9998] inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                @click="scrollListToTop"
+                @click="scrollListToTop({ window: true })"
                 aria-label="Voltar ao topo"
             >
                 ↑
@@ -311,6 +321,10 @@ watchEffect(() => {
 
 const goToPack = () => {
     router.visit('/pick');
+};
+
+const goToDecidir = () => {
+    router.visit('/decidir');
 };
 
 const activeTab = ref('take');
@@ -1003,11 +1017,11 @@ const handleWindowScroll = () => {
     showScrollTop.value = shouldShowScrollTop();
 };
 
-const scrollListToTop = () => {
+const scrollListToTop = ({ window: scrollWindow = false } = {}) => {
     if (listContainer.value) {
         listContainer.value.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    if (typeof window !== 'undefined') {
+    if (scrollWindow && typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     showScrollTop.value = false;

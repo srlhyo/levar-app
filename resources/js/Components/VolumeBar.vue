@@ -5,11 +5,11 @@
             <span class="text-slate-900 font-semibold">{{ formatVolume(totalAvailableLiters, true) }}</span>
         </div>
 
-        <div class="h-3 w-full overflow-hidden rounded-full bg-slate-200">
+        <div class="flex h-3 w-full overflow-hidden rounded-full bg-slate-200">
             <div
                 v-for="segment in segments"
                 :key="segment.key"
-                :class="[segment.class, 'h-full transition-all duration-500 ease-out']"
+                :class="[segment.class, 'h-full flex-none transition-all duration-500 ease-out']"
                 :style="{ width: `${segment.percentage}%` }"
             />
         </div>
@@ -80,22 +80,24 @@ const cm3ToLiters = (value) => (Number(value) || 0) / 1000;
 const normalizedBags = computed(() => {
     if (!Array.isArray(props.bags)) return [];
     return props.bags.map((bag, index) => {
-        const capacityCm3 = Number(
-            bag.capacityVolumeCm3 ??
-                bag.capacity_volume_cm3 ??
-                bag.capacityVolume ??
-                bag.capacity_volume ??
-                0,
-        ) || 0;
-        const reservedAppliedCm3 = Number(
-            bag.reservedVolumeAppliedCm3 ??
-                bag.reserved_volume_cm3 ??
-                bag.reservedVolumeCm3 ??
-                bag.reserved_volume_applied_cm3 ??
-                0,
-        ) || 0;
+        const capacityCm3 =
+            Number(
+                bag.capacityVolumeCm3 ??
+                    bag.capacity_volume_cm3 ??
+                    bag.capacityVolume ??
+                    bag.capacity_volume ??
+                    0,
+            ) || 0;
+        const reservedAppliedCm3 =
+            Number(
+                bag.reservedVolumeAppliedCm3 ??
+                    bag.reserved_volume_cm3 ??
+                    bag.reservedVolumeCm3 ??
+                    bag.reserved_volume_applied_cm3 ??
+                    0,
+            ) || 0;
 
-        const projectedCm3 = Number(bag.projectedVolumeCm3 ?? 0);
+        const projectedCm3 = Number(bag.projectedVolumeCm3 ?? bag.projected_volume_cm3 ?? 0);
         const actualCm3 = Number(bag.volumeCm3 ?? bag.volume_cm3 ?? 0);
 
         const effectiveCm3Raw =
@@ -104,6 +106,8 @@ const normalizedBags = computed(() => {
             effectiveCm3Raw != null && !Number.isNaN(Number(effectiveCm3Raw))
                 ? Number(effectiveCm3Raw)
                 : actualCm3 + projectedCm3 + reservedAppliedCm3;
+
+        const actualUsedCm3 = actualCm3 + projectedCm3;
 
         const remainingCm3 =
             bag.remainingVolumeCm3 != null
@@ -116,14 +120,12 @@ const normalizedBags = computed(() => {
         const usedLiters = cm3ToLiters(effectiveCm3);
         const reservedLiters = cm3ToLiters(reservedAppliedCm3);
         const remainingLiters = cm3ToLiters(remainingCm3);
-        const actualUsedLiters = cm3ToLiters(actualCm3 + projectedCm3);
 
         return {
             key: bag.id ?? `bag-${index}`,
             label: bag.name || `Mala ${index + 1}`,
             capacityLiters,
             usedLiters,
-            actualUsedLiters,
             reservedLiters,
             remainingLiters,
             color: colorPalette[index % colorPalette.length],
@@ -155,24 +157,19 @@ const remainingLiters = computed(() => Math.max(totalAvailableLiters.value - use
 const safeTotal = computed(() => Math.max(totalAvailableLiters.value, 0.0001));
 
 const segments = computed(() => {
-    const bagSegments = normalizedBags.value.map((bag) => ({
-        key: `bag-${bag.key}`,
-        class: bag.color,
-        percentage: clamp(((bag.usedLiters ?? 0) / safeTotal.value) * 100),
-    }));
+const bagSegments = normalizedBags.value.map((bag) => ({
+    key: `bag-${bag.key}`,
+    class: bag.color,
+    percentage: clamp(((bag.usedLiters ?? 0) / safeTotal.value) * 100),
+}));
 
-    const reservedPercentage = clamp((reservedLiters.value / safeTotal.value) * 100);
-    const remainingPercentage = clamp((remainingLiters.value / safeTotal.value) * 100);
+const remainingPercentage = clamp(((remainingLiters.value || 0) / safeTotal.value) * 100);
+const trailingSegments = [];
+if (remainingPercentage > 0) {
+    trailingSegments.push({ key: 'remaining', class: 'bg-slate-200', percentage: remainingPercentage });
+}
 
-    const extraSegments = [];
-    if (reservedPercentage > 0) {
-        extraSegments.push({ key: 'reserved', class: 'bg-sky-300', percentage: reservedPercentage });
-    }
-    if (remainingPercentage > 0) {
-        extraSegments.push({ key: 'remaining', class: 'bg-slate-200', percentage: remainingPercentage });
-    }
-
-    return [...bagSegments, ...extraSegments];
+return [...bagSegments, ...trailingSegments];
 });
 
 const formatVolume = (value, withCm3 = false) => {

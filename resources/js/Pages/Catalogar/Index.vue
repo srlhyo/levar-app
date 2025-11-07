@@ -204,6 +204,17 @@
                 </div>
 
                 <label class="space-y-2">
+                    <span class="text-sm font-medium text-slate-700">Descrição / notas</span>
+                    <textarea
+                        v-model="description"
+                        rows="3"
+                        placeholder="Inclua detalhes, estado ou observações importantes"
+                        class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    ></textarea>
+                    <span class="text-xs text-slate-500">Essas notas aparecem nas cartas do Decidir e ajudam a lembrar detalhes.</span>
+                </label>
+
+                <label class="space-y-2">
                     <span class="text-sm font-medium text-slate-700">Volume estimado (litros)</span>
                     <input
                         v-model="volumeLiters"
@@ -324,6 +335,7 @@ import { useDecisionStore } from '@/stores/decision';
 const fileInput = ref(null);
 const photo = ref('');
 const name = ref('');
+const description = ref('');
 const weight = ref('');
 const volumeLiters = ref('');
 const length = ref('');
@@ -553,6 +565,7 @@ const applyCalculatedVolume = () => {
 const resetForm = () => {
     photo.value = '';
     name.value = '';
+    description.value = '';
     weight.value = '';
     volumeLiters.value = '';
     volumeTouched.value = false;
@@ -631,10 +644,11 @@ const handleSubmit = async () => {
 
     try {
         const volumeCm3Rounded = Math.round(volumeCm3 * 100) / 100;
+        const notesValue = description.value?.trim() ? description.value.trim() : null;
 
         const payload = {
             title: name.value.trim(),
-            notes: undefined,
+            notes: notesValue,
             weight_kg: Number(weightKg.toFixed(3)),
             volume_cm3: volumeCm3Rounded,
             category: category.value || null,

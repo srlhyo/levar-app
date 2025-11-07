@@ -8,9 +8,11 @@ use App\Models\Item;
 use App\Models\ItemMedia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\ImageManager;
+use Throwable;
 
 class ItemMediaController extends Controller
 {
@@ -25,62 +27,42 @@ class ItemMediaController extends Controller
         ]);
 
         $file = $data['file'];
-        $defaultDisk = config('filesystems.default', 'public');
-        $disk = $defaultDisk === 'local' ? 'public' : $defaultDisk;
+        $disk = $this->resolveDisk();
         $directory = "items/{$item->id}";
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $filename = $this->buildFilename($file);
 
-        $path = Storage::disk($disk)->putFileAs($directory, $file, $filename);
+        try {
+            $stored = $this->persistUploadedImage($file, $disk, $directory, $filename);
+        } catch (Throwable $exception) {
+            report($exception);
 
-        $manager = $this->makeImageManager();
-        $thumbPath = $directory . '/thumbs/' . $filename;
-        $bytes = $file->getSize();
-
-        $width = null;
-        $height = null;
-
-        if ($manager) {
-            $image = $manager->read($file->getPathname());
-            $width = $image->width();
-            $height = $image->height();
-
-            $thumb = (clone $image)->cover(400, 400);
-            $thumbEncoded = $thumb->toJpeg(80);
-            Storage::disk($disk)->put($thumbPath, $thumbEncoded->toString());
-        } else {
-            $dimensions = @getimagesize($file->getPathname());
-            if (is_array($dimensions)) {
-                $width = $dimensions[0] ?? null;
-                $height = $dimensions[1] ?? null;
-            }
-
-            Storage::disk($disk)->put($thumbPath, file_get_contents($file->getPathname()));
+            return response()->json([
+                'message' => 'Não foi possível processar a imagem agora. Tente novamente em instantes.',
+            ], 422);
         }
 
         $media = $item->media()->create([
             'disk' => $disk,
-            'path' => $path,
-            'thumb_path' => $thumbPath,
+            'path' => $stored['path'],
+            'thumb_path' => $stored['thumb_path'],
             'status' => 'done',
-            'bytes' => $bytes,
-            'width' => $width,
-            'height' => $height,
-            'mime' => $file->getMimeType(),
+            'bytes' => $stored['bytes'],
+            'width' => $stored['width'],
+            'height' => $stored['height'],
+            'mime' => $stored['mime'],
             'uploaded_by' => $request->user()?->id,
         ]);
 
-        if (!$item->thumbnail_url) {
-            $item->update([
-                'photo_url' => Storage::disk($disk)->url($path),
-                'thumbnail_url' => Storage::disk($disk)->url($thumbPath),
-            ]);
-        }
+        $item->update([
+            'photo_url' => $stored['url'],
+            'thumbnail_url' => $stored['thumb_url'],
+        ]);
 
         return response()->json([
             'media' => [
                 'id' => (string) $media->id,
-                'url' => Storage::disk($disk)->url($media->path),
-                'thumb_url' => Storage::disk($disk)->url($media->thumb_path),
+                'url' => $stored['url'],
+                'thumb_url' => $stored['thumb_url'],
             ],
         ], 201);
     }
@@ -111,7 +93,77 @@ class ItemMediaController extends Controller
         }
 
         return response()->json(['status' => 'ok']);
-}
+    }
+
+    private function buildFilename(UploadedFile $file): string
+    {
+        $extension = $file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'jpg';
+
+        return Str::uuid() . '.' . strtolower($extension);
+    }
+
+    private function resolveDisk(): string
+    {
+        $defaultDisk = config('filesystems.default', 'public');
+
+        return $defaultDisk === 'local' ? 'public' : $defaultDisk;
+    }
+
+    private function persistUploadedImage(UploadedFile $file, string $disk, string $directory, string $filename): array
+    {
+        $storage = Storage::disk($disk);
+        $path = null;
+        $thumbPath = "{$directory}/thumbs/{$filename}";
+        $realPath = $file->getRealPath() ?: $file->getPathname();
+
+        $bytes = (int) $file->getSize();
+        $mime = $file->getMimeType();
+
+        try {
+            $path = $storage->putFileAs($directory, $file, $filename);
+
+            $storage->makeDirectory(dirname($thumbPath));
+
+            $manager = $this->makeImageManager();
+            $width = null;
+            $height = null;
+
+            if ($manager && $realPath) {
+                $image = $manager->read($realPath);
+                $width = $image->width();
+                $height = $image->height();
+
+                $thumbImage = $manager->read($realPath)->cover(600, 600);
+                $storage->put($thumbPath, $thumbImage->toJpeg(85)->toString());
+            } else {
+                $dimensions = $realPath ? @getimagesize($realPath) : null;
+
+                if (is_array($dimensions)) {
+                    $width = $dimensions[0] ?? null;
+                    $height = $dimensions[1] ?? null;
+                }
+
+                $storage->put($thumbPath, file_get_contents($realPath ?: $file->getPathname()));
+            }
+
+            return [
+                'path' => $path,
+                'thumb_path' => $thumbPath,
+                'bytes' => $bytes,
+                'width' => $width,
+                'height' => $height,
+                'mime' => $mime,
+                'url' => $storage->url($path),
+                'thumb_url' => $storage->url($thumbPath),
+            ];
+        } catch (Throwable $exception) {
+            if ($path) {
+                $storage->delete([$path, $thumbPath]);
+            }
+
+            throw $exception;
+        }
+    }
 
     private function makeImageManager(): ?ImageManager
     {

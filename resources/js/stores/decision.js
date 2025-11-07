@@ -15,6 +15,10 @@ const defaultCounts = () => ({
     error: 0,
 });
 
+const resolveCsrfToken = () => (typeof window !== 'undefined' && typeof window.__resolveCsrfToken === 'function'
+    ? window.__resolveCsrfToken()
+    : '');
+
 const parseNumericInput = (value) => {
     if (value === null || value === undefined) {
         return null;
@@ -260,7 +264,7 @@ export const useDecisionStore = defineStore('decision', {
             const current = this.currentItem;
             if (!current) return null;
 
-            const payload = { decision };
+            const payload = { decision, _token: resolveCsrfToken() };
             if (options.bag) {
                 payload.bag = options.bag;
             }
@@ -278,7 +282,7 @@ export const useDecisionStore = defineStore('decision', {
             this.assertMove();
             if (!ids?.length) return;
 
-            const payload = { decision };
+            const payload = { decision, _token: resolveCsrfToken() };
 
             if (options.clearBag) {
                 payload.bag = '';
@@ -297,7 +301,7 @@ export const useDecisionStore = defineStore('decision', {
             this.assertMove();
             if (!ids?.length) return;
 
-            await axios.post('/api/items/requeue', { ids });
+            await axios.post('/api/items/requeue', { ids, _token: resolveCsrfToken() });
             await Promise.allSettled([
                 this.fetchDeck(),
                 this.fetchResumo(),
@@ -308,7 +312,7 @@ export const useDecisionStore = defineStore('decision', {
             this.assertMove();
             if (!ids?.length) return;
 
-            await axios.post(`/api/moves/${this.moveId}/resumo/pending-to-leave`, { ids });
+            await axios.post(`/api/moves/${this.moveId}/resumo/pending-to-leave`, { ids, _token: resolveCsrfToken() });
             await Promise.allSettled([this.fetchResumo(), this.fetchDeck()]);
         },
         async fetchResumo() {
@@ -369,26 +373,33 @@ export const useDecisionStore = defineStore('decision', {
             this.assertMove();
             if (!ids?.length) return;
 
-            await axios.post('/api/items/pack', { ids, packed });
+            await axios.post('/api/items/pack', { ids, packed, _token: resolveCsrfToken() });
             await Promise.allSettled([this.fetchPack(), this.fetchResumo()]);
         },
         async assignBag(itemId, bagCode) {
             this.assertMove();
-            await axios.post(`/api/items/${itemId}/bag`, { bag: bagCode });
+            await axios.post(`/api/items/${itemId}/bag`, { bag: bagCode, _token: resolveCsrfToken() });
+            await Promise.allSettled([this.fetchPack(), this.fetchResumo()]);
+        },
+        async assignBagBulk(ids, bagCode) {
+            this.assertMove();
+            if (!ids?.length) return;
+
+            await Promise.all(ids.map((id) => axios.post(`/api/items/${id}/bag`, { bag: bagCode, _token: resolveCsrfToken() })));
             await Promise.allSettled([this.fetchPack(), this.fetchResumo()]);
         },
         async softDeleteItems(ids) {
             this.assertMove();
             if (!ids?.length) return;
 
-            await axios.post('/api/items/recycle', { ids });
+            await axios.post('/api/items/recycle', { ids, _token: resolveCsrfToken() });
             await Promise.allSettled([this.fetchResumo(), this.fetchDeck(), this.fetchPack(), this.fetchRecycle()]);
         },
         async restoreItems(ids) {
             this.assertMove();
             if (!ids?.length) return;
 
-            await axios.post('/api/items/restore', { ids });
+            await axios.post('/api/items/restore', { ids, _token: resolveCsrfToken() });
             await Promise.allSettled([this.fetchResumo(), this.fetchDeck(), this.fetchPack(), this.fetchRecycle()]);
         },
         async destroyItem(id) {
