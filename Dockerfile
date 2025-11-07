@@ -1,4 +1,4 @@
-# 1) PHP dependencies
+# 1) PHP dependencies (build stage, composer only)
 FROM php:8.3-fpm-alpine AS php-deps
 ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN apk add --no-cache git libzip-dev oniguruma-dev libpng-dev icu-dev libxml2-dev \
@@ -19,18 +19,21 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# 3) Runtime: Nginx + PHP-FPM
+# 3) Runtime: Nginx + PHP-FPM from Alpine packages (with DOM)
 FROM alpine:3.20
-RUN apk add --no-cache nginx supervisor php83 php83-fpm php83-opcache \
-  php83-pdo php83-pdo_mysql php83-mbstring php83-zip php83-intl php83-xml php83-gd php83-curl tzdata bash
-# (No need to symlink php; php is already present)
+RUN apk add --no-cache \
+      nginx supervisor \
+      php83 php83-fpm php83-opcache \
+      php83-pdo php83-pdo_mysql php83-mbstring php83-zip php83-intl \
+      php83-xml php83-gd php83-curl \
+      tzdata bash
+# ^ php83-xml provides DOMDocument
 
 RUN mkdir -p /var/www/html /run/nginx /var/log/supervisor
 
-# Copy PHP config/bits from deps stage
-COPY --from=php-deps /usr/local/etc/php/conf.d/opcache.ini /etc/php83/conf.d/opcache.ini
-COPY --from=php-deps /usr/local/lib/php/extensions /usr/local/lib/php/extensions
-COPY --from=php-deps /usr/local/etc/php /usr/local/etc/php
+# Use the opcache settings from build stage as a convenience (optional)
+# If you prefer, you can instead echo these to /etc/php83/conf.d/*.ini
+# COPY --from=php-deps /usr/local/etc/php/conf.d/opcache.ini /etc/php83/conf.d/opcache.ini
 
 WORKDIR /var/www/html
 COPY . .
@@ -38,7 +41,7 @@ COPY --from=php-deps /var/www/html/vendor ./vendor
 COPY --from=assets /app/public/build ./public/build
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Artisan ops now that app files exist
+# Run artisan commands now that the full app + php83-* are present
 RUN php artisan package:discover --ansi || true \
  && php artisan storage:link || true \
  && php artisan config:cache \
