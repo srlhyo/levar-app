@@ -132,15 +132,40 @@
         </Card>
 
         <Card tone="blue" class="space-y-6">
-            <div class="flex items-start gap-3">
-                <IconPill tone="blue">
-                    <Camera class="h-6 w-6" />
-                </IconPill>
-                <div class="space-y-1">
-                    <h2 class="text-lg font-semibold text-slate-800 sm:text-xl">Adicionar um novo item</h2>
-                    <p class="text-sm text-slate-600 sm:text-base">Preencha as informações abaixo para manter o catálogo organizado.</p>
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="flex items-start gap-3">
+                    <IconPill tone="blue">
+                        <Camera class="h-6 w-6" />
+                    </IconPill>
+                    <div class="space-y-1">
+                        <h2 class="text-lg font-semibold text-slate-800 sm:text-xl">Adicionar um novo item</h2>
+                        <p class="text-sm text-slate-600 sm:text-base">Preencha as informações abaixo para manter o catálogo organizado.</p>
+                    </div>
                 </div>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+                    @click="showCatalogHelp = !showCatalogHelp"
+                    :aria-expanded="showCatalogHelp ? 'true' : 'false'"
+                >
+                    <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15 text-[11px] font-semibold text-sky-600">?</span>
+                    Como funciona
+                </button>
             </div>
+
+            <transition name="fade">
+                <div
+                    v-if="showCatalogHelp"
+                    class="space-y-2 rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm"
+                >
+                    <p class="font-semibold text-slate-800">Dicas rápidas</p>
+                    <ul class="list-disc space-y-1 pl-5">
+                        <li>Foto, nome e descrição viram a carta do Decidir — quanto mais contexto, melhor.</li>
+                        <li>Pese ou estime em kg e informe o volume em litros (ou calcule pelas dimensões).</li>
+                        <li>Use a descrição para lembrar acessórios, fragilidade ou onde o item está guardado.</li>
+                    </ul>
+                </div>
+            </transition>
 
             <form class="space-y-6" @submit.prevent="handleSubmit">
                 <div class="space-y-3">
@@ -346,6 +371,7 @@ const fragile = ref(false);
 const photoFile = ref(null);
 const volumeTouched = ref(false);
 const applyingCalculatedVolume = ref(false);
+const showCatalogHelp = ref(false);
 
 const parseLocaleNumber = (value) => {
     if (value === null || value === undefined) {

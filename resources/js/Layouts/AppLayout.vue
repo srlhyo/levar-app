@@ -69,6 +69,7 @@
                 <slot />
             </section>
         </main>
+        <ScrollTopButton :targets="scrollTargets" />
         <ToastHub />
 
         <OverlayModal :model-value="showWelcomeModal" @close="goToInstructions">
@@ -170,7 +171,7 @@
                             class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
                             @click="nextStoryPage"
                         >
-                            {{ hasNextStory ? 'Continuar' : 'Fechar' }}
+                            {{ hasNextStory ? 'Continuar a ler' : 'Fechar' }}
                         </button>
                     </div>
                 </div>
@@ -218,17 +219,31 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, useSlots, watch } from 'vue';
+import { computed, onMounted, onBeforeUnmount, provide, ref, useSlots, watch } from 'vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import { router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import ToastHub from '@/Components/ToastHub.vue';
 import OverlayModal from '@/Components/OverlayModal.vue';
+import ScrollTopButton from '@/Components/ScrollTopButton.vue';
 
 const page = usePage();
 const slots = useSlots();
 
 const currentUser = computed(() => page.props.auth?.user ?? null);
+const scrollTargets = ref([]);
+
+const registerScrollTarget = (targetRef) => {
+    if (!targetRef) {
+        return () => {};
+    }
+    scrollTargets.value = [...scrollTargets.value, targetRef];
+    return () => {
+        scrollTargets.value = scrollTargets.value.filter((refItem) => refItem !== targetRef);
+    };
+};
+
+provide('registerScrollTarget', registerScrollTarget);
 const csrfToken = computed(() =>
     page.props.csrf_token ??
     document.head?.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ??

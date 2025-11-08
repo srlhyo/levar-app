@@ -5,6 +5,34 @@
         <template #subtitle>Uma visão geral das malas, pendências e itens que vão com a gente.</template>
 
         <Card tone="slate">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                    <p class="text-base font-semibold text-slate-900">Panorama da mudança</p>
+                    <p class="text-sm text-slate-600">Acompanhe o avanço entre levar, pendentes e não levar em tempo real.</p>
+                </div>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                    @click="showResumoHelp = !showResumoHelp"
+                    :aria-expanded="showResumoHelp ? 'true' : 'false'"
+                >
+                    <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/15 text-[11px] font-semibold text-emerald-600">?</span>
+                    Como funciona
+                </button>
+            </div>
+            <transition name="fade">
+                <div
+                    v-if="showResumoHelp"
+                    class="mb-4 space-y-2 rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm"
+                >
+                    <p class="font-semibold text-slate-800">Dicas rápidas</p>
+                    <ul class="list-disc space-y-1 pl-5">
+                        <li>Use o Resumo para reordenar o que já foi decidido e enviar itens de volta ao deck.</li>
+                        <li>Os números somam levar + não levar + pendentes. Se algo parecer fora, reinsira cartas.</li>
+                        <li>Os cartões de mala mostram peso/volume utilizados; quando travam, mova itens para outra.</li>
+                    </ul>
+                </div>
+            </transition>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="space-y-1">
                     <p class="text-xs uppercase tracking-wide text-slate-600">Vai levar</p>
@@ -203,7 +231,6 @@
                     <div
                         ref="listContainer"
                         class="max-h-[65vh] space-y-3 overflow-y-auto pr-1"
-                        @scroll="handleListScroll"
                     >
                         <ItemRow
                             v-for="item in currentItems"
@@ -286,24 +313,12 @@
             </Tabs>
         </Card>
 
-        <transition name="fade">
-            <button
-                v-if="showScrollTop"
-                type="button"
-                class="fixed bottom-6 right-5 z-[9998] inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                @click="scrollListToTop({ window: true })"
-                aria-label="Voltar ao topo"
-            >
-                ↑
-            </button>
-        </transition>
-
     </AppLayout>
 </template>
 
 <script setup>
 import { Head, usePage, router } from '@inertiajs/vue3';
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import Tabs from '@/Components/Tabs.vue';
@@ -327,6 +342,7 @@ const goToDecidir = () => {
     router.visit('/decidir');
 };
 
+const showResumoHelp = ref(false);
 const activeTab = ref('take');
 const selectAllRef = ref(null);
 const selection = reactive({
@@ -997,25 +1013,6 @@ const pruneAllSelection = () => {
 };
 
 const listContainer = ref(null);
-const showScrollTop = ref(false);
-
-const shouldShowScrollTop = () => {
-    const listScrolled = listContainer.value ? listContainer.value.scrollTop > 240 : false;
-    const windowScrolled = typeof window !== 'undefined' ? window.scrollY > 320 : false;
-    return listScrolled || windowScrolled;
-};
-
-const handleListScroll = (event) => {
-    if (event?.target) {
-        showScrollTop.value = event.target.scrollTop > 240 || (typeof window !== 'undefined' ? window.scrollY > 320 : false);
-    } else {
-        showScrollTop.value = shouldShowScrollTop();
-    }
-};
-
-const handleWindowScroll = () => {
-    showScrollTop.value = shouldShowScrollTop();
-};
 
 const scrollListToTop = ({ window: scrollWindow = false } = {}) => {
     if (listContainer.value) {
@@ -1024,7 +1021,6 @@ const scrollListToTop = ({ window: scrollWindow = false } = {}) => {
     if (scrollWindow && typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    showScrollTop.value = false;
 };
 
 const resetFilters = () => {
@@ -1108,7 +1104,6 @@ watch(currentPage, (value) => {
 
 watch(filteredItems, () => {
     pruneSelection();
-    nextTick(() => handleListScroll({ target: listContainer.value }));
 });
 
 const ensureUndecided = async (ids) => {
@@ -1146,6 +1141,9 @@ const handleBulkRequeue = async () => {
     }
 };
 
+const registerScrollTarget = inject('registerScrollTarget', null);
+let unregisterScrollTarget = null;
+
 onMounted(async () => {
     if (!move.value?.id) return;
     try {
@@ -1159,16 +1157,13 @@ onMounted(async () => {
         toast.error('Não foi possível carregar o resumo ❌');
     }
 
-    if (typeof window !== 'undefined') {
-        window.addEventListener('scroll', handleWindowScroll, { passive: true });
-        nextTick(() => handleWindowScroll());
+    if (registerScrollTarget) {
+        unregisterScrollTarget = registerScrollTarget(listContainer);
     }
 });
 
 onBeforeUnmount(() => {
-    if (typeof window !== 'undefined') {
-        window.removeEventListener('scroll', handleWindowScroll);
-    }
+    unregisterScrollTarget?.();
 });
 </script>
 

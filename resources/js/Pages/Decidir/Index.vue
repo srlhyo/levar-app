@@ -5,6 +5,34 @@
         <template #subtitle>Escolha rapidamente se o item vai, não vai ou fica para decidir depois.</template>
 
         <Card tone="green" class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="text-base font-semibold text-slate-900">Como decidir</p>
+                    <p class="text-sm text-slate-600">Arraste a carta ou use os botões abaixo para classificar cada item.</p>
+                </div>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                    @click="showDecidirHelp = !showDecidirHelp"
+                    :aria-expanded="showDecidirHelp ? 'true' : 'false'"
+                >
+                    <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/15 text-[11px] font-semibold text-emerald-600">?</span>
+                    Como funciona
+                </button>
+            </div>
+            <transition name="fade">
+                <div
+                    v-if="showDecidirHelp"
+                    class="space-y-2 rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm"
+                >
+                    <p class="font-semibold text-slate-800">Dicas rápidas</p>
+                    <ul class="list-disc space-y-1 pl-5">
+                        <li>Deslize para a direita (Levar), esquerda (Não levar) ou para baixo (Pendentes).</li>
+                        <li>Preferiu tocar? Os botões abaixo da carta fazem a mesma ação com feedback tátil.</li>
+                        <li>Se a pilha acabar, verifique Pendentes no Resumo e reinsira o que quiser tentar novamente.</li>
+                    </ul>
+                </div>
+            </transition>
             <div class="flex items-center justify-between text-sm font-medium text-slate-600">
                 <span>Restantes na pilha</span>
                 <span>{{ undecidedCount }} / {{ totalCount }}</span>
@@ -208,6 +236,7 @@ const bannerProcessedWithPendings = computed(
     () => totalCount.value > 0 && undecidedCount.value === 0 && backlogCount.value > 0,
 );
 
+const showDecidirHelp = ref(false);
 const isProcessing = ref(false);
 const swipeCardRef = ref(null);
 const tooltipIds = {

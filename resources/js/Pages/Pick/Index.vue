@@ -190,7 +190,6 @@
             v-if="filteredPackItems.length"
             ref="listContainer"
             class="max-h-[65vh] space-y-4 overflow-y-auto pr-1"
-            @scroll="handleListScroll"
         >
             <div
                 v-for="item in filteredPackItems"
@@ -285,23 +284,12 @@
         </div>
         </Card>
 
-        <transition name="fade">
-            <button
-                v-if="showScrollTop"
-                type="button"
-                class="fixed bottom-6 right-5 z-[9998] inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                @click="scrollListToTop"
-                aria-label="Voltar ao topo"
-            >
-                ↑
-            </button>
-        </transition>
     </AppLayout>
 </template>
 
 <script setup>
 import { Head, usePage } from '@inertiajs/vue3';
-import { computed, nextTick, onMounted, reactive, ref, watch, watchEffect } from 'vue';
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
 import { Package } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
@@ -324,6 +312,10 @@ watchEffect(() => {
     decisionStore.setMove(move.value);
 });
 
+const listContainer = ref(null);
+const registerScrollTarget = inject('registerScrollTarget', null);
+let unregisterScrollTarget = null;
+
 onMounted(async () => {
     if (move.value?.id) {
         try {
@@ -333,7 +325,13 @@ onMounted(async () => {
         }
     }
 
-    nextTick(() => handleListScroll({ target: listContainer.value }));
+    if (registerScrollTarget) {
+        unregisterScrollTarget = registerScrollTarget(listContainer);
+    }
+});
+
+onBeforeUnmount(() => {
+    unregisterScrollTarget?.();
 });
 
 const packItems = computed(() => decisionStore.pack.items ?? []);
@@ -392,19 +390,9 @@ const filteredPackItems = computed(() => {
     return packItems.value.filter((item) => matchesFilter(item, filter) && matchesQuery(item, query));
 });
 
-const listContainer = ref(null);
-const showScrollTop = ref(false);
-
-const handleListScroll = (event) => {
-    const target = event?.target ?? listContainer.value;
-    if (!target) return;
-    showScrollTop.value = target.scrollTop > 240;
-};
-
 const scrollListToTop = () => {
     if (!listContainer.value) return;
     listContainer.value.scrollTo({ top: 0, behavior: 'smooth' });
-    showScrollTop.value = false;
 };
 
 const setActiveFilter = (value) => {
@@ -412,16 +400,6 @@ const setActiveFilter = (value) => {
     activeFilter.value = value;
     nextTick(() => scrollListToTop());
 };
-
-watch(filteredPackItems, (items) => {
-    nextTick(() => {
-        if (!items.length) {
-            showScrollTop.value = false;
-            return;
-        }
-        handleListScroll({ target: listContainer.value });
-    });
-});
 
 watch(searchQuery, () => {
     nextTick(() => scrollListToTop());
