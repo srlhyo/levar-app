@@ -114,7 +114,7 @@
                 </div>
                 <button
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                    class="inline-flex items-center gap-2 rounded-full bg-yellow-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow transition hover:bg-yellow-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-200"
                     @click="goToPack"
                 >
                     Abrir Embalar
@@ -132,7 +132,7 @@
                 </div>
                 <button
                     type="button"
-                    class="inline-flex items-center gap-2 self-start rounded-full bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-600 ring-1 ring-sky-200 transition hover:bg-sky-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 sm:text-sm"
+                    class="inline-flex items-center gap-2 self-start rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
                     @click="goToDecidir"
                 >
                     Ir para Decidir

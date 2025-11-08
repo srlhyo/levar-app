@@ -14,12 +14,12 @@
                     v-if="hasPhoto"
                     :src="itemPhoto"
                     :alt="item.title ?? item.name"
-                    class="max-h-full max-w-full cursor-zoom-in object-contain transition hover:scale-[1.01]"
+                    class="max-h-full max-w-full select-none object-contain"
                     loading="lazy"
                     decoding="async"
+                    draggable="false"
+                    @dragstart.prevent
                     @error="handleImageError"
-                    @pointerdown.stop
-                    @click.stop="openImageModal"
                 />
                 <Package v-else class="h-24 w-24 text-emerald-400/40" />
                 <button
