@@ -24,7 +24,7 @@ jobs:
             cd /root/levar-app
             git pull origin main
             #docker compose -f docker-compose.yml down app
-            docker compose -f docker-compose.yml --build --no-cache app
+            docker compose -f docker-compose.yml build --no-cache app
             docker compose -f docker-compose.yml up -d app
             docker exec laravel_app sh -c "npm run build"
             docker exec laravel_app sh -c "chown -R www-data:www-data /var/www/html/*"
