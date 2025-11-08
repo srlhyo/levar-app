@@ -276,7 +276,7 @@ const storySteps = [
     {
         paragraphs: [
             'A Levar nasceu de uma iluminação de Deus, do poder do amor e da vontade inigualável que enchem o meu coração e a minha alma — mesmo em tempos de guerra, dor, lágrimas e suor.',
-            'Sem saber por onde ou como começar, orei para que Deus me guiasse e me desse clareza a cada etapa da jornada. A resposta veio em forma de amor — uma ideia simples que me aproximou de alguém que é muito especial para mim, acalmou os obstáculos e transformou o que antes parecia impossível.',
+            'Sem saber por onde ou como começar, orei para que Deus me guiasse e me desse clareza a cada etapa da jornada. A resposta veio em forma de amor — uma ideia simples que me aproximou de alguém que me é muito especial (ela sabe quem é), tornou menores os obstáculos e transformou o que antes parecia impossível.',
             'Antes que a Levar existisse, EU SOU.',
             'João 8:58 — “Antes que Abraão existisse, EU SOU.”',
         ],
