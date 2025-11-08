@@ -22,6 +22,6 @@ jobs:
           script: |
             cd /root/levar-app
             git pull origin main
-            docker compose down
+            docker compose -f docker-compose.yml down app
             docker compose -f docker-compose.yml up -d --build app
             docker compose -f docker-compose.yml restart app
