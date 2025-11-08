@@ -22,6 +22,6 @@ jobs:
           script: |
             cd /root/levar-app
             git pull origin main
-            docker-compose down
-            docker-compose up -d --build laravel_app
-            docker-compose restart laravel_app
+            docker compose down
+            docker compose up -d --build laravel_app
+            docker compose restart laravel_app
