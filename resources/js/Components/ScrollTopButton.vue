@@ -3,7 +3,7 @@
         <button
             v-if="visible"
             type="button"
-            class="fixed bottom-6 right-5 z-[9998] inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/70 text-slate-900 shadow-lg shadow-slate-900/10 backdrop-blur-md ring-1 ring-white/40 transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            class="fixed bottom-6 right-5 z-[9998] inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-slate-900 shadow-lg shadow-black/5 backdrop-blur-3xl ring-1 ring-white/40 transition hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white animate-pulse"
             @click="scrollToTop"
             aria-label="Voltar ao topo"
         >
