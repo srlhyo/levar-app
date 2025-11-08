@@ -198,18 +198,28 @@
             >
                     <div class="flex flex-1 items-start gap-3">
                         <div
-                            class="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-amber-100/60"
+                            class="relative flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-amber-100/60"
                         >
                             <img
                                 v-if="hasPhoto(item)"
                                 :src="itemPhoto(item)"
                                 :alt="item.title ?? item.name"
-                                class="max-h-full max-w-full object-contain"
+                                class="max-h-full max-w-full cursor-zoom-in object-contain transition hover:scale-[1.04]"
                                 loading="lazy"
                                 decoding="async"
                                 @error="() => markPhotoFailed(item)"
+                                @click.stop="openImagePreview(item)"
                             />
                             <Package v-else class="h-7 w-7 text-amber-500/60" />
+                            <button
+                                v-if="hasPhoto(item)"
+                                type="button"
+                                class="absolute right-1 top-1 inline-flex h-7 w-7 items-center justify-center rounded-xl bg-white/85 text-slate-700 shadow ring-1 ring-slate-100 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                                @click.stop="openImagePreview(item)"
+                                aria-label="Ampliar imagem"
+                            >
+                                <ZoomIn class="h-4 w-4" />
+                            </button>
                         </div>
                         <div class="space-y-1">
                             <p class="text-base font-semibold text-slate-900 sm:text-lg">{{ item.title ?? item.name }}</p>
@@ -284,13 +294,19 @@
         </div>
         </Card>
 
+        <ImagePreviewModal
+            v-if="previewSrc"
+            v-model="previewVisible"
+            :src="previewSrc"
+            :alt="previewAlt"
+        />
     </AppLayout>
 </template>
 
 <script setup>
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
-import { Package } from 'lucide-vue-next';
+import { Package, ZoomIn } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import Suitcase from '@/Components/Suitcase.vue';
@@ -298,6 +314,7 @@ import WeightBar from '@/Components/WeightBar.vue';
 import VolumeBar from '@/Components/VolumeBar.vue';
 import { useDecisionStore } from '@/stores/decision';
 import { toast } from '@/utils/toast';
+import ImagePreviewModal from '@/Components/ImagePreviewModal.vue';
 
 const decisionStore = useDecisionStore();
 const page = usePage();
@@ -388,6 +405,24 @@ const filteredPackItems = computed(() => {
     const filter = activeFilter.value;
     const query = normalize(searchQuery.value);
     return packItems.value.filter((item) => matchesFilter(item, filter) && matchesQuery(item, query));
+});
+
+const previewVisible = ref(false);
+const previewItem = ref(null);
+
+const openImagePreview = (item) => {
+    if (!itemPhoto(item)) return;
+    previewItem.value = item;
+    previewVisible.value = true;
+};
+
+const previewSrc = computed(() => (previewItem.value ? itemPhoto(previewItem.value) : null));
+const previewAlt = computed(() => previewItem.value?.title ?? previewItem.value?.name ?? 'Item');
+
+watch(previewVisible, (visible) => {
+    if (!visible) {
+        previewItem.value = null;
+    }
 });
 
 const scrollListToTop = () => {

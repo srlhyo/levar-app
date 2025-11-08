@@ -19,12 +19,22 @@
                     v-if="hasPhoto"
                     :src="itemPhoto"
                     :alt="item.title ?? item.name"
-                    class="max-h-full max-w-full object-contain"
+                    class="max-h-full max-w-full cursor-zoom-in object-contain transition hover:scale-[1.02]"
                     loading="lazy"
                     decoding="async"
                     @error="handleImageError"
+                    @click.stop="openPreview"
                 />
                 <Package v-else class="h-6 w-6 text-slate-500" />
+                <button
+                    v-if="hasPhoto"
+                    type="button"
+                    class="absolute right-1 top-1 inline-flex h-7 w-7 items-center justify-center rounded-xl bg-white/85 text-slate-700 shadow ring-1 ring-slate-100 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    @click.stop="openPreview"
+                    aria-label="Ampliar imagem"
+                >
+                    <ZoomIn class="h-4 w-4" />
+                </button>
             </div>
             <div class="space-y-1">
                 <p class="text-base font-semibold text-slate-900 sm:text-lg">{{ item.title ?? item.name }}</p>
@@ -73,11 +83,20 @@
             </div>
         </div>
     </div>
+    <Teleport to="body">
+        <ImagePreviewModal
+            v-if="hasPhoto && showPreview"
+            v-model="showPreview"
+            :src="itemPhoto"
+            :alt="item.title ?? item.name"
+        />
+    </Teleport>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { Package, Trash2 } from 'lucide-vue-next';
+import { Package, Trash2, ZoomIn } from 'lucide-vue-next';
+import ImagePreviewModal from '@/Components/ImagePreviewModal.vue';
 
 const props = defineProps({
     item: {
@@ -123,6 +142,7 @@ const sanitizedPhoto = computed(() => {
 });
 
 const imageFailed = ref(false);
+const showPreview = ref(false);
 
 const hasPhoto = computed(() => Boolean(sanitizedPhoto.value) && !imageFailed.value);
 const itemPhoto = computed(() => (hasPhoto.value ? sanitizedPhoto.value : null));
@@ -135,6 +155,7 @@ watch(
     () => sanitizedPhoto.value,
     () => {
         imageFailed.value = false;
+        showPreview.value = false;
     },
 );
 
@@ -202,6 +223,18 @@ const handleHint = (key) => {
         hintVisible[key] = false;
     }, 1200);
 };
+
+const openPreview = () => {
+    if (!hasPhoto.value) return;
+    showPreview.value = true;
+};
+
+watch(
+    () => props.item?.id,
+    () => {
+        showPreview.value = false;
+    },
+);
 
 onMounted(() => {
     if (typeof window !== 'undefined') {

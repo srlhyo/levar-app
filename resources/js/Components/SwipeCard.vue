@@ -8,18 +8,30 @@
         @pointerleave="handlePointerEnd"
         @pointercancel="handlePointerEnd"
     >
-        <div class="pointer-events-none overflow-hidden rounded-3xl bg-white/90 shadow-lg/30 shadow-slate-200 ring-1 ring-black/5 backdrop-blur-sm">
-            <div class="flex h-80 w-full items-center justify-center bg-slate-900/5">
+        <div class="overflow-hidden rounded-3xl bg-white/90 shadow-lg/30 shadow-slate-200 ring-1 ring-black/5 backdrop-blur-sm">
+            <div class="relative flex h-80 w-full items-center justify-center bg-slate-900/5">
                 <img
                     v-if="hasPhoto"
                     :src="itemPhoto"
                     :alt="item.title ?? item.name"
-                    class="max-h-full max-w-full object-contain"
+                    class="max-h-full max-w-full cursor-zoom-in object-contain transition hover:scale-[1.01]"
                     loading="lazy"
                     decoding="async"
                     @error="handleImageError"
+                    @pointerdown.stop
+                    @click.stop="openImageModal"
                 />
                 <Package v-else class="h-24 w-24 text-emerald-400/40" />
+                <button
+                    v-if="hasPhoto"
+                    type="button"
+                    class="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow ring-1 ring-white/80 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    @pointerdown.stop
+                    @click.stop="openImageModal"
+                    aria-label="Ampliar imagem"
+                >
+                    <ZoomIn class="h-4 w-4" />
+                </button>
             </div>
 
             <div class="space-y-2 p-6">
@@ -73,11 +85,19 @@
             </div>
         </transition>
     </div>
+
+    <ImagePreviewModal
+        v-if="hasPhoto"
+        v-model="showImageModal"
+        :src="itemPhoto"
+        :alt="props.item.title ?? props.item.name"
+    />
 </template>
 
 <script setup>
 import { computed, defineExpose, ref, watch } from 'vue';
-import { AlertTriangle, Package } from 'lucide-vue-next';
+import { AlertTriangle, Package, ZoomIn } from 'lucide-vue-next';
+import ImagePreviewModal from '@/Components/ImagePreviewModal.vue';
 
 const props = defineProps({
     item: {
@@ -243,10 +263,18 @@ const triggerFromParent = (decision) => {
 
 defineExpose({ triggerDecision: triggerFromParent });
 
+const showImageModal = ref(false);
+
+const openImageModal = () => {
+    if (!hasPhoto.value) return;
+    showImageModal.value = true;
+};
+
 watch(
     () => props.item?.id,
     () => {
         resetCard();
+        showImageModal.value = false;
     },
 );
 </script>
