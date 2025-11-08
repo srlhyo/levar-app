@@ -180,7 +180,7 @@
 
         <OverlayModal :model-value="showInstructionsModal" @close="dismissInstructions">
             <template #header>
-                <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">Seu ritual</p>
+                <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">Instruções básicas</p>
                 <h2 class="text-2xl font-bold text-slate-900">Como usar a Levar</h2>
             </template>
 
