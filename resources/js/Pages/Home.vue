@@ -2,7 +2,9 @@
     <Head title="Decidir o que Levar" />
     <AppLayout>
         <template #title>Decidir o que Levar</template>
-        <template #subtitle>Organize sua mudança de forma simples e visual.</template>
+        <template #subtitle>
+            <span @click="handleMudancaClick" class="select-none">Organize sua mudança</span> de forma simples e visual.
+        </template>
 
         <div class="grid gap-4 sm:gap-5">
             <Card
@@ -32,14 +34,18 @@
         </div>
 
         <footer class="pt-6 text-center text-sm text-slate-500">
-            <p>UK → Brasil • 2 malas de 23kg cada</p>
+            <p>
+                UK → Brasil • 2 malas de
+                <span @click="handleKgClick" class="select-none"> 23kg </span>
+                cada
+            </p>
         </footer>
     </AppLayout>
 </template>
 
 <script setup>
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Camera, ChevronRight, FileText, Heart, Package } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
@@ -87,9 +93,41 @@ const modes = [
     },
 ];
 
+const catalogUnlocked = ref(false);
+const othersUnlocked = ref(false);
+const mudancaClicks = ref(0);
+const kgClicks = ref(0);
+
 const isEnabled = (mode) => {
-    if (isAdmin.value) return true;
+    if (isAdmin.value) {
+        if (mode.key === 'catalogar') {
+            return catalogUnlocked.value;
+        }
+        return othersUnlocked.value;
+    }
     return mode.key !== 'catalogar';
+};
+
+const pulseToggle = (refTarget) => {
+    refTarget.value = !refTarget.value;
+};
+
+const handleMudancaClick = () => {
+    if (!isAdmin.value) return;
+    mudancaClicks.value += 1;
+    if (mudancaClicks.value >= 3) {
+        mudancaClicks.value = 0;
+        pulseToggle(catalogUnlocked);
+    }
+};
+
+const handleKgClick = () => {
+    if (!isAdmin.value) return;
+    kgClicks.value += 1;
+    if (kgClicks.value >= 3) {
+        kgClicks.value = 0;
+        pulseToggle(othersUnlocked);
+    }
 };
 
 const handleNavigate = (mode) => {
