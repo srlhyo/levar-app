@@ -23,5 +23,5 @@ jobs:
             cd /root/levar-app
             git pull origin main
             docker compose down
-            docker compose -f docker-compose.yml up -d --build laravel_app
-            docker compose -f docker-compose.yml restart laravel_app
+            docker compose -f docker-compose.yml up -d --build app
+            docker compose -f docker-compose.yml restart app
