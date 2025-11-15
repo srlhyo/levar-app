@@ -8,11 +8,14 @@ use App\Models\Item;
 use App\Models\Move;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class MoveOnboardingService
 {
+    private ?bool $priorityColumnExists = null;
+
     public function __construct(
         private readonly BagSnapshotService $snapshotService,
     ) {
@@ -57,11 +60,17 @@ class MoveOnboardingService
 
                     $dimensions = $service->makeDimensions();
 
-                    return [
+                    $state = [
                         'decision' => $decision,
                         'dimensions' => $dimensions['string'],
                         'volume_cm3' => $dimensions['volume_cm3'],
                     ];
+
+                    if ($service->itemsHavePriorityColumn()) {
+                        $state['priority'] = fake()->randomElement(['alta', 'media', 'baixa']);
+                    }
+
+                    return $state;
                 })
                 ->create();
 
@@ -175,5 +184,13 @@ class MoveOnboardingService
                     'thumbnail_url' => Storage::disk($disk)->url($media->thumb_path),
                 ]);
             });
+    }
+    private function itemsHavePriorityColumn(): bool
+    {
+        if ($this->priorityColumnExists !== null) {
+            return $this->priorityColumnExists;
+        }
+
+        return $this->priorityColumnExists = Schema::hasColumn('items', 'priority');
     }
 }
