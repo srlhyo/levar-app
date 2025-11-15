@@ -4,7 +4,7 @@
             <div class="rounded-3xl bg-white/90 p-8 shadow-lg ring-1 ring-black/5 space-y-6">
                 <header class="space-y-1">
                     <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">Bem-vindo</p>
-                    <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">Entrar test</h1>
+                    <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">Entrar test again</h1>
                     <p class="text-sm text-slate-600">
                         Acesse o Levar com seu email e senha.
                     </p>
