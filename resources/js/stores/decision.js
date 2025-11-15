@@ -388,6 +388,20 @@ export const useDecisionStore = defineStore('decision', {
             await Promise.all(ids.map((id) => axios.post(`/api/items/${id}/bag`, { bag: bagCode, _token: resolveCsrfToken() })));
             await Promise.allSettled([this.fetchPack(), this.fetchResumo()]);
         },
+        async updateBagNotes(bagId, payload) {
+            this.assertMove();
+            if (!bagId) return;
+
+            await axios.put(`/api/bags/${bagId}/notes`, { ...payload, _token: resolveCsrfToken() });
+            await Promise.allSettled([this.fetchPack(), this.fetchResumo()]);
+        },
+        async updateItemPriority(itemId, priority) {
+            this.assertMove();
+            if (!itemId) return;
+
+            await axios.put(`/api/items/${itemId}/priority`, { priority: priority ?? null, _token: resolveCsrfToken() });
+            await Promise.allSettled([this.fetchPack(), this.fetchResumo()]);
+        },
         async softDeleteItems(ids) {
             this.assertMove();
             if (!ids?.length) return;

@@ -36,20 +36,7 @@ class ItemService
 
             $item->decision = $decision;
 
-            if ($bag && $decision === 'yes') {
-                if ($bag->move_id !== $item->move_id) {
-                    throw new InvalidArgumentException('Bag does not belong to the same move.');
-                }
-
-                $item->bag()->associate($bag);
-            } elseif ($clearBag) {
-                $item->bag()->dissociate();
-            }
-
-            if ($decision !== 'yes') {
-                $item->bag()->dissociate();
-            }
-
+            $this->syncBagAssignment($item, $decision, $bag, $clearBag);
             $item->packed_at = $decision === 'yes' ? $item->packed_at : null;
 
             $item->save();
@@ -150,6 +137,26 @@ class ItemService
 
             $this->snapshotService->refresh($move);
         });
+    }
+
+    private function syncBagAssignment(Item $item, string $decision, ?Bag $bag, bool $clearBag): void
+    {
+        $shouldClear = $decision !== 'yes' || $clearBag;
+
+        if ($shouldClear) {
+            $item->bag()->dissociate();
+            return;
+        }
+
+        if ($bag === null) {
+            return;
+        }
+
+        if ($bag->move_id !== $item->move_id) {
+            throw new InvalidArgumentException('Bag does not belong to the same move.');
+        }
+
+        $item->bag()->associate($bag);
     }
 
 }

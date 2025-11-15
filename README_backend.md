@@ -1,6 +1,6 @@
 # Backend Integration Guide
 
-This document captures the server-side blueprint for the Levar app after porting the Lovable UI to Laravel + Inertia.
+This document captures the server-side blueprint for the EasyTrip app after porting the Lovable UI to Laravel + Inertia.
 
 ## Environment
 

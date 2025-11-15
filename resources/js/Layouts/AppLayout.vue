@@ -55,7 +55,7 @@
                                     class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
                                     @click="logout"
                                 >
-                                    Sair do Levar
+                                    Sair do EasyTrip
                                 </button>
                             </div>
                         </transition>
@@ -78,43 +78,66 @@
                 <h2 class="text-3xl font-bold text-slate-900">Uma viagem entre mundos</h2>
             </template>
 
-            <div class="space-y-4 text-center">
-                <div class="flex items-center justify-center gap-4">
+            <div class="space-y-6 transition-all duration-700 ease-out" :class="welcomeTextRaised ? 'pt-0' : 'pt-1'">
+                <div
+                    class="welcome-flags flex flex-wrap items-center justify-center gap-4 rounded-3xl bg-white/70 p-4 ring-1 ring-white/70"
+                    :class="{ 'welcome-flags--hidden': welcomeTextRaised }"
+                >
                     <span class="flag flag-pt" aria-label="Portugal"></span>
                     <span class="flag flag-uk" aria-label="Reino Unido"></span>
                     <span class="flag flag-br" aria-label="Brasil"></span>
                 </div>
-                <div :class="['welcome-text space-y-3 text-left text-sm text-slate-700 sm:text-base', { raise: welcomeTextRaised }]">
-                    <p>
-                        Em abril tomei uma das decisões mais difíceis da minha vida: deixar para trás o país que me
-                        estendeu uma ponte quando resolvi sair do meu berço e gatinhar em direção a algo que eu acreditava
-                        ser maior do que o mundo que me rodeava há 17 anos.
-                    </p>
-                    <p>
-                        A ponte era firme o suficiente para suportar todas as tempestades e águas turbulentas enquanto eu a
-                        atravessava; e suave o quanto basta para me amparar em cada queda, enquanto deixava de gatinhar e
-                        aprendia a dar os primeiros passos — e depois a andar — até chegar à terra que viria a ser o meu chão
-                        por 20 anos.
-                    </p>
-                    <p>
-                        Hoje, a pouco menos de dois meses da minha chegada à terra que será o meu chão daqui em diante,
-                        celebro o nascimento da Levar.
-                        <button
-                            type="button"
-                            class="ml-2 text-emerald-600 underline decoration-dotted underline-offset-4 hover:text-emerald-500"
-                            @click="openStoryModal"
-                        >
-                            Clica aqui
-                        </button>
-                        <span> cpara saber mais.</span>
-                    </p>
+
+                <div
+                    class="welcome-journey relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-5 text-white shadow-lg"
+                    :class="{ 'welcome-journey--raised': welcomeTextRaised }"
+                >
+                    <div class="absolute inset-0 opacity-30 [mask-image:radial-gradient(circle_at_top,_white,_transparent)]"></div>
+                    <div class="relative mb-4 flex flex-col items-start gap-3">
+                        <p class="text-base font-semibold text-white sm:text-lg">
+                            A viagem começa com coragem, fé e uma ponte entre mundos.
+                        </p>
+                        <div class="welcome-scroll-hint" aria-hidden="true">
+                            <span class="welcome-scroll-hint__text">Role para continuar</span>
+                            <span class="welcome-scroll-hint__arrow">↓</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <article class="welcome-step">
+                        <div class="welcome-step__marker" aria-hidden="true">1</div>
+                        <p>
+                            Em abril tomei uma das decisões mais difíceis da minha vida: deixar para trás o país que me estendeu uma ponte quando resolvi sair do meu berço e gatinhar em direção a algo maior.
+                        </p>
+                        </article>
+                        <article class="welcome-step">
+                        <div class="welcome-step__marker" aria-hidden="true">2</div>
+                        <p>
+                            A ponte era firme para suportar tempestades e suave para me amparar em cada queda — desde os primeiros passos até o chão que me acolheu por 20 anos.
+                        </p>
+                        </article>
+                        <article class="welcome-step">
+                        <div class="welcome-step__marker" aria-hidden="true">3</div>
+                        <p>
+                            Hoje, a pouco mais de um mês da minha chegada à terra que será o meu próximo chão, celebro o nascimento da EasyTrip.
+                            <button
+                                type="button"
+                                class="welcome-story-link"
+                                @click="openStoryModal"
+                            >
+                                Clica aqui
+                            </button>
+                            <span> para saber mais.</span>
+                        </p>
+                        </article>
+                    </div>
                 </div>
             </div>
 
             <template #footer>
                 <button
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                    class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-transparent px-4 py-2 text-sm font-semibold text-emerald-600 shadow-none transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-100"
                     @click="goToInstructions"
                 >
                     Seguir para instruções
@@ -127,7 +150,7 @@
                 <div class="flex items-center justify-between gap-3">
                     <div class="min-w-0">
                         <p class="text-xs font-semibold uppercase tracking-wide text-amber-500">Antes que tudo existisse</p>
-                        <h2 class="text-2xl font-bold text-slate-900 leading-tight">A história por trás da Levar</h2>
+                        <h2 class="text-2xl font-bold text-slate-900 leading-tight">A história por trás da EasyTrip</h2>
                     </div>
                     <div class="confetti" aria-hidden="true">
                         <span v-for="n in 24" :key="n" class="confetti-piece"></span>
@@ -136,12 +159,31 @@
             </template>
 
             <div class="story-scroll space-y-4 text-sm text-slate-700 sm:text-base">
-                <p v-for="(paragraph, index) in currentStoryStep.paragraphs" :key="`story-${storyPage}-${index}`">
-                    {{ paragraph }}
-                </p>
+                <div class="story-hero">
+                    <p class="story-hero__label">Linha do tempo</p>
+                    <p class="story-hero__text">
+                        Acompanhe a jornada abaixo.
+                    </p>
+                </div>
+
+                <div class="story-timeline space-y-4">
+                    <article
+                        v-for="(paragraph, index) in currentStoryStep.paragraphs"
+                        :key="`story-${storyPage}-${index}`"
+                        class="story-card"
+                        :class="{ 'story-card--last': index === currentStoryStep.paragraphs.length - 1 }"
+                    >
+                        <div class="story-card__marker" aria-hidden="true">
+                            <span>{{ index + 1 }}</span>
+                        </div>
+                        <p>
+                            {{ paragraph }}
+                        </p>
+                    </article>
+                </div>
                 <ul
                     v-if="currentStoryStep.list"
-                    class="list-disc space-y-1 rounded-2xl bg-amber-50/70 p-4 text-slate-600"
+                    class="story-list"
                 >
                     <li v-for="(item, idx) in currentStoryStep.list" :key="`bullet-${idx}`">
                         {{ item }}
@@ -181,29 +223,32 @@
         <OverlayModal :model-value="showInstructionsModal" @close="dismissInstructions">
             <template #header>
                 <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">Instruções básicas</p>
-                <h2 class="text-2xl font-bold text-slate-900">Como usar a Levar</h2>
+                <h2 class="text-2xl font-bold text-slate-900">Como usar a EasyTrip</h2>
             </template>
 
-            <div class="space-y-4">
-                <div class="rounded-2xl bg-emerald-50/60 p-4 ring-1 ring-emerald-100">
-                    <h3 class="text-sm font-semibold text-emerald-800">1. Catalogar</h3>
-                    <p class="text-sm text-emerald-700">
-                        Fotografe e descreva cada item como se fosse uma memória — peso, volume, notas especiais.
-                    </p>
-                </div>
-                <div class="rounded-2xl bg-sky-50/60 p-4 ring-1 ring-sky-100">
-                    <h3 class="text-sm font-semibold text-sky-800">2. Decidir</h3>
-                    <p class="text-sm text-sky-700">
-                        No swipe deck, defina se o item vai, fica ou espera. Gestos e botões têm o mesmo encanto.
-                    </p>
-                </div>
-                <div class="rounded-2xl bg-amber-50/60 p-4 ring-1 ring-amber-100">
-                    <h3 class="text-sm font-semibold text-amber-800">3. Embalar &amp; Resumo</h3>
-                    <p class="text-sm text-amber-700">
-                        Distribua peso/volume entre as malas e acompanhe os totais. Se algo encher demais, o Levar avisa.
-                    </p>
-                </div>
-            </div>
+            <ol class="instruction-steps space-y-3">
+                <li
+                    v-for="(step, index) in instructionSteps"
+                    :key="step.title"
+                    class="instruction-step"
+                >
+                    <span
+                        class="instruction-step__icon"
+                        :class="`instruction-step__icon--${step.tone}`"
+                        aria-hidden="true"
+                    >
+                        {{ step.icon }}
+                    </span>
+                    <div>
+                        <h3 class="text-sm font-semibold" :class="step.headingClass">
+                            {{ step.title }}
+                        </h3>
+                        <p class="text-sm" :class="step.bodyClass">
+                            {{ step.description }}
+                        </p>
+                    </div>
+                </li>
+            </ol>
 
             <template #footer>
                 <button
@@ -275,11 +320,38 @@ const storySteps = [
     },
     {
         paragraphs: [
-            'A Levar nasceu de uma iluminação de Deus, do poder do amor e da vontade inigualável que enchem o meu coração e a minha alma — mesmo em tempos de guerra, dor, lágrimas e suor.',
+            'A EasyTrip nasceu de uma iluminação de Deus, do poder do amor e da vontade inigualável que enchem o meu coração e a minha alma — mesmo em tempos de guerra, dor, lágrimas e suor.',
             'Sem saber por onde ou como começar, orei para que Deus me guiasse e me desse clareza a cada etapa da jornada. A resposta veio em forma de amor — uma ideia simples que me aproximou de alguém que me é muito especial (ela sabe quem é), tornou menores os obstáculos e transformou o que antes parecia impossível.',
-            'Antes que a Levar existisse, EU SOU.',
+            'Antes que a EasyTrip existisse, EU SOU.',
         ],
         list: null,
+    },
+];
+
+const instructionSteps = [
+    {
+        title: '1. Catalogar',
+        description: 'Fotografe e descreva cada item como se fosse uma memória — peso, volume, notas especiais.',
+        icon: '📸',
+        tone: 'emerald',
+        headingClass: 'text-emerald-800',
+        bodyClass: 'text-emerald-700',
+    },
+    {
+        title: '2. Decidir',
+        description: 'No swipe deck, defina se o item vai, fica ou espera. Gestos e botões têm o mesmo encanto.',
+        icon: '🌀',
+        tone: 'sky',
+        headingClass: 'text-sky-800',
+        bodyClass: 'text-sky-700',
+    },
+    {
+        title: '3. Embalar & Resumo',
+        description: 'Distribua peso/volume entre as malas e acompanhe os totais. Se algo encher demais, o EasyTrip avisa.',
+        icon: '🧳',
+        tone: 'amber',
+        headingClass: 'text-amber-800',
+        bodyClass: 'text-amber-700',
     },
 ];
 
@@ -401,6 +473,260 @@ onBeforeUnmount(() => {
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+.welcome-flags {
+    transition:
+        opacity 0.8s ease,
+        transform 0.8s ease,
+        height 0.6s ease,
+        margin 0.6s ease,
+        padding 0.6s ease;
+}
+.welcome-flags span {
+    flex-shrink: 0;
+}
+.welcome-flags--hidden {
+    opacity: 0;
+    transform: translateY(-16px);
+    height: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+}
+
+.welcome-journey {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 45px rgba(15, 23, 42, 0.35);
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.welcome-journey--raised {
+    transform: translateY(-14px);
+}
+
+.welcome-scroll-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+}
+.welcome-scroll-hint__arrow {
+    display: inline-flex;
+    width: 1.5rem;
+    height: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    animation: arrowBounce 1.2s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(4px);
+    }
+}
+
+.welcome-step {
+    display: flex;
+    gap: 0.75rem;
+    border-radius: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(6px);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 0.95rem;
+}
+
+.welcome-step__marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.18);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.story-card {
+    position: relative;
+    display: flex;
+    gap: 0.75rem;
+    border-radius: 1.25rem;
+    background: rgba(248, 250, 252, 0.9);
+    padding: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+.story-hero {
+    border-radius: 1.5rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, rgba(254, 243, 199, 0.8), rgba(251, 191, 36, 0.5));
+    border: 1px solid rgba(180, 83, 9, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.story-hero__label {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #b45309;
+    margin-bottom: 0.25rem;
+}
+.story-hero__text {
+    font-size: 0.95rem;
+    color: #7c2d12;
+    line-height: 1.5;
+}
+
+.story-timeline {
+    position: relative;
+    padding-left: 0.5rem;
+}
+.story-timeline::before {
+    content: '';
+    position: absolute;
+    left: 1.4rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.15), rgba(15, 23, 42, 0));
+}
+.story-card {
+    padding: 1rem 1rem 1rem 3rem;
+}
+.story-card::before {
+    content: '';
+    position: absolute;
+    left: 1.48rem;
+    top: 2rem;
+    bottom: -0.75rem;
+    width: 2px;
+    background: rgba(251, 191, 36, 0.8);
+}
+.story-card--last::before {
+    display: none;
+}
+.story-card__marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.85), rgba(249, 115, 22, 0.85));
+    color: #fff7ed;
+    font-weight: 700;
+}
+
+.story-list {
+    list-style: none;
+    padding: 1rem;
+    border-radius: 1.25rem;
+    background: rgba(254, 243, 199, 0.6);
+    border: 1px dashed rgba(180, 83, 9, 0.4);
+    color: #92400e;
+}
+.story-list li + li {
+    margin-top: 0.35rem;
+}
+
+.instruction-step {
+    display: flex;
+    gap: 0.75rem;
+    border-radius: 1.25rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+    align-items: flex-start;
+}
+
+.instruction-step__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 1rem;
+    font-size: 1.2rem;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+.instruction-step__icon--emerald {
+    background: linear-gradient(135deg, #d1fae5, #6ee7b7);
+    color: #065f46;
+}
+.instruction-step__icon--sky {
+    background: linear-gradient(135deg, #e0f2fe, #7dd3fc);
+    color: #0c4a6e;
+}
+.instruction-step__icon--amber {
+    background: linear-gradient(135deg, #fef3c7, #fcd34d);
+    color: #92400e;
+}
+
+.welcome-story-link {
+    position: relative;
+    margin-left: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #ecfdf5;
+    background: linear-gradient(130deg, rgba(34, 197, 94, 0.9) 0%, rgba(5, 150, 105, 0.92) 60%, rgba(16, 185, 129, 0.98) 100%);
+    border: 1px solid rgba(5, 150, 105, 0.55);
+    background-size: 200% 200%;
+    text-decoration: none;
+    transition: transform 0.25s ease, background 0.25s ease;
+    animation: pulseLink 1.8s ease-in-out infinite, gradientShift 3s ease-in-out infinite;
+    box-shadow: 0 12px 30px rgba(6, 78, 59, 0.25);
+}
+.welcome-story-link::after {
+    content: '→';
+    font-size: 0.95em;
+    transition: transform 0.25s ease;
+}
+.welcome-story-link:hover {
+    background-position: 100% 0;
+    transform: translateY(-1px);
+}
+.welcome-story-link:hover::after {
+    transform: translateX(2px);
+}
+
+@keyframes pulseLink {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0 0;
+    }
+    50% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
 }
 
 .flag {

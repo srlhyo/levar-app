@@ -23,6 +23,8 @@ class BagFactory extends Factory
             'name' => 'Mala ' . $code,
             'code' => $code,
             'capacity_kg' => $this->faker->randomFloat(2, 18, 32),
+            'notes' => null,
+            'checklist' => [],
             'sort_order' => 0,
         ];
     }

@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico'],
       manifest: {
-        name: 'Decidir o que Levar',
+        name: 'EasyTrip',
         short_name: 'Decidir',
         description: 'Organize sua mudança de forma visual e prática',
         theme_color: '#3b82f6',

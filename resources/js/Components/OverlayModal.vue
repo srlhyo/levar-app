@@ -2,12 +2,12 @@
     <transition name="fade">
         <div
             v-if="modelValue"
-            class="fixed inset-0 z-[12000] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+            class="fixed inset-0 z-[12000] flex items-start justify-center overflow-y-auto bg-slate-950/60 px-4 py-6 backdrop-blur-sm sm:items-center"
             role="dialog"
             aria-modal="true"
         >
             <div
-                class="relative w-full max-w-2xl space-y-4 rounded-3xl bg-white p-6 text-slate-700 shadow-2xl ring-1 ring-black/5 sm:p-8"
+                class="relative w-full max-w-2xl space-y-4 overflow-y-auto rounded-3xl bg-white p-6 text-slate-700 shadow-2xl ring-1 ring-black/5 max-h-[90vh] sm:max-h-[85vh] sm:p-8"
             >
                 <button
                     type="button"

@@ -18,6 +18,7 @@ class ItemFactory extends Factory
     {
         $decision = $this->faker->randomElement(['undecided', 'pending', 'yes', 'no']);
         $packed = $decision === 'yes' && $this->faker->boolean(60);
+        $priority = $this->faker->optional(0.5)->randomElement(['essential', 'priority', 'optional']);
 
         $length = $this->faker->numberBetween(15, 90);
         $width = $this->faker->numberBetween(10, 60);
@@ -38,6 +39,7 @@ class ItemFactory extends Factory
             'category' => $this->faker->optional(0.4)->word(),
             'fragile' => $this->faker->boolean(25),
             'decision' => $decision,
+            'priority' => $priority,
             'packed_at' => $packed ? $this->faker->dateTimeBetween('-10 days', 'now') : null,
             'sort_order' => $this->faker->numberBetween(0, 1000),
             'location_hint' => $this->faker->optional(0.3)->sentence(3),

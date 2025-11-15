@@ -1,4 +1,4 @@
-# Decidir o que Levar — DEVSPEC
+# Decidir o que EasyTrip — DEVSPEC
 
 ## Objective
 A progressive web app (PWA) to catalog items and decide what to take when moving between homes.  

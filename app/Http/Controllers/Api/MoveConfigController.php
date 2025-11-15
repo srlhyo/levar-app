@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Concerns\InteractsWithMoves;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MoveConfig\UpdateMoveConfigRequest;
 use App\Models\Bag;
 use App\Models\Move;
-use App\Services\BagSnapshotService;
+use App\Services\MoveConfigService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class MoveConfigController extends Controller
 {
@@ -36,66 +36,11 @@ class MoveConfigController extends Controller
         ]);
     }
 
-    public function update(Request $request, Move $move): JsonResponse
+    public function update(UpdateMoveConfigRequest $request, Move $move, MoveConfigService $service): JsonResponse
     {
         $this->authorizeMove($request, $move);
 
-        $validated = $request->validate([
-            'reserved_kg' => ['required', 'numeric', 'min:0', 'max:999'],
-            'reserved_volume_liters' => ['nullable', 'numeric', 'min:0', 'max:9999'],
-            'bags' => ['required', 'array', 'min:1'],
-            'bags.*.id' => ['nullable', 'integer'],
-            'bags.*.name' => ['required', 'string', 'max:120'],
-            'bags.*.code' => ['nullable', 'string', 'max:10'],
-            'bags.*.capacity_kg' => ['required', 'numeric', 'min:0'],
-            'bags.*.dimensions' => ['nullable', 'string', 'max:120'],
-        ]);
-
-        DB::transaction(function () use ($move, $validated) {
-            $move->update([
-                'reserved_weight_kg' => $validated['reserved_kg'],
-                'reserved_volume_cm3' => isset($validated['reserved_volume_liters'])
-                    ? round($validated['reserved_volume_liters'] * 1000, 2)
-                    : 0,
-            ]);
-
-            $incoming = collect($validated['bags']);
-            $existing = $move->bags()->get()->keyBy('id');
-            $processedIds = [];
-
-            foreach ($incoming as $index => $bagData) {
-                $payload = [
-                    'name' => $bagData['name'],
-                    'code' => $bagData['code'] ?? null,
-                    'capacity_kg' => $bagData['capacity_kg'],
-                    'dimensions' => $bagData['dimensions'] ?? null,
-                    'sort_order' => $index,
-                ];
-
-                if (!empty($bagData['id']) && $existing->has((int) $bagData['id'])) {
-                    /** @var Bag $bag */
-                    $bag = $existing[(int) $bagData['id']];
-                    $bag->update($payload);
-                    $processedIds[] = $bag->id;
-                } else {
-                    $bag = $move->bags()->create($payload);
-                    $processedIds[] = $bag->id;
-                }
-            }
-
-            $move->bags()
-                ->whereNotIn('id', $processedIds)
-                ->get()
-                ->each(function (Bag $bag) {
-                    $bag->items()->update([
-                        'bag_id' => null,
-                    ]);
-
-                    $bag->delete();
-                });
-        });
-
-        app(BagSnapshotService::class)->refresh($move->fresh('bags'));
+        $service->update($move, $request->validated());
 
         return response()->json([
             'status' => 'ok',

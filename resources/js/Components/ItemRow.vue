@@ -51,6 +51,33 @@
                         {{ volumePillLabel }}
                     </span>
                 </div>
+                <div
+                    v-if="showBagActions && normalizedBagOptions.length"
+                    class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600"
+                >
+                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 font-medium">
+                        <Luggage class="h-3.5 w-3.5 text-slate-400" />
+                        {{ currentBagLabel }}
+                    </span>
+                    <div class="flex flex-wrap gap-1">
+                        <button
+                            v-for="option in normalizedBagOptions"
+                            :key="option.value ?? 'unassigned'"
+                            type="button"
+                            class="rounded-full border px-3 py-1 font-semibold transition"
+                            :class="[
+                                isCurrentBag(option.value)
+                                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                                    : 'border-slate-200 bg-white/80 text-slate-600 hover:border-emerald-200',
+                                bagActionDisabled ? 'cursor-not-allowed opacity-50' : '',
+                            ]"
+                            :disabled="bagActionDisabled"
+                            @click.stop="() => handleAssign(option.value)"
+                        >
+                            {{ option.label }}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -94,8 +121,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { Package, Trash2, ZoomIn } from 'lucide-vue-next';
+import {
+    computed,
+    onMounted,
+    reactive,
+    ref,
+    watch,
+} from 'vue';
+import { Luggage, Package, Trash2, ZoomIn } from 'lucide-vue-next';
 import ImagePreviewModal from '@/Components/ImagePreviewModal.vue';
 
 const props = defineProps({
@@ -115,9 +148,21 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    bagOptions: {
+        type: Array,
+        default: () => [],
+    },
+    showBagActions: {
+        type: Boolean,
+        default: false,
+    },
+    bagActionDisabled: {
+        type: Boolean,
+        default: false,
+    },
 });
 
-const emit = defineEmits(['toggle-select', 'delete']);
+const emit = defineEmits(['toggle-select', 'delete', 'assign-bag']);
 
 const isTouchDevice = ref(false);
 const hintVisible = reactive({ delete: false });
@@ -211,8 +256,43 @@ const volumePillLabel = computed(() => {
     return `Volume • ${info.litersFormatted} L`;
 });
 
+const normalizedBagOptions = computed(() => {
+    if (!props.showBagActions) return [];
+    const options = props.bagOptions ?? [];
+    if (!options.length) {
+        return [];
+    }
+    return options.map((option) => ({
+        value: option.value ?? '',
+        label: option.label ?? 'Sem mala',
+    }));
+});
+
+const currentBagCode = computed(() => {
+    const direct = props.item?.bag ?? props.item?.bag_code ?? null;
+    if (direct != null) return String(direct);
+    const bagId = props.item?.bag_id;
+    return bagId != null ? String(bagId) : '';
+});
+
+const currentBagLabel = computed(() => {
+    const match = normalizedBagOptions.value.find((option) => isCurrentBag(option.value));
+    if (match) return match.label;
+    return 'Sem mala';
+});
+
+const isCurrentBag = (value) => {
+    const normalized = value == null ? '' : String(value);
+    return normalized === currentBagCode.value;
+};
+
 const onToggle = (event) => {
     emit('toggle-select', { id: props.item.id, value: event.target.checked });
+};
+
+const handleAssign = (bagCode) => {
+    if (props.bagActionDisabled) return;
+    emit('assign-bag', { id: props.item.id, bag: bagCode ?? '' });
 };
 
 const handleHint = (key) => {

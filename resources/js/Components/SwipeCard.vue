@@ -57,6 +57,16 @@
                 <p v-if="item.notes" class="text-sm text-slate-600">
                     {{ item.notes }}
                 </p>
+                <div v-if="warningBadges.length" class="flex flex-wrap gap-2 pt-2">
+                    <span
+                        v-for="warning in warningBadges"
+                        :key="warning"
+                        class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 ring-1 ring-amber-200"
+                    >
+                        <AlertTriangle class="h-3 w-3" />
+                        {{ warning }}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -161,6 +171,20 @@ const volumeLabel = computed(() => {
     return `${Number(liters).toFixed(1)} L (${numberFormatter.format(Math.round(cm3))} cm³)`;
 });
 
+const warningBadges = computed(() => {
+    const badges = [];
+    if (!props.item?.weight && !props.item?.weight_kg) {
+        badges.push('Sem peso estimado');
+    }
+    if (!props.item?.volume_cm3) {
+        badges.push('Sem volume');
+    }
+    if (!props.item?.photo_url && !props.item?.thumbnail_url) {
+        badges.push('Sem foto');
+    }
+    return badges;
+});
+
 const positionX = ref(0);
 const positionY = ref(0);
 const isDragging = ref(false);
@@ -232,7 +256,11 @@ const resetCard = () => {
     isAnimating.value = false;
 };
 
-const triggerDecision = (decision) => {
+const emitDecision = (decision, options = {}) => {
+    emit('decision', { type: decision, options });
+};
+
+const triggerDecision = (decision, options = {}) => {
     if (isAnimating.value) return;
     isAnimating.value = true;
 
@@ -241,7 +269,7 @@ const triggerDecision = (decision) => {
         positionY.value = 40;
         window.setTimeout(() => {
             resetCard();
-            emit('decision', 'pending');
+            emitDecision('pending', options);
         }, 220);
         return;
     }
@@ -252,13 +280,13 @@ const triggerDecision = (decision) => {
     positionY.value = decision === 'yes' ? -20 : 20;
     window.setTimeout(() => {
         resetCard();
-        emit('decision', decision);
+        emitDecision(decision, options);
     }, 220);
 };
 
-const triggerFromParent = (decision) => {
+const triggerFromParent = (decision, options = {}) => {
     if (props.disabled) return;
-    triggerDecision(decision);
+    triggerDecision(decision, options);
 };
 
 defineExpose({ triggerDecision: triggerFromParent });

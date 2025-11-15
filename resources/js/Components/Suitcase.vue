@@ -55,6 +55,13 @@
             <p class="text-sm font-semibold" :class="statusLabelClass">
                 {{ status }}
             </p>
+            <p
+                v-if="hasNotes"
+                class="flex items-center justify-center gap-1 text-xs font-medium text-amber-600"
+            >
+                <span aria-hidden="true">📝</span>
+                Notas salvas
+            </p>
         </div>
     </div>
 </template>
@@ -91,9 +98,17 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    weight: {
+        type: Object,
+        default: null,
+    },
     volume: {
         type: Object,
         default: null,
+    },
+    hasNotes: {
+        type: Boolean,
+        default: false,
     },
 });
 

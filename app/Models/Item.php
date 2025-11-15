@@ -24,6 +24,7 @@ class Item extends Model
         'category',
         'fragile',
         'decision',
+        'priority',
         'packed_at',
         'sort_order',
         'location_hint',

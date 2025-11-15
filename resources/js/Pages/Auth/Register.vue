@@ -6,7 +6,7 @@
                     <p class="text-xs font-semibold uppercase tracking-wide text-sky-500">Criar conta</p>
                     <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">Comece agora</h1>
                     <p class="text-sm text-slate-600">
-                        Registre-se para organizar sua mudança com o Levar.
+                        Registre-se para organizar sua mudança com o EasyTrip.
                     </p>
                 </header>
 

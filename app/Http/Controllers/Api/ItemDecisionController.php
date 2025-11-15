@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Concerns\InteractsWithMoves;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ItemDecisionRequest;
 use App\Http\Resources\ItemResource;
+use App\Models\Bag;
 use App\Models\Item;
+use App\Models\Move;
 use App\Services\ItemService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\Response;
 
 class ItemDecisionController extends Controller
 {
@@ -19,31 +21,17 @@ class ItemDecisionController extends Controller
     {
     }
 
-    public function store(Request $request, Item $item): JsonResponse
+    public function store(ItemDecisionRequest $request, Item $item): JsonResponse
     {
         $move = $this->authorizeItem($request, $item);
+        $data = $request->validated();
 
-        $validated = $request->validate([
-            'decision' => ['required', Rule::in(['undecided', 'pending', 'yes', 'no'])],
-            'bag' => ['nullable', 'string', 'max:10'],
-        ]);
-
-        $bag = null;
-        $clearBag = false;
-
-        if ($request->has('bag') && empty($validated['bag'])) {
-            $clearBag = true;
-        }
-
-        if (!empty($validated['bag'])) {
-            $bag = $move->bags()->where('code', $validated['bag'])->first();
-            abort_if(!$bag, 422, 'Bag not found.');
-            $clearBag = false;
-        }
+        $bag = $this->determineBag($move, $data['bag'] ?? null);
+        $clearBag = $request->has('bag') && empty($data['bag']);
 
         $updated = $this->itemService->decide(
-            $item,
-            $validated['decision'],
+            $item->loadMissing('bag'),
+            $data['decision'],
             $bag,
             $request->user(),
             ['endpoint' => 'api.items.decidir'],
@@ -53,5 +41,17 @@ class ItemDecisionController extends Controller
         return response()->json([
             'item' => ItemResource::make($updated->load('bag')),
         ]);
+    }
+
+    private function determineBag(Move $move, ?string $code): ?Bag
+    {
+        if (!$code) {
+            return null;
+        }
+
+        $bag = $move->bags()->where('code', $code)->first();
+        abort_if(!$bag, Response::HTTP_UNPROCESSABLE_ENTITY, 'Bag not found.');
+
+        return $bag;
     }
 }

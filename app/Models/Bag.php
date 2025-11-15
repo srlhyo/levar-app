@@ -15,11 +15,14 @@ class Bag extends Model
         'code',
         'capacity_kg',
         'dimensions',
+        'notes',
+        'checklist',
         'sort_order',
     ];
 
     protected $casts = [
         'capacity_kg' => 'float',
+        'checklist' => 'array',
     ];
 
     public function move()

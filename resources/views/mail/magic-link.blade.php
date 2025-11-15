@@ -13,7 +13,7 @@
                     <td>
                         <h1 style="margin-top: 0; font-size: 24px; font-weight: 700; color: #0f172a;">Seu link mágico chegou ✨</h1>
                         <p style="font-size: 14px; line-height: 1.6; margin-bottom: 24px; color: #334155;">
-                            Clique no botão abaixo para acessar seu painel do Levar. O link expira em 15 minutos.
+                            Clique no botão abaixo para acessar seu painel do EasyTrip. O link expira em 15 minutos.
                         </p>
                         <p style="text-align: center; margin-bottom: 32px;">
                             <a href="{{ $url }}" style="display: inline-block; padding: 12px 28px; background: #0ea5e9; color: #ffffff; text-decoration: none; font-weight: 600; border-radius: 999px;">

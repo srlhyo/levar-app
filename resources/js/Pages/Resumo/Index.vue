@@ -25,11 +25,13 @@
                     v-if="showResumoHelp"
                     class="mb-4 space-y-2 rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm"
                 >
-                    <p class="font-semibold text-slate-800">Dicas rápidas</p>
-                    <ul class="list-disc space-y-1 pl-5">
-                        <li>Use o Resumo para reordenar o que já foi decidido e enviar itens de volta ao deck.</li>
-                        <li>Os números somam levar + não levar + pendentes. Se algo parecer fora, reinsira cartas.</li>
-                        <li>Os cartões de mala mostram peso/volume utilizados; quando travam, mova itens para outra.</li>
+                    <p class="font-semibold text-slate-800">Como usar o Resumo</p>
+                    <ul class="list-disc space-y-1.5 pl-5">
+                        <li>O painel mostra o progresso total e avisa quando malas travam ou ainda existem pendências; siga os botões para Embalar ou Decidir conforme o aviso.</li>
+                        <li>Os blocos de “Capacidade das malas” espelham peso e volume do Embalar — basta acompanhar ali para saber quando redistribuir itens.</li>
+                        <li>Em “Itens por decisão”, os filtros e a barra “Selecionar todos” ficam fixos; use-os para buscar, marcar vários itens e devolver ao deck.</li>
+                        <li>Para itens já marcados como “Levar”, toque nos chips de mala para mover rapidamente entre as malas ou deixá-los “Sem mala”.</li>
+                        <li>Selecione vários itens e escolha “Enviar seleção para…” para realocar em lote sem sair desta tela.</li>
                     </ul>
                 </div>
             </transition>
@@ -104,21 +106,97 @@
             </div>
         </Card>
 
-        <Card tone="slate" class="space-y-4">
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <Card
+            v-if="statusBanner"
+            :tone="statusBanner.tone ?? 'slate'"
+            class="flex flex-col gap-3"
+        >
+            <div class="flex items-start gap-3">
+                <span class="text-3xl" aria-hidden="true">{{ statusBanner.emoji }}</span>
+                <div>
+                    <p class="text-base font-semibold text-slate-900">{{ statusBanner.title }}</p>
+                    <p class="text-sm text-slate-600">{{ statusBanner.message }}</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button
+                    v-for="action in statusBanner.actions"
+                    :key="action.label"
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
+                    @click="action.handler?.()"
+                >
+                    {{ action.label }}
+                </button>
+            </div>
+        </Card>
+
+        <Card tone="slate" class="space-y-6">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="space-y-1">
-                    <p class="text-sm font-semibold text-slate-800">Capacidade das malas</p>
-                    <p class="text-xs text-slate-600 sm:text-sm">
-                        Veja os detalhes completos de peso e volume na tela Embalar. Lá você consegue distribuir e travar cada mala em tempo real.
+                    <p class="text-base font-semibold text-slate-900">Capacidade das malas</p>
+                    <p class="text-sm text-slate-600">
+                        Monitore peso e volume de cada mala. Quando algo lotar, siga para Embalar ou reinsira itens no deck do Decidir.
                     </p>
                 </div>
-                <button
-                    type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-yellow-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow transition hover:bg-yellow-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-200"
-                    @click="goToPack"
-                >
-                    Abrir Embalar
-                </button>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <button
+                        type="button"
+                        class="inline-flex items-center justify-center gap-2 rounded-full bg-yellow-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow transition hover:bg-yellow-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-200"
+                        @click="goToPack"
+                    >
+                        Abrir Embalar
+                    </button>
+                    <button
+                        type="button"
+                        class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                        @click="goToDecidir"
+                    >
+                        Ir para Decidir
+                        <span aria-hidden="true" class="text-base">→</span>
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="capacitySkeletonVisible" class="grid gap-4 lg:grid-cols-2">
+                <div class="h-64 rounded-3xl bg-white/50 shadow-inner shadow-slate-100 animate-pulse" />
+                <div class="h-64 rounded-3xl bg-white/50 shadow-inner shadow-slate-100 animate-pulse" />
+            </div>
+            <div v-else class="grid gap-4 lg:grid-cols-2">
+                <WeightBar
+                    :bags="bagSummaries"
+                    :reserved-kg="stats.reservedKg ?? 0"
+                    :total-capacity-kg="totalCapacityKg"
+                    :yes-weight-kg="yesWeightKg"
+                />
+                <VolumeBar
+                    :bags="bagSummaries"
+                    :reserved-cm3="volumeReservedCm3"
+                    :total-capacity-cm3="volumeTotalCapacityCm3"
+                    :used-cm3="volumeUsedCm3"
+                />
+            </div>
+
+            <div v-if="suitcaseCards.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <Suitcase
+                    v-for="bag in suitcaseCards"
+                    :key="bag.id"
+                    :name="bag.name"
+                    :dims="bag.dims"
+                    :current="bag.current"
+                    :max="bag.max"
+                    :status="bag.status"
+                    :ratio="bag.ratio"
+                    :weight="bag.weight"
+                    :volume="bag.volume"
+                />
+            </div>
+            <div
+                v-else
+                class="rounded-3xl border border-dashed border-white/50 bg-white/50 px-4 py-6 text-sm text-slate-600 sm:px-6"
+            >
+                <p class="font-semibold text-slate-700">Nenhuma mala cadastrada ainda.</p>
+                <p>Use a tela Embalar para configurar as malas e acompanhar os espaços utilizados.</p>
             </div>
         </Card>
 
@@ -130,14 +208,6 @@
                         Navegue pelos itens marcados como levar, pendentes ou não levar.
                     </p>
                 </div>
-                <button
-                    type="button"
-                    class="inline-flex items-center gap-2 self-start rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
-                    @click="goToDecidir"
-                >
-                    Ir para Decidir
-                    <span aria-hidden="true" class="text-base">→</span>
-                </button>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs text-slate-600 sm:text-sm">
                 <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-600">
@@ -153,78 +223,107 @@
 
             <Tabs v-model="activeTab" :items="tabItems">
                 <div v-if="totalFilteredCount" class="mt-4 space-y-4">
-                    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/70 px-4 py-2 text-sm text-slate-600 ring-1 ring-white/40">
-                        <div class="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
-                            <div class="relative">
-                                <input
-                                    v-model="searchQuery"
-                                    type="search"
-                                    placeholder="Buscar por nome, notas ou mala…"
-                                    class="w-56 rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-sm text-slate-700 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:w-64"
-                                />
+                    <div class="sticky top-16 z-20 space-y-3 rounded-3xl bg-white/90 px-4 py-3 text-sm text-slate-600 shadow ring-1 ring-black/5 backdrop-blur">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+                                <div class="relative">
+                                    <input
+                                        v-model="searchQuery"
+                                        type="search"
+                                        placeholder="Buscar por nome, notas ou mala…"
+                                        class="w-56 rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-sm text-slate-700 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:w-64"
+                                    />
+                                </div>
+                                <select
+                                    v-model="selectedBagFilter"
+                                    class="rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
+                                >
+                                    <option value="all">Todas as malas</option>
+                                    <option v-for="bag in bagFilters" :key="bag.value" :value="bag.value">
+                                        {{ bag.label }}
+                                    </option>
+                                    <option value="unassigned">Sem mala</option>
+                                </select>
+                                <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-2 py-1 text-xs text-slate-600 shadow-inner shadow-slate-100">
+                                    <span>Itens por página</span>
+                                    <select
+                                        v-model.number="pageSize"
+                                        class="rounded border border-slate-200 bg-white px-2 py-1 text-xs focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-300"
+                                    >
+                                        <option v-for="option in pageSizeOptions" :key="option" :value="option">
+                                            {{ option }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-black/5 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                                    @click="resetFilters"
+                                >
+                                    Limpar filtros
+                                </button>
                             </div>
+                            <div class="text-xs text-slate-500 sm:text-sm">
+                                Exibindo
+                                <span class="font-semibold text-slate-700">{{ pageStart }}–{{ pageEnd }}</span>
+                                de
+                                <span class="font-semibold text-slate-700">{{ totalFilteredCount }}</span>
+                                itens
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <label class="flex items-center gap-2 font-semibold">
+                                <input
+                                    ref="selectAllRef"
+                                    type="checkbox"
+                                    class="h-5 w-5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-400"
+                                    :checked="allSelected"
+                                    @change="toggleSelectAll"
+                                />
+                                <span>Selecionar todos</span>
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-200 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+                                    :disabled="!selectedCount"
+                                    @click="handleBulkRequeue"
+                                    title="Devolver a seleção para o deck da tela Decidir"
+                                >
+                                    ↩ Voltar para o deck do Decidir
+                                </button>
+                                <span v-if="selectedCount" class="text-xs font-medium text-slate-500">
+                                    {{ selectedCount }} selecionado(s)
+                                </span>
+                            </div>
+                        </div>
+                        <div
+                            v-if="showBulkBagAssign"
+                            class="flex flex-wrap items-center gap-2 rounded-2xl bg-white/80 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 sm:text-sm"
+                        >
+                            <span class="font-semibold text-slate-700">Enviar seleção para</span>
                             <select
-                                v-model="selectedBagFilter"
-                                class="rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
+                                v-model="bulkBagChoice"
+                                class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
                             >
-                                <option value="all">Todas as malas</option>
-                                <option v-for="bag in bagFilters" :key="bag.value" :value="bag.value">
+                                <option value="">Sem mala</option>
+                                <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
                                     {{ bag.label }}
                                 </option>
-                                <option value="unassigned">Sem mala</option>
                             </select>
-                            <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-2 py-1 text-xs text-slate-600 shadow-inner shadow-slate-100">
-                                <span>Itens por página</span>
-                                <select
-                                    v-model.number="pageSize"
-                                    class="rounded border border-slate-200 bg-white px-2 py-1 text-xs focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-300"
-                                >
-                                    <option v-for="option in pageSizeOptions" :key="option" :value="option">
-                                        {{ option }}
-                                    </option>
-                                </select>
-                            </div>
                             <button
                                 type="button"
-                                class="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-black/5 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-                                @click="resetFilters"
+                                class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                                :disabled="bulkAssignLoading"
+                                @click="handleBulkAssign"
                             >
-                                Limpar filtros
+                                <span
+                                    v-if="bulkAssignLoading"
+                                    class="h-2 w-2 animate-ping rounded-full bg-white"
+                                    aria-hidden="true"
+                                />
+                                Aplicar
                             </button>
-                        </div>
-                        <div class="text-xs text-slate-500 sm:text-sm">
-                            Exibindo
-                            <span class="font-semibold text-slate-700">{{ pageStart }}–{{ pageEnd }}</span>
-                            de
-                            <span class="font-semibold text-slate-700">{{ totalFilteredCount }}</span>
-                            itens
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/70 px-4 py-2 text-sm text-slate-600 ring-1 ring-white/40">
-                        <label class="flex items-center gap-2 font-semibold">
-                            <input
-                                ref="selectAllRef"
-                                type="checkbox"
-                                class="h-5 w-5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-400"
-                                :checked="allSelected"
-                                @change="toggleSelectAll"
-                            />
-                            <span>Selecionar todos</span>
-                        </label>
-                        <div class="flex items-center gap-2">
-                            <button
-                                type="button"
-                                class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-200 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
-                                :disabled="!selectedCount"
-                                @click="handleBulkRequeue"
-                                title="Devolver a seleção para o deck da tela Decidir"
-                            >
-                                ↩ Voltar para o deck do Decidir
-                            </button>
-                            <span v-if="selectedCount" class="text-xs font-medium text-slate-500">
-                                {{ selectedCount }} selecionado(s)
-                            </span>
                         </div>
                     </div>
 
@@ -239,6 +338,10 @@
                             :selected="currentSelection.has(item.id)"
                             :show-delete="false"
                             @toggle-select="toggleSelection"
+                            :bag-options="quickBagOptions"
+                            :show-bag-actions="showBagChips"
+                            :bag-action-disabled="isItemAssigning(item.id)"
+                            @assign-bag="handleRowAssignBag"
                         />
                     </div>
 
@@ -321,8 +424,11 @@ import { Head, usePage, router } from '@inertiajs/vue3';
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
-import Tabs from '@/Components/Tabs.vue';
 import ItemRow from '@/Components/ItemRow.vue';
+import Suitcase from '@/Components/Suitcase.vue';
+import Tabs from '@/Components/Tabs.vue';
+import VolumeBar from '@/Components/VolumeBar.vue';
+import WeightBar from '@/Components/WeightBar.vue';
 import { useDecisionStore } from '@/stores/decision';
 import { toast } from '@/utils/toast';
 
@@ -350,11 +456,50 @@ const selection = reactive({
     pending: new Set(),
     leave: new Set(),
 });
+const assigningBagIds = ref(new Set());
+const bulkBagChoice = ref('');
+const bulkAssignLoading = ref(false);
 
 const takeItems = computed(() => decisionStore.takeList ?? []);
 const pendingItems = computed(() => decisionStore.pendingList ?? []);
 const undecidedItems = computed(() => decisionStore.undecidedList ?? []);
 const leaveItems = computed(() => decisionStore.leaveList ?? []);
+const isLoadingResumo = computed(() => decisionStore.loading.resumo);
+const bagOptions = computed(() => {
+    const source = decisionStore.resumo.bags ?? move.value?.bags ?? [];
+    if (!Array.isArray(source)) return [];
+    const seen = new Set();
+    const options = [];
+    source.forEach((bag, index) => {
+        const raw = bag?.code ?? bag?.slug ?? bag?.id ?? index;
+        const value = raw != null ? String(raw) : `bag-${index}`;
+        if (seen.has(value)) return;
+        seen.add(value);
+        const label = bag?.name ?? `Mala ${String(raw ?? index + 1).toUpperCase()}`;
+        options.push({ value, label });
+    });
+    return options;
+});
+const hasBagOptions = computed(() => bagOptions.value.length > 0);
+const bagLabelMap = computed(() => {
+    const map = { '': 'Sem mala' };
+    bagOptions.value.forEach((option) => {
+        map[option.value] = option.label;
+    });
+    return map;
+});
+const quickBagOptions = computed(() => {
+    if (!bagOptions.value.length) return [];
+    const base = bagOptions.value.slice(0, 3);
+    const combined = [...base, { value: '', label: 'Sem mala' }];
+    const seen = new Set();
+    return combined.filter((option) => {
+        const key = option.value ?? '';
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+});
 
 const allResumoItems = computed(() => {
     const map = new Map();
@@ -398,6 +543,7 @@ const bagFilters = computed(() => {
     });
     return Array.from(seen.values()).sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
 });
+const showBagChips = computed(() => activeTab.value === 'take' && hasBagOptions.value);
 
 const normalize = (value) => (value ?? '').toString().toLowerCase();
 
@@ -457,6 +603,9 @@ const allSelected = computed(
 );
 const someSelected = computed(
     () => selectedIds.value.length > 0 && selectedIds.value.length < currentItems.value.length,
+);
+const showBulkBagAssign = computed(
+    () => activeTab.value === 'take' && hasBagOptions.value && selectedCount.value > 0,
 );
 
 const emptyStates = {
@@ -802,6 +951,8 @@ const bagSummaries = computed(() => {
     return adjustedBags;
 });
 
+const capacitySkeletonVisible = computed(() => isLoadingResumo.value && bagSummaries.value.length === 0);
+
 const totalCapacityKg = computed(() => (stats.value.totalCapacityKg ?? bagSummaries.value.reduce((sum, bag) => sum + bag.capacity, 0)));
 const yesWeightKg = computed(() => (stats.value.yesWeightKg ?? bagSummaries.value.reduce((sum, bag) => sum + (bag.effectiveUsedKg ?? bag.used ?? 0), 0)));
 const reservedCapacityKg = computed(() => stats.value.reservedKg ?? 0);
@@ -899,7 +1050,7 @@ const volumeReservedCm3 = computed(() =>
     bagSummaries.value.reduce((sum, bag) => sum + (bag.reservedVolumeAppliedCm3 ?? 0), 0),
 );
 
-const suitcaseBags = computed(() =>
+const suitcaseCards = computed(() =>
     bagSummaries.value.map((bag) => {
         const capacityVolumeCm3 = bag.capacityVolumeCm3 != null ? Number(bag.capacityVolumeCm3) : null;
         const actualVolumeCm3 = Number(bag.volumeCm3 ?? bag.volume_cm3 ?? 0);
@@ -952,6 +1103,44 @@ const suitcaseBags = computed(() =>
         };
     }),
 );
+const lockedBagNames = computed(() =>
+    bagSummaries.value.filter((bag) => bag.locked).map((bag) => bag.name).filter(Boolean),
+);
+const statusBanner = computed(() => {
+    if (lockedBagNames.value.length) {
+        return {
+            tone: 'yellow',
+            emoji: '🧳',
+            title: 'Alguma mala travou',
+            message: `${lockedBagNames.value.join(', ')} atingiu o limite de peso ou volume. Reorganize no Embalar ou remova itens.`,
+            actions: [{ label: 'Abrir Embalar', handler: goToPack }],
+        };
+    }
+    if (stats.value.pending_total > 0 && pendingDeckCount.value === 0) {
+        return {
+            tone: 'slate',
+            emoji: '🗂️',
+            title: 'Pendentes aguardando decisão',
+            message: 'Reinsira os itens pendentes para continuar o processo de decisão.',
+            actions: [{ label: 'Ir para Decidir', handler: goToDecidir }],
+        };
+    }
+    if (
+        stats.value.pending_total === 0
+        && stats.value.undecided === 0
+        && stats.value.take > 0
+        && lockedBagNames.value.length === 0
+    ) {
+        return {
+            tone: 'green',
+            emoji: '🎒',
+            title: 'Tudo decidido!',
+            message: 'Hora de embalar: todos os itens já foram classificados.',
+            actions: [{ label: 'Abrir Embalar', handler: goToPack }],
+        };
+    }
+    return null;
+});
 
 const toggleSelection = ({ id, value }) => {
     const set = currentSelection.value;
@@ -1106,6 +1295,21 @@ watch(filteredItems, () => {
     pruneSelection();
 });
 
+watch(
+    bagOptions,
+    (options) => {
+        if (!options.length) {
+            bulkBagChoice.value = '';
+            return;
+        }
+        if (bulkBagChoice.value && options.some((option) => option.value === bulkBagChoice.value)) {
+            return;
+        }
+        bulkBagChoice.value = options[0].value ?? '';
+    },
+    { immediate: true },
+);
+
 const ensureUndecided = async (ids) => {
     const toReset = ids.filter((id) => {
         const item = decisionStore.itemsMap[id];
@@ -1138,6 +1342,53 @@ const handleBulkRequeue = async () => {
     } catch (error) {
         console.error(error);
         toast.error('Não foi possível reinserir os itens ❌');
+    }
+};
+
+const setItemAssigning = (id, value) => {
+    const key = String(id);
+    const next = new Set(assigningBagIds.value);
+    if (value) {
+        next.add(key);
+    } else {
+        next.delete(key);
+    }
+    assigningBagIds.value = next;
+};
+
+const isItemAssigning = (id) => assigningBagIds.value.has(String(id));
+
+const formatBagLabel = (value) => bagLabelMap.value[value ?? ''] ?? 'Sem mala';
+
+const handleRowAssignBag = async ({ id, bag }) => {
+    if (!id) return;
+    setItemAssigning(id, true);
+    try {
+        await decisionStore.assignBag(id, bag ?? '');
+        toast.success(bag ? `Enviado para ${formatBagLabel(bag)}` : 'Removido da mala');
+    } catch (error) {
+        console.error(error);
+        toast.error('Não foi possível atualizar a mala ❌');
+    } finally {
+        setItemAssigning(id, false);
+    }
+};
+
+const handleBulkAssign = async () => {
+    if (!selectedIds.value.length) return;
+    bulkAssignLoading.value = true;
+    try {
+        await decisionStore.assignBagBulk(selectedIds.value, bulkBagChoice.value ?? '');
+        toast.success(
+            bulkBagChoice.value
+                ? `Seleção enviada para ${formatBagLabel(bulkBagChoice.value)}`
+                : 'Seleção removida das malas',
+        );
+    } catch (error) {
+        console.error(error);
+        toast.error('Não foi possível atualizar as malas ❌');
+    } finally {
+        bulkAssignLoading.value = false;
     }
 };
 

@@ -6,7 +6,7 @@
                     <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">Bem-vindo</p>
                     <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">Entrar</h1>
                     <p class="text-sm text-slate-600">
-                        Acesse o Levar com seu email e senha.
+                        Acesse o EasyTrip com seu email e senha.
                     </p>
                 </header>
 
