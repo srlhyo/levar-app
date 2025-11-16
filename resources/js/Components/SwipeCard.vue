@@ -1,6 +1,7 @@
 <template>
     <div
         class="swipe-card relative w-[90%] max-w-md cursor-grab select-none sm:max-w-lg"
+        :class="{ 'swipe-card--dragging': isDragging }"
         :style="cardStyle"
         @pointerdown="handlePointerDown"
         @pointermove="handlePointerMove"
@@ -195,9 +196,13 @@ const isAnimating = ref(false);
 
 const HORIZONTAL_THRESHOLD = 80;
 const VERTICAL_THRESHOLD = 60;
+const VERTICAL_DAMPING = 0.2;
 
 const handlePointerDown = (event) => {
     if (props.disabled || isAnimating.value) return;
+    if (event.cancelable) {
+        event.preventDefault();
+    }
     isDragging.value = true;
     transitionStyle.value = 'none';
     startX.value = event.clientX;
@@ -207,8 +212,11 @@ const handlePointerDown = (event) => {
 
 const handlePointerMove = (event) => {
     if (!isDragging.value) return;
+    if (event.cancelable) {
+        event.preventDefault();
+    }
     positionX.value = event.clientX - startX.value;
-    positionY.value = event.clientY - startY.value;
+    positionY.value = (event.clientY - startY.value) * VERTICAL_DAMPING;
 };
 
 const handlePointerEnd = (event) => {
@@ -239,11 +247,11 @@ const cardStyle = computed(() => ({
     transform: `translate(${positionX.value}px, ${positionY.value}px) rotate(${positionX.value / 12}deg)`,
     transition: transitionStyle.value,
     opacity: Math.max(0.4, 1 - Math.abs(positionX.value) / 350),
-    touchAction: 'none',
 }));
 
 const overlay = computed(() => {
-    if (positionY.value > VERTICAL_THRESHOLD) return 'pending';
+    const normalizedY = VERTICAL_DAMPING ? positionY.value / VERTICAL_DAMPING : positionY.value;
+    if (normalizedY > VERTICAL_THRESHOLD) return 'pending';
     if (positionX.value > HORIZONTAL_THRESHOLD) return 'yes';
     if (positionX.value < -HORIZONTAL_THRESHOLD) return 'no';
     return null;
@@ -315,5 +323,13 @@ watch(
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+.swipe-card {
+    touch-action: none;
+}
+.swipe-card--dragging {
+    cursor: grabbing;
+    user-select: none;
 }
 </style>

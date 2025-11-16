@@ -17,6 +17,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        if (!$this->shouldSeedDemoData()) {
+            $this->command?->warn('Skipping demo seed outside of local/testing environment.');
+            return;
+        }
+
         $user = User::factory()->create([
             'name' => 'Demo Admin',
             'email' => 'demo@example.com',
@@ -33,5 +38,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         app(MoveOnboardingService::class)->bootstrapDemoData($move, 60);
+    }
+
+    private function shouldSeedDemoData(): bool
+    {
+        return app()->environment(['local', 'testing']);
     }
 }

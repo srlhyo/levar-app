@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\MoveOnboardingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,11 +14,6 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
-    public function __construct(
-        private readonly MoveOnboardingService $onboardingService,
-    ) {
-    }
-
     public function create(): Response
     {
         return Inertia::render('Auth/Register');
@@ -46,7 +40,7 @@ class RegisteredUserController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        $move = $user->moves()->firstOrCreate(
+        $user->moves()->firstOrCreate(
             ['user_id' => $user->id],
             [
                 'origin_country' => 'GB',
@@ -55,8 +49,6 @@ class RegisteredUserController extends Controller
                 'reserved_volume_cm3' => 60000,
             ],
         );
-
-        $this->onboardingService->bootstrapDemoData($move);
 
         return redirect()->route('home')->with('show_onboarding', true);
     }

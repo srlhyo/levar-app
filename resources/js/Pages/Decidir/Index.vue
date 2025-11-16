@@ -23,87 +23,108 @@
                     <p class="text-base font-semibold text-slate-900">Como decidir</p>
                     <p class="text-sm text-slate-600">Arraste a carta ou use os botões abaixo para classificar cada item.</p>
                 </div>
-                <button
-                    type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-                    @click="showDecidirHelp = !showDecidirHelp"
-                    :aria-expanded="showDecidirHelp ? 'true' : 'false'"
-                >
-                    <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/15 text-[11px] font-semibold text-emerald-600">?</span>
-                    Como funciona
-                </button>
-            </div>
-            <transition name="fade">
-                <div
-                    v-if="showDecidirHelp"
-                    class="space-y-3 rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm"
-                >
-                    <p class="font-semibold text-slate-800">Como aproveitar o deck</p>
-                    <ul class="list-disc space-y-1.5 pl-5">
-                        <li>Deslize a carta inteira: direita = <strong>Levar</strong>, esquerda = <strong>Não levar</strong>, para baixo = <strong>Pendentes</strong>. Os botões replicam os gestos.</li>
-                        <li>Use os atalhos inteligentes para despachar direto para uma mala ou guardar o item; eles respeitam travas de peso/volume.</li>
-                        <li>Ative o feedback tátil para sentir cada decisão e toque no ícone da foto para ampliá-la antes de decidir.</li>
-                        <li>A barra “Na fila” mostra os próximos itens e o botão “Desfazer” devolve a última carta ao deck em até 6 segundos.</li>
-                        <li>Se a pilha zerar, visite o Resumo para reinsira pendentes ou revisar as malas antes de continuar.</li>
-                    </ul>
-                </div>
-            </transition>
-            <div class="flex items-center justify-between text-sm font-medium text-slate-600">
-                <span>Restantes na pilha</span>
-                <span>{{ undecidedCount }} / {{ totalCount }}</span>
-            </div>
-            <div class="h-2 rounded-full bg-white/60">
-                <div class="h-full rounded-full bg-emerald-500 transition-all duration-300" :style="{ width: `${progressPercent}%` }" />
-            </div>
-            <div class="rounded-2xl bg-white/70 px-4 py-2 text-xs font-medium text-slate-600 sm:text-sm">
-                <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <span class="inline-flex items-center gap-1">
-                        <span class="font-semibold text-emerald-600">{{ progressPercent }}%</span>
-                        concluído
-                    </span>
-                    <span class="inline-flex items-center gap-1 text-slate-500">
-                        Processados: <span class="font-semibold text-slate-700">{{ processedCount }}</span> / {{ totalCount }}
-                    </span>
-                    <span
-                        v-if="backlogCount"
-                        class="inline-flex items-center gap-1 text-amber-600"
-                    >
-                        Fila pendente: <span class="font-semibold">{{ backlogCount }}</span>
-                    </span>
+                <div class="flex items-center gap-3 text-xs text-slate-500 sm:text-sm">
+                    <button type="button" class="underline-offset-4 hover:underline" @click="setAllGuideSections(true)">Expandir tudo</button>
+                    <span class="text-slate-300">•</span>
+                    <button type="button" class="underline-offset-4 hover:underline" @click="setAllGuideSections(false)">Recolher tudo</button>
                 </div>
             </div>
-            <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-white/60 px-4 py-2 text-xs text-slate-600 sm:text-sm">
-                <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-1 text-rose-600">
-                    <X class="h-4 w-4" />
-                    Não levar
-                </span>
-                <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-slate-700">
-                    <Clock class="h-4 w-4" />
-                    Decidir depois
-                </span>
-                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-emerald-600">
-                    <Heart class="h-4 w-4" />
-                    Levar
-                </span>
-            </div>
-            <p class="text-xs text-slate-600 sm:text-sm">
-                Deslize a carta inteira ou toque nos botões para classificar. No celular, mantenha o toque firme para arrastar.
-            </p>
-            <div class="flex justify-end">
+
+            <section class="rounded-2xl bg-white/80">
                 <button
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
-                    @click="toggleHaptics"
+                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                    @click="toggleGuideSection('guide')"
                 >
-                    <Vibrate class="h-4 w-4" />
-                    <span>{{ hapticsEnabled ? 'Feedback tátil ligado' : 'Ativar feedback tátil' }}</span>
-                    <span
-                        class="h-2 w-2 rounded-full"
-                        :class="hapticsEnabled ? 'bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.2)]' : 'bg-slate-400'"
-                        aria-hidden="true"
+                    Guia rápido
+                    <ChevronDown
+                        class="h-4 w-4 transition"
+                        :class="guideSections.guide ? 'rotate-180' : ''"
                     />
                 </button>
-            </div>
+                <transition name="fade">
+                    <div v-if="guideSections.guide" class="space-y-2 px-4 pb-3 text-xs text-slate-600 sm:text-sm">
+                        <p>Deslize a carta inteira: direita = <strong>Levar</strong>, esquerda = <strong>Não levar</strong>, para baixo = <strong>Pendentes</strong>.</p>
+                        <p>Os botões abaixo replicam os gestos e são ideais quando quiser decidir rapidamente sem arrastar.</p>
+                        <p>A ação “Desfazer” devolve o último item ao deck em até 6 segundos se algo der errado.</p>
+                    </div>
+                </transition>
+            </section>
+
+            <section class="rounded-2xl bg-white/80">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                    @click="toggleGuideSection('progress')"
+                >
+                    Progresso do deck
+                    <ChevronDown
+                        class="h-4 w-4 transition"
+                        :class="guideSections.progress ? 'rotate-180' : ''"
+                    />
+                </button>
+                <transition name="fade">
+                    <div v-if="guideSections.progress" class="space-y-2 px-4 pb-3 text-xs text-slate-600 sm:text-sm">
+                        <div class="flex items-center justify-between font-medium">
+                            <span>Restantes na pilha</span>
+                            <span>{{ undecidedCount }} / {{ totalCount }}</span>
+                        </div>
+                        <div class="h-2 rounded-full bg-slate-100">
+                            <div class="h-full rounded-full bg-emerald-500 transition-all duration-300" :style="{ width: `${progressPercent}%` }" />
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-3 py-2 text-[13px] font-medium text-slate-600 sm:text-sm">
+                            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                <span class="inline-flex items-center gap-1">
+                                    <span class="font-semibold text-emerald-600">{{ progressPercent }}%</span>
+                                    concluído
+                                </span>
+                                <span class="inline-flex items-center gap-1 text-slate-500">
+                                    Processados: <span class="font-semibold text-slate-700">{{ processedCount }}</span> / {{ totalCount }}
+                                </span>
+                                <span
+                                    v-if="backlogCount"
+                                    class="inline-flex items-center gap-1 text-amber-600"
+                                >
+                                    Fila pendente: <span class="font-semibold">{{ backlogCount }}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </transition>
+            </section>
+
+            <section class="rounded-2xl bg-white/80">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                    @click="toggleGuideSection('legend')"
+                >
+                    Gestos e botões
+                    <ChevronDown
+                        class="h-4 w-4 transition"
+                        :class="guideSections.legend ? 'rotate-180' : ''"
+                    />
+                </button>
+                <transition name="fade">
+                    <div v-if="guideSections.legend" class="space-y-2 px-4 pb-3 text-xs text-slate-600 sm:text-sm">
+                        <div class="flex flex-wrap items-center gap-2 rounded-xl bg-white px-3 py-2">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-1 text-rose-600">
+                                <X class="h-4 w-4" />
+                                Não levar
+                            </span>
+                            <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+                                <Clock class="h-4 w-4" />
+                                Decidir depois
+                            </span>
+                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-emerald-600">
+                                <Heart class="h-4 w-4" />
+                                Levar
+                            </span>
+                        </div>
+                        <p>Deslize a carta inteira ou toque nos botões para classificar. No celular, mantenha o toque firme para arrastar.</p>
+                    </div>
+                </transition>
+            </section>
         </Card>
 
         <div v-if="isLoading" class="flex flex-col items-center gap-6">
@@ -130,25 +151,8 @@
                 @decision="handleDecision"
             />
 
-            <div v-if="upcomingCards.length" class="w-full max-w-md text-left sm:max-w-lg">
-                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Na fila</p>
-                <div class="flex gap-3 overflow-x-auto pb-1">
-                    <div
-                        v-for="item in upcomingCards"
-                        :key="item.id"
-                        class="min-w-[11rem] shrink-0 rounded-2xl border border-slate-200/70 bg-white/80 px-3 py-2 shadow-sm"
-                    >
-                        <p class="line-clamp-2 text-sm font-semibold text-slate-800">{{ item.title ?? item.name }}</p>
-                        <p class="text-xs text-slate-500">
-                            {{ item.category ? formatCategory(item.category) : 'Item catalogado' }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
             <SwipeActionButtons
                 :disabled="isProcessing"
-                :quick-actions="quickActions"
                 @decide="requestDecision"
             />
         </div>
@@ -212,16 +216,17 @@ import {
     nextTick,
     onBeforeUnmount,
     onMounted,
+    reactive,
     ref,
     watch,
     watchEffect,
 } from 'vue';
 import {
+    ChevronDown,
     Clock,
     Heart,
     Sparkles,
     Undo2,
-    Vibrate,
     X,
 } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
@@ -235,7 +240,6 @@ const page = usePage();
 const decisionStore = useDecisionStore();
 
 const move = computed(() => page.props.move ?? null);
-const moveBags = computed(() => move.value?.bags ?? []);
 
 watchEffect(() => {
     decisionStore.setMove(move.value);
@@ -247,84 +251,30 @@ const undecidedCount = computed(() => decisionStore.undecidedCount);
 const backlogCount = computed(() => decisionStore.pendingCount);
 const progressPercent = computed(() => decisionStore.progressPercent);
 const currentItem = computed(() => decisionStore.currentItem);
-const upcomingCards = computed(() => decisionStore.deck.slice(1, 3));
 const bannerProcessedWithPendings = computed(
     () => totalCount.value > 0 && undecidedCount.value === 0 && backlogCount.value > 0,
 );
 
-const showDecidirHelp = ref(false);
+const guideSections = reactive({
+    guide: false,
+    progress: false,
+    legend: false,
+});
+const setAllGuideSections = (state) => {
+    Object.keys(guideSections).forEach((key) => {
+        guideSections[key] = state;
+    });
+};
+const toggleGuideSection = (key) => {
+    guideSections[key] = !guideSections[key];
+};
 const isProcessing = ref(false);
 const isLoading = ref(true);
 const swipeCardRef = ref(null);
-const hapticsEnabled = ref(true);
 const milestoneMessage = ref(null);
 const celebrationTimeout = ref(null);
 const celebratedMilestones = ref(new Set());
 const undoState = ref({ itemId: null, label: '', timer: null });
-
-const formatBagDescription = (bag) => {
-    const remaining = [bag?.remaining_kg, bag?.remaining_weight, bag?.remaining_weight_kg].find(
-        (value) => typeof value === 'number' && Number.isFinite(value),
-    );
-    if (remaining != null) {
-        return `${remaining.toFixed(1)} kg livres`;
-    }
-
-    const capacity = [bag?.capacity_kg, bag?.max_weight, bag?.limit_kg].find(
-        (value) => typeof value === 'number' && Number.isFinite(value),
-    );
-    if (capacity != null) {
-        return `${capacity.toFixed(1)} kg máx.`;
-    }
-
-    return 'Enviar para a mala';
-};
-
-const availableBags = computed(() => {
-    if (Array.isArray(moveBags.value) && moveBags.value.length > 0) {
-        return moveBags.value;
-    }
-    if (Array.isArray(decisionStore.bags) && decisionStore.bags.length > 0) {
-        return decisionStore.bags;
-    }
-    return [];
-});
-
-const quickActions = computed(() => {
-    const actions = [];
-    if (availableBags.value.length) {
-        const bagActions = availableBags.value.slice(0, 3).map((bag) => {
-            const code = bag?.code ?? bag?.slug ?? bag?.id ?? null;
-            return {
-                key: `bag-${code ?? bag?.id}`,
-                label: bag?.name || `Mala ${String(code ?? '').toUpperCase()}`,
-                description: formatBagDescription(bag),
-                name: 'yes',
-                options: code ? { bag: code } : {},
-                intent: bag?.locked ? 'warning' : 'default',
-            };
-        });
-        actions.push(...bagActions);
-    }
-
-    actions.push({
-        key: 'action-pending',
-        label: 'Guardar',
-        description: 'Mover para pendentes',
-        name: 'pending',
-        options: {},
-        intent: 'warning',
-    });
-
-    return actions;
-});
-
-const vibrate = (pattern) => {
-    if (!hapticsEnabled.value) return;
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate(pattern);
-    }
-};
 
 const handleDecision = async ({ type, options = {} }) => {
     const active = decisionStore.currentItem;
@@ -337,13 +287,10 @@ const handleDecision = async ({ type, options = {} }) => {
         await decisionStore.applyDecision(type, options);
 
         if (type === 'pending') {
-            vibrate([0, 30, 30, 30]);
             toast.info('Item adiado ⏳');
         } else if (type === 'yes') {
-            vibrate(25);
             toast.success('Marcado para levar 💚');
         } else if (type === 'no') {
-            vibrate([0, 20, 80, 20]);
             toast.info('Marcado como não levar ❌');
         }
         setUndoState(active.id, formatDecisionLabel(type, options));
@@ -366,13 +313,6 @@ const requestDecision = (type, options = {}) => {
 const goToResumo = () => {
     const destination = route ? route('resumo.index') : '/resumo';
     router.visit(destination);
-};
-
-const toggleHaptics = () => {
-    hapticsEnabled.value = !hapticsEnabled.value;
-    if (typeof window !== 'undefined') {
-        window.localStorage.setItem('decidir_haptics', JSON.stringify(hapticsEnabled.value));
-    }
 };
 
 const formatDecisionLabel = (type, options) => {
@@ -437,14 +377,6 @@ const loadDeck = async () => {
     }
 };
 
-const hydratePreferences = () => {
-    if (typeof window === 'undefined') return;
-    const storedHaptics = window.localStorage.getItem('decidir_haptics');
-    if (storedHaptics !== null) {
-        hapticsEnabled.value = storedHaptics === 'true';
-    }
-};
-
 const handleMilestones = (value) => {
     const thresholds = [25, 50, 75, 100];
     thresholds.forEach((threshold) => {
@@ -468,7 +400,6 @@ const triggerCelebration = (threshold) => {
 };
 
 onMounted(() => {
-    hydratePreferences();
     loadDeck();
 });
 
@@ -492,12 +423,6 @@ watch(progressPercent, (value) => {
     handleMilestones(value);
 });
 
-const formatCategory = (value) => {
-    if (!value) return '';
-    return String(value)
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (char) => char.toUpperCase());
-};
 </script>
 
 <style scoped>

@@ -102,11 +102,15 @@ export const useDecisionStore = defineStore('decision', {
             return Boolean(state.moveId);
         },
         totalCount(state) {
-            if (state.progress.total) return state.progress.total;
+            if (typeof state.progress.total === 'number') {
+                return state.progress.total;
+            }
             return state.resumo.stats?.total ?? 0;
         },
         processedCount(state) {
-            if (state.progress.processed) return state.progress.processed;
+            if (typeof state.progress.processed === 'number') {
+                return state.progress.processed;
+            }
             const decided = state.resumo.stats?.decided ?? 0;
             const pending = state.resumo.stats?.pending ?? state.resumo.stats?.pending_total ?? 0;
             return decided + pending;

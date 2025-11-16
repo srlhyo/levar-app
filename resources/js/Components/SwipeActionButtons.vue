@@ -32,31 +32,6 @@
             </button>
         </div>
 
-        <div
-            v-if="quickActionList.length"
-            class="rounded-3xl border border-slate-200/70 bg-white/80 p-3 shadow-sm"
-        >
-            <div class="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <span>Atalhos inteligentes</span>
-                <span class="text-[11px] font-medium text-slate-400">Toque para aplicar</span>
-            </div>
-            <div class="flex gap-2 overflow-x-auto pb-1">
-                <button
-                    v-for="action in quickActionList"
-                    :key="action.key"
-                    type="button"
-                    class="flex min-w-[9rem] shrink-0 flex-col gap-1 rounded-2xl border border-slate-200 bg-white/70 px-3 py-2 text-left text-sm text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
-                    :class="action.intent === 'warning' ? 'border-amber-200 bg-amber-50/80 text-amber-900' : ''"
-                    :disabled="disabled"
-                    @click="() => emitDecision(action.name, action.options)"
-                >
-                    <span class="font-semibold">{{ action.label }}</span>
-                    <span v-if="action.description" class="text-xs text-slate-500" :class="action.intent === 'warning' ? 'text-amber-800' : ''">
-                        {{ action.description }}
-                    </span>
-                </button>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -70,10 +45,6 @@ const props = defineProps({
         default: false,
     },
     actions: {
-        type: Array,
-        default: () => [],
-    },
-    quickActions: {
         type: Array,
         default: () => [],
     },
@@ -112,8 +83,6 @@ const touchHint = reactive({
 
 const isTouchDevice = ref(false);
 const hintsDismissed = ref(false);
-
-const quickActionList = computed(() => props.quickActions ?? []);
 
 const emitDecision = (name, options = {}) => {
     emit('decide', name, options ?? {});
