@@ -8,6 +8,7 @@ use App\Models\Item;
 use App\Models\Move;
 use App\Models\User;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Schema;
 
 class BagActivityService
 {
@@ -73,6 +74,10 @@ class BagActivityService
 
     protected function createLog(Move $move, ?Bag $bag, ?Item $item, ?User $user, string $action, array $meta = []): void
     {
+        if (!Schema::hasTable('bag_activity_logs')) {
+            return;
+        }
+
         BagActivityLog::create([
             'move_id' => $move->id,
             'bag_id' => $bag?->id,

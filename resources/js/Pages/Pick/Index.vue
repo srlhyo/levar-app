@@ -37,96 +37,181 @@
                     </ul>
                 </div>
             </transition>
-            <div
-                class="grid gap-3 rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:grid-cols-3 sm:text-sm"
-            >
-                <div class="flex items-center gap-3">
-                    <span class="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 text-emerald-600">⚖️</span>
-                    <div class="space-y-0.5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                            Peso carregado
-                        </p>
-                        <p class="text-sm font-semibold text-slate-800">
-                            {{ formatKg(packUsedWeightKg) }} / {{ formatKg(packTotalCapacityKg) }}
-                        </p>
-                        <p class="text-[11px] text-slate-500 sm:text-xs">
-                            {{ formatKg(packRemainingWeightKg) }} livres • {{ formatKg(packReservedKg) }} reservado
-                        </p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="grid h-8 w-8 place-items-center rounded-full bg-sky-100 text-sky-600">🧊</span>
-                    <div class="space-y-0.5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                            Volume ocupado
-                        </p>
-                        <p class="text-sm font-semibold text-slate-800">
-                            {{ formatLiters(packUsedVolumeCm3) }} / {{ formatLiters(packTotalVolumeCm3) }}
-                        </p>
-                        <p class="text-[11px] text-slate-500 sm:text-xs">
-                            {{ formatLiters(packRemainingVolumeCm3) }} livres • {{ formatLiters(packReservedVolumeCm3) }} reservado
-                        </p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span
-                        class="grid h-8 w-8 place-items-center rounded-full"
-                        :class="lockedBagsCount ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'"
-                    >
-                        🧳
-                    </span>
-                    <div class="space-y-0.5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                            Status das malas
-                        </p>
-                        <p class="text-sm font-semibold" :class="lockedBagsCount ? 'text-rose-600' : 'text-slate-800'">
-                            {{ lockedBagsCount }} bloqueada(s) • {{ totalBagsCount }} no total
-                        </p>
-                        <p class="text-[11px] text-slate-500 sm:text-xs">
-                            {{ packedCount }} itens embalados de {{ packItems.length }}
-                        </p>
-                    </div>
-                </div>
+            <div class="flex items-center gap-3 text-xs text-slate-500 sm:text-sm">
+                <button type="button" class="underline-offset-4 hover:underline" @click="setAllSummarySections(true)">Expandir tudo</button>
+                <span class="text-slate-300">•</span>
+                <button type="button" class="underline-offset-4 hover:underline" @click="setAllSummarySections(false)">Recolher tudo</button>
             </div>
-            <WeightBar
-                :bags="rawPackBags"
-                :reserved-kg="packReservedKg"
-                :total-capacity-kg="packTotalCapacityKg"
-                :yes-weight-kg="packUsedWeightKg"
-            />
-            <VolumeBar
-                :bags="rawPackBags"
-                :reserved-cm3="packReservedVolumeCm3"
-                :total-capacity-cm3="packTotalVolumeCm3"
-                :used-cm3="packUsedVolumeCm3"
-            />
-            <div class="grid gap-4 md:grid-cols-2">
-                <Suitcase
-                    v-for="bag in suitcaseSummaries"
-                    :key="bag.id"
-                    :name="bag.name"
-                    :dims="bag.dims"
-                    :current="bag.current"
-                    :max="bag.max"
-                    :status="bag.status"
-                    :ratio="bag.ratio"
-                    :weight="bag.weight"
-                    :volume="bag.volume"
-                    :has-notes="Boolean((bag.notes ?? '').trim().length || (bag.checklist?.length ?? 0))"
-                />
-            </div>
+
+            <section class="rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-0 py-1 text-left text-sm font-semibold text-slate-700"
+                    @click="toggleSummarySection('metrics')"
+                >
+                    Indicadores rápidos
+                    <ChevronDown class="h-4 w-4 transition" :class="summarySections.metrics ? 'rotate-180' : ''" />
+                </button>
+                <transition name="fade">
+                    <div v-if="summarySections.metrics" class="mt-3 grid gap-3 sm:grid-cols-3">
+                        <div class="flex items-center gap-3 rounded-2xl bg-white px-3 py-2">
+                            <span class="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 text-emerald-600">⚖️</span>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
+                                    Peso carregado
+                                </p>
+                                <p class="text-sm font-semibold text-slate-800">
+                                    {{ formatKg(packUsedWeightKg) }} / {{ formatKg(packTotalCapacityKg) }}
+                                </p>
+                                <p class="text-[11px] text-slate-500 sm:text-xs">
+                                    {{ formatKg(packRemainingWeightKg) }} livres • {{ formatKg(packReservedKg) }} reservado
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-2xl bg-white px-3 py-2">
+                            <span class="grid h-8 w-8 place-items-center rounded-full bg-sky-100 text-sky-600">🧊</span>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
+                                    Volume ocupado
+                                </p>
+                                <p class="text-sm font-semibold text-slate-800">
+                                    {{ formatLiters(packUsedVolumeCm3) }} / {{ formatLiters(packTotalVolumeCm3) }}
+                                </p>
+                                <p class="text-[11px] text-slate-500 sm:text-xs">
+                                    {{ formatLiters(packRemainingVolumeCm3) }} livres • {{ formatLiters(packReservedVolumeCm3) }} reservado
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-2xl bg-white px-3 py-2">
+                            <span
+                                class="grid h-8 w-8 place-items-center rounded-full"
+                                :class="lockedBagsCount ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'"
+                            >
+                                🧳
+                            </span>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
+                                    Status das malas
+                                </p>
+                                <p class="text-sm font-semibold" :class="lockedBagsCount ? 'text-rose-600' : 'text-slate-800'">
+                                    {{ lockedBagsCount }} bloqueada(s) • {{ totalBagsCount }} no total
+                                </p>
+                                <p class="text-[11px] text-slate-500 sm:text-xs">
+                                    {{ packedCount }} itens embalados de {{ packItems.length }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </transition>
+            </section>
+
+            <section class="rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-0 py-1 text-left text-sm font-semibold text-slate-700"
+                    @click="toggleSummarySection('weight')"
+                >
+                    Peso total disponível
+                    <ChevronDown class="h-4 w-4 transition" :class="summarySections.weight ? 'rotate-180' : ''" />
+                </button>
+                <p class="text-[11px] font-medium text-slate-500 sm:text-xs">
+                    {{ formatKg(packTotalCapacityKg) }} de capacidade • {{ formatKg(packRemainingWeightKg) }} livres
+                </p>
+                <transition name="fade">
+                    <div v-if="summarySections.weight" class="pt-3">
+                        <WeightBar
+                            :bags="rawPackBags"
+                            :reserved-kg="packReservedKg"
+                            :total-capacity-kg="packTotalCapacityKg"
+                            :yes-weight-kg="packUsedWeightKg"
+                        />
+                    </div>
+                </transition>
+            </section>
+
+            <section class="rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-0 py-1 text-left text-sm font-semibold text-slate-700"
+                    @click="toggleSummarySection('volume')"
+                >
+                    Volume total disponível
+                    <ChevronDown class="h-4 w-4 transition" :class="summarySections.volume ? 'rotate-180' : ''" />
+                </button>
+                <p class="text-[11px] font-medium text-slate-500 sm:text-xs">
+                    {{ formatLiters(packTotalVolumeCm3) }} ({{ formatCm3(packTotalVolumeCm3) }}) • {{ formatLiters(packRemainingVolumeCm3) }} livres
+                </p>
+                <transition name="fade">
+                    <div v-if="summarySections.volume" class="pt-3">
+                        <VolumeBar
+                            :bags="rawPackBags"
+                            :reserved-cm3="packReservedVolumeCm3"
+                            :total-capacity-cm3="packTotalVolumeCm3"
+                            :used-cm3="packUsedVolumeCm3"
+                        />
+                    </div>
+                </transition>
+            </section>
+
+            <section class="rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-0 py-1 text-left text-sm font-semibold text-slate-700"
+                    @click="toggleSummarySection('detail')"
+                >
+                    Detalhe por mala
+                    <ChevronDown class="h-4 w-4 transition" :class="summarySections.detail ? 'rotate-180' : ''" />
+                </button>
+                <transition name="fade">
+                    <div v-if="summarySections.detail" class="pt-3">
+                        <div v-if="suitcaseSummaries.length" class="grid gap-4 md:grid-cols-2">
+                            <Suitcase
+                                v-for="bag in suitcaseSummaries"
+                                :key="bag.id"
+                                :name="bag.name"
+                                :dims="bag.dims"
+                                :current="bag.current"
+                                :max="bag.max"
+                                :status="bag.status"
+                                :ratio="bag.ratio"
+                                :weight="bag.weight"
+                                :volume="bag.volume"
+                                :has-notes="Boolean((bag.notes ?? '').trim().length || (bag.checklist?.length ?? 0))"
+                            />
+                        </div>
+                        <div
+                            v-else
+                            class="rounded-3xl border border-dashed border-white/50 bg-white/50 px-4 py-6 text-sm text-slate-600 sm:px-6"
+                        >
+                            <p class="font-semibold text-slate-700">Nenhuma mala cadastrada ainda.</p>
+                            <p>Use a tela Embalar para configurar as malas e acompanhar os espaços utilizados.</p>
+                        </div>
+                    </div>
+                </transition>
+            </section>
         </Card>
 
         <Card
             v-if="statusBanner"
             :tone="statusBanner.tone ?? 'slate'"
-            class="mt-4 flex items-start gap-3"
+            class="mt-4 space-y-3"
         >
-            <span class="text-3xl" aria-hidden="true">{{ statusBanner.emoji }}</span>
-            <div>
-                <p class="text-base font-semibold text-slate-900">{{ statusBanner.title }}</p>
-                <p class="text-sm text-slate-600">{{ statusBanner.message }}</p>
-            </div>
+            <button
+                type="button"
+                class="flex w-full items-center justify-between gap-3 rounded-2xl px-2 py-1 text-left text-sm font-semibold text-slate-900"
+                @click="togglePanelSection('status')"
+            >
+                <span class="flex items-center gap-3">
+                    <span class="text-3xl" aria-hidden="true">{{ statusBanner.emoji }}</span>
+                    <span>{{ statusBanner.title }}</span>
+                </span>
+                <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.status ? 'rotate-180' : ''" />
+            </button>
+            <transition name="fade">
+                <p v-if="packPanelSections.status" class="text-sm text-slate-600">
+                    {{ statusBanner.message }}
+                </p>
+            </transition>
         </Card>
 
         <Card
@@ -134,35 +219,44 @@
             tone="slate"
             class="mt-4 space-y-3"
         >
-            <div class="flex items-start gap-3">
-                <span class="text-3xl" aria-hidden="true">🔄</span>
-                <div>
-                    <p class="text-base font-semibold text-slate-900">{{ rebalanceSuggestion.title }}</p>
+            <button
+                type="button"
+                class="flex w-full items-center justify-between gap-3 rounded-2xl px-2 py-1 text-left text-sm font-semibold text-slate-900"
+                @click="togglePanelSection('rebalance')"
+            >
+                <span class="flex items-center gap-3">
+                    <span class="text-3xl" aria-hidden="true">🔄</span>
+                    <span>{{ rebalanceSuggestion.title }}</span>
+                </span>
+                <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.rebalance ? 'rotate-180' : ''" />
+            </button>
+            <transition name="fade">
+                <div v-if="packPanelSections.rebalance" class="space-y-3">
                     <p class="text-sm text-slate-600">
                         {{ rebalanceSuggestion.description }}
                     </p>
+                    <button
+                        v-if="rebalanceSuggestion.mode === 'action'"
+                        type="button"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow transition hover:bg-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+                        :disabled="suggestionLoading"
+                        @click="applyRebalanceSuggestion"
+                    >
+                        <span v-if="suggestionLoading" class="h-2 w-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Aplicar sugestão
+                    </button>
+                    <button
+                        v-else-if="rebalanceSuggestion.mode === 'manual'"
+                        type="button"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow ring-1 ring-slate-200 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+                        :disabled="suggestionLoading"
+                        @click="releaseRebalanceItem"
+                    >
+                        <span v-if="suggestionLoading" class="h-2 w-2 animate-spin rounded-full border-2 border-slate-700 border-t-transparent" />
+                        Liberar item da mala
+                    </button>
                 </div>
-            </div>
-            <button
-                v-if="rebalanceSuggestion.mode === 'action'"
-                type="button"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow transition hover:bg-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="suggestionLoading"
-                @click="applyRebalanceSuggestion"
-            >
-                <span v-if="suggestionLoading" class="h-2 w-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Aplicar sugestão
-            </button>
-            <button
-                v-else-if="rebalanceSuggestion.mode === 'manual'"
-                type="button"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow ring-1 ring-slate-200 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="suggestionLoading"
-                @click="releaseRebalanceItem"
-            >
-                <span v-if="suggestionLoading" class="h-2 w-2 animate-spin rounded-full border-2 border-slate-700 border-t-transparent" />
-                Liberar item da mala
-            </button>
+            </transition>
         </Card>
         <Card
             v-else
@@ -192,73 +286,89 @@
             tone="slate"
             class="mt-4 space-y-4"
         >
-            <div class="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                    <p class="text-base font-semibold text-slate-900">Linha do tempo das prioridades</p>
-                    <p class="text-sm text-slate-600">Use as etiquetas abaixo dos cartões para marcar itens essenciais e ver rapidamente o que ainda está fora das malas.</p>
-                </div>
-            </div>
-            <div class="grid gap-3 sm:grid-cols-3">
-                <div
-                    v-for="group in priorityTimeline.groups"
-                    :key="group.key"
-                    class="rounded-2xl border border-slate-100 bg-white/80 p-4 text-sm shadow-sm"
-                >
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg" aria-hidden="true">{{ group.emoji }}</span>
-                        <p class="font-semibold text-slate-800">{{ group.label }}</p>
-                    </div>
-                    <p class="text-xs text-slate-500 mt-1">
-                        {{ group.assigned }} de {{ group.total }} nas malas
-                    </p>
-                    <div class="mt-3 h-2 rounded-full bg-slate-100">
-                        <div
-                            class="h-2 rounded-full transition-all"
-                            :class="group.barClass"
-                            :style="{ width: `${group.progress}%` }"
-                        />
-                    </div>
-                    <p
-                        v-if="group.pendingNames.length"
-                        class="mt-2 text-xs font-medium text-amber-700"
+            <button
+                type="button"
+                class="flex w-full items-center justify-between gap-3 rounded-2xl px-2 py-1 text-left text-sm font-semibold text-slate-900"
+                @click="togglePanelSection('timeline')"
+            >
+                <span class="flex flex-col text-left">
+                    <span>Linha do tempo das prioridades</span>
+                    <span class="text-xs font-normal text-slate-500">
+                        Use as etiquetas para visualizar rapidamente o que ainda está fora das malas.
+                    </span>
+                </span>
+                <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.timeline ? 'rotate-180' : ''" />
+            </button>
+            <transition name="fade">
+                <div v-if="packPanelSections.timeline" class="grid gap-3 sm:grid-cols-3">
+                    <div
+                        v-for="group in priorityTimeline.groups"
+                        :key="group.key"
+                        class="rounded-2xl border border-slate-100 bg-white/80 p-4 text-sm shadow-sm"
                     >
-                        Falta colocar: {{ group.pendingNames.join(', ') }}
-                    </p>
-                    <p
-                        v-else
-                        class="mt-2 text-xs text-emerald-600"
-                    >
-                        Tudo certo por aqui!
-                    </p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg" aria-hidden="true">{{ group.emoji }}</span>
+                            <p class="font-semibold text-slate-800">{{ group.label }}</p>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">
+                            {{ group.assigned }} de {{ group.total }} nas malas
+                        </p>
+                        <div class="mt-3 h-2 rounded-full bg-slate-100">
+                            <div
+                                class="h-2 rounded-full transition-all"
+                                :class="group.barClass"
+                                :style="{ width: `${group.progress}%` }"
+                            />
+                        </div>
+                        <p
+                            v-if="group.pendingNames.length"
+                            class="mt-2 text-xs font-medium text-amber-700"
+                        >
+                            Falta colocar: {{ group.pendingNames.join(', ') }}
+                        </p>
+                        <p
+                            v-else
+                            class="mt-2 text-xs text-emerald-600"
+                        >
+                            Tudo certo por aqui!
+                        </p>
+                    </div>
                 </div>
-            </div>
+            </transition>
         </Card>
         <Card
             v-if="bagHistoryFeed.length"
             tone="slate"
             class="mt-4 space-y-3"
         >
-            <div class="flex items-start justify-between gap-3">
-                <div>
-                    <p class="text-base font-semibold text-slate-900">Atualizações recentes</p>
-                    <p class="text-sm text-slate-600">Últimos movimentos registrados nas malas.</p>
-                </div>
-            </div>
-            <ol class="space-y-3 max-h-64 overflow-y-auto pr-1">
-                <li
-                    v-for="entry in bagHistoryFeed"
-                    :key="entry.id"
-                    class="rounded-2xl border border-slate-100 bg-white/80 p-3 text-sm text-slate-600 shadow-sm"
-                >
-                    <div class="flex items-center justify-between gap-2">
-                        <p class="font-semibold text-slate-800">{{ entry.bagName }}</p>
-                        <span class="text-xs text-slate-400">
-                            {{ formatRelativeTimeLabel(entry.created_at) }}
-                        </span>
-                    </div>
-                    <p class="text-sm">{{ formatHistoryMessage(entry) }}</p>
-                </li>
-            </ol>
+            <button
+                type="button"
+                class="flex w-full items-center justify-between gap-3 rounded-2xl px-2 py-1 text-left text-sm font-semibold text-slate-900"
+                @click="togglePanelSection('history')"
+            >
+                <span class="flex flex-col text-left">
+                    <span>Atualizações recentes</span>
+                    <span class="text-xs font-normal text-slate-500">Últimos movimentos registrados nas malas.</span>
+                </span>
+                <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.history ? 'rotate-180' : ''" />
+            </button>
+            <transition name="fade">
+                <ol v-if="packPanelSections.history" class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                    <li
+                        v-for="entry in bagHistoryFeed"
+                        :key="entry.id"
+                        class="rounded-2xl border border-slate-100 bg-white/80 p-3 text-sm text-slate-600 shadow-sm"
+                    >
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="font-semibold text-slate-800">{{ entry.bagName }}</p>
+                            <span class="text-xs text-slate-400">
+                                {{ formatRelativeTimeLabel(entry.created_at) }}
+                            </span>
+                        </div>
+                        <p class="text-sm">{{ formatHistoryMessage(entry) }}</p>
+                    </li>
+                </ol>
+            </transition>
         </Card>
 
         <Card
@@ -267,10 +377,24 @@
             class="mt-4 space-y-4"
         >
             <div class="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                    <p class="text-base font-semibold text-slate-900">Notas e checklist das malas</p>
-                    <p class="text-sm text-slate-600">Guarde lembretes importantes e marque o que já está pronto em cada mala.</p>
-                </div>
+                <button
+                    type="button"
+                    class="flex flex-1 items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left text-sm font-semibold text-slate-900 ring-1 ring-transparent transition hover:bg-white/70"
+                    :class="packPanelSections.notes ? 'ring-emerald-200 bg-white/80' : 'ring-slate-200 bg-white/60'"
+                    :aria-expanded="packPanelSections.notes ? 'true' : 'false'"
+                    @click="togglePanelSection('notes')"
+                >
+                    <span class="flex flex-col text-left">
+                        <span class="inline-flex items-center gap-2">
+                            <span>Notas e checklist das malas</span>
+                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                {{ packPanelSections.notes ? 'Recolher' : 'Expandir' }}
+                            </span>
+                        </span>
+                        <span class="text-xs font-normal text-slate-500">Guarde lembretes importantes e marque o que já está pronto em cada mala.</span>
+                    </span>
+                    <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.notes ? 'rotate-180' : ''" />
+                </button>
                 <div class="flex items-center gap-2">
                     <button
                         type="button"
@@ -284,118 +408,122 @@
                     <NotebookPen class="h-5 w-5 text-slate-400" aria-hidden="true" />
                 </div>
             </div>
-            <div class="flex flex-wrap gap-2">
-                <button
-                    v-for="bag in bagNotesTargets"
-                    :key="bag.id"
-                    type="button"
-                    class="rounded-full border px-3 py-1.5 text-sm font-semibold transition"
-                    :class="bag.id === selectedBagNotesId ? 'border-emerald-400 bg-emerald-50 text-emerald-700 shadow' : 'border-slate-200 bg-white text-slate-600 hover:bg-white'"
-                    @click="selectedBagNotesId = bag.id"
-                >
-                    {{ bag.name }}
-                    <span
-                        v-if="(bag.notes ?? '').trim().length || (bag.checklist?.length ?? 0)"
-                        class="ml-1 text-xs text-amber-500"
-                    >
-                        •
-                    </span>
-                </button>
-            </div>
-            <div v-if="currentBagNotes && currentBagMeta" class="grid gap-4 md:grid-cols-2">
-                <div class="space-y-2">
-                    <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                        <NotebookPen class="h-4 w-4 text-amber-500" />
-                        Notas da {{ currentBagMeta.name }}
-                    </label>
-                    <p v-if="currentBagLastUpdate" class="text-xs text-slate-400">
-                        Última atualização: {{ formatRelativeTimeLabel(currentBagLastUpdate.created_at) }}
-                    </p>
-                    <textarea
-                        v-model="currentBagNotes.notes"
-                        :maxlength="bagNotesMax"
-                        rows="4"
-                        class="w-full rounded-2xl border border-slate-200 bg-white/90 p-3 text-sm text-slate-700 shadow-inner shadow-slate-50 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-                        placeholder="Ex.: Usar cadeado TSA, colocar etiqueta com destino..."
-                        @input="touchCurrentBagDraft"
-                    />
-                    <div class="text-right text-xs text-slate-400">
-                        {{ bagNotesCharCount }} / {{ bagNotesMax }} caracteres
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                        <ListChecks class="h-4 w-4 text-slate-500" />
-                        Checklist rápido
-                    </label>
-                    <div class="space-y-2">
-                        <div
-                            v-for="item in currentBagNotes.checklist"
-                            :key="item.id"
-                            class="flex items-center gap-2 rounded-2xl border border-slate-100 bg-white/80 p-2 shadow-sm"
+            <transition name="fade">
+                <div v-if="packPanelSections.notes" class="space-y-4">
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            v-for="bag in bagNotesTargets"
+                            :key="bag.id"
+                            type="button"
+                            class="rounded-full border px-3 py-1.5 text-sm font-semibold transition"
+                            :class="bag.id === selectedBagNotesId ? 'border-emerald-400 bg-emerald-50 text-emerald-700 shadow' : 'border-slate-200 bg-white text-slate-600 hover:bg-white'"
+                            @click="selectedBagNotesId = bag.id"
                         >
-                            <input
-                                v-model="item.completed"
-                                type="checkbox"
-                                class="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-300"
-                                @change="touchCurrentBagDraft"
-                            />
-                            <input
-                                v-model="item.text"
-                                type="text"
-                                class="flex-1 rounded-full border border-transparent bg-transparent px-3 py-1 text-sm text-slate-700 focus:border-emerald-200 focus:outline-none"
-                                placeholder="Ex.: Colocar etiqueta"
-                                maxlength="160"
+                            {{ bag.name }}
+                            <span
+                                v-if="(bag.notes ?? '').trim().length || (bag.checklist?.length ?? 0)"
+                                class="ml-1 text-xs text-amber-500"
+                            >
+                                •
+                            </span>
+                        </button>
+                    </div>
+                    <div v-if="currentBagNotes && currentBagMeta" class="grid gap-4 md:grid-cols-2">
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <NotebookPen class="h-4 w-4 text-amber-500" />
+                                Notas da {{ currentBagMeta.name }}
+                            </label>
+                            <p v-if="currentBagLastUpdate" class="text-xs text-slate-400">
+                                Última atualização: {{ formatRelativeTimeLabel(currentBagLastUpdate.created_at) }}
+                            </p>
+                            <textarea
+                                v-model="currentBagNotes.notes"
+                                :maxlength="bagNotesMax"
+                                rows="4"
+                                class="w-full rounded-2xl border border-slate-200 bg-white/90 p-3 text-sm text-slate-700 shadow-inner shadow-slate-50 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                placeholder="Ex.: Usar cadeado TSA, colocar etiqueta com destino..."
                                 @input="touchCurrentBagDraft"
                             />
-                            <button
-                                type="button"
-                                class="text-slate-400 transition hover:text-rose-500"
-                                @click="removeChecklistItem(item.id)"
-                                aria-label="Remover item"
-                            >
-                                <X class="h-4 w-4" />
-                            </button>
+                            <div class="text-right text-xs text-slate-400">
+                                {{ bagNotesCharCount }} / {{ bagNotesMax }} caracteres
+                            </div>
                         </div>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <ListChecks class="h-4 w-4 text-slate-500" />
+                                Checklist rápido
+                            </label>
+                            <div class="space-y-2">
+                                <div
+                                    v-for="item in currentBagNotes.checklist"
+                                    :key="item.id"
+                                    class="flex items-center gap-2 rounded-2xl border border-slate-100 bg-white/80 p-2 shadow-sm"
+                                >
+                                    <input
+                                        v-model="item.completed"
+                                        type="checkbox"
+                                        class="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-300"
+                                        @change="touchCurrentBagDraft"
+                                    />
+                                    <input
+                                        v-model="item.text"
+                                        type="text"
+                                        class="flex-1 rounded-full border border-transparent bg-transparent px-3 py-1 text-sm text-slate-700 focus:border-emerald-200 focus:outline-none"
+                                        placeholder="Ex.: Colocar etiqueta"
+                                        maxlength="160"
+                                        @input="touchCurrentBagDraft"
+                                    />
+                                    <button
+                                        type="button"
+                                        class="text-slate-400 transition hover:text-rose-500"
+                                        @click="removeChecklistItem(item.id)"
+                                        aria-label="Remover item"
+                                    >
+                                        <X class="h-4 w-4" />
+                                    </button>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="inline-flex items-center gap-2 rounded-full border border-dashed border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-emerald-300 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                    :disabled="maxChecklistReached"
+                                    @click="addChecklistItem"
+                                >
+                                    <Plus class="h-4 w-4" />
+                                    Novo item
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <p v-else class="text-sm text-slate-500">Selecione uma mala para adicionar notas.</p>
+                    <div
+                        v-if="currentBagNotes && currentBagMeta"
+                        class="flex flex-wrap justify-end gap-2"
+                    >
                         <button
                             type="button"
-                            class="inline-flex items-center gap-2 rounded-full border border-dashed border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-emerald-300 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
-                            :disabled="maxChecklistReached"
-                            @click="addChecklistItem"
+                            class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                            :disabled="!bagNotesDirty"
+                            @click="resetBagNotes"
                         >
-                            <Plus class="h-4 w-4" />
-                            Novo item
+                            Descartar alterações
+                        </button>
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                            :disabled="!bagNotesDirty || isBagNotesSaving"
+                            @click="saveBagNotes"
+                        >
+                            <span
+                                v-if="isBagNotesSaving"
+                                class="h-2 w-2 animate-ping rounded-full bg-white"
+                                aria-hidden="true"
+                            />
+                            Salvar notas
                         </button>
                     </div>
                 </div>
-            </div>
-            <p v-else class="text-sm text-slate-500">Selecione uma mala para adicionar notas.</p>
-            <div
-                v-if="currentBagNotes && currentBagMeta"
-                class="flex flex-wrap justify-end gap-2"
-            >
-                <button
-                    type="button"
-                    class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
-                    :disabled="!bagNotesDirty"
-                    @click="resetBagNotes"
-                >
-                    Descartar alterações
-                </button>
-                <button
-                    type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
-                    :disabled="!bagNotesDirty || isBagNotesSaving"
-                    @click="saveBagNotes"
-                >
-                    <span
-                        v-if="isBagNotesSaving"
-                        class="h-2 w-2 animate-ping rounded-full bg-white"
-                        aria-hidden="true"
-                    />
-                    Salvar notas
-                </button>
-            </div>
+            </transition>
         </Card>
 
         <Card tone="yellow" class="space-y-4">
@@ -403,9 +531,18 @@
                 <div class="rounded-2xl bg-white/70 px-3 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
                     <div class="flex items-start gap-2 pb-2">
                         <Package class="mt-[2px] h-4 w-4 text-amber-500" />
-                        <p>
-                            Use a busca, filtros e ações em massa para reorganizar vários itens de uma vez só. O bloco abaixo permanece visível enquanto você rola dentro da lista.
-                        </p>
+                        <div class="flex-1">
+                            <p class="text-xs leading-relaxed text-slate-600 sm:text-sm">
+                                {{ listTipExpanded ? listTipText : listTipPreview }}
+                            </p>
+                            <button
+                                type="button"
+                                class="mt-1 text-[11px] font-semibold text-amber-600 underline-offset-4 hover:underline sm:text-xs"
+                                @click="listTipExpanded = !listTipExpanded"
+                            >
+                                {{ listTipExpanded ? 'Ver menos' : 'Ver tudo' }}
+                            </button>
+                        </div>
                     </div>
                     <div
                         ref="listContainer"
@@ -429,240 +566,191 @@
                                         {{ filteredPackItems.length }} resultado(s)
                                     </span>
                                 </div>
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <button
-                                        v-for="option in filterOptions"
-                                        :key="option.value"
-                                        type="button"
-                                        class="rounded-full border px-3 py-1 text-xs font-semibold transition sm:text-sm"
-                                        :class="[
-                                            activeFilter === option.value
-                                                ? 'border-emerald-300 bg-emerald-500 text-white shadow'
-                                                : 'border-slate-200 bg-white/80 text-slate-600 hover:bg-white',
-                                        ]"
-                                        @click="setActiveFilter(option.value)"
-                                    >
-                                        {{ option.label }}
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="space-y-2 rounded-2xl bg-white/80 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 sm:text-sm">
-                                <div class="flex flex-wrap items-center justify-between gap-2">
-                                    <label class="inline-flex items-center gap-2 font-semibold text-slate-700">
-                                        <input
-                                            type="checkbox"
-                                            class="h-5 w-5 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
-                                            :checked="allSelectedOnPage"
-                                            @change="toggleSelectAllOnPage($event.target.checked)"
-                                        />
-                                        Selecionar todos da lista
-                                    </label>
-                                    <span v-if="selectedIds.length" class="text-xs font-medium text-slate-500">
-                                        {{ selectedIds.length }} selecionado(s)
-                                    </span>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-2" v-if="selectedIds.length">
-                                    <select
-                                        v-model="bulkBagChoice"
-                                        class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
-                                    >
-                                        <option value="">Sem mala</option>
-                                        <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
-                                            {{ bag.label }}
-                                        </option>
-                                    </select>
-                                    <button
-                                        type="button"
-                                        class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                                        :disabled="bulkAssigning"
-                                        @click="handleBulkAssign"
-                                    >
-                                        <span v-if="bulkAssigning" class="h-2 w-2 animate-ping rounded-full bg-white" aria-hidden="true" />
-                                        Enviar seleção
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
-                                        :disabled="bulkAssigning"
-                                        @click="handleBulkPacked(true)"
-                                    >
-                                        Marcar embalado
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
-                                        :disabled="bulkAssigning"
-                                        @click="handleBulkPacked(false)"
-                                    >
-                                        Marcar pendente
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
-                                        @click="clearSelection"
-                                    >
-                                        Limpar seleção ({{ selectedIds.length }})
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                <span class="font-semibold text-slate-700">
-                                    Embalados: {{ packedCount }} / {{ packItems.length }}
-                                </span>
                                 <button
-                                    v-if="hasPacked"
                                     type="button"
-                                    class="inline-flex items-center gap-2 rounded-full border border-amber-200 px-4 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-100 sm:text-sm"
-                                    @click="markAllPacked(false)"
-                                    aria-label="Desmarcar todos os itens embalados"
+                                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 sm:text-sm"
+                                    @click="toggleFiltersExpanded"
                                 >
-                                    Desmarcar todos
+                                    <SlidersHorizontal class="h-4 w-4" />
+                                    {{ filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros' }}
                                 </button>
                             </div>
+                            <transition name="fade">
+                                <div
+                                    v-if="showFiltersPanel"
+                                    class="space-y-2 rounded-2xl bg-white/80 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 sm:text-sm"
+                                >
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <button
+                                            v-for="option in filterOptions"
+                                            :key="option.value"
+                                            type="button"
+                                            class="rounded-full border px-3 py-1 text-xs font-semibold transition sm:text-sm"
+                                            :class="[
+                                                activeFilter === option.value
+                                                    ? 'border-emerald-300 bg-emerald-500 text-white shadow'
+                                                    : 'border-slate-200 bg-white/80 text-slate-600 hover:bg-white',
+                                            ]"
+                                            @click="setActiveFilter(option.value)"
+                                        >
+                                            {{ option.label }}
+                                        </button>
+                                    </div>
+                                    <div class="flex flex-wrap items-center justify-between gap-2">
+                                        <label class="inline-flex items-center gap-2 font-semibold text-slate-700">
+                                            <input
+                                                type="checkbox"
+                                                class="h-5 w-5 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+                                                :checked="allSelectedOnPage"
+                                                @change="toggleSelectAllOnPage($event.target.checked)"
+                                            />
+                                            Selecionar todos da lista
+                                        </label>
+                                        <span v-if="selectedIds.length" class="text-xs font-medium text-slate-500">
+                                            {{ selectedIds.length }} selecionado(s)
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2" v-if="selectedIds.length">
+                                        <select
+                                            v-model="bulkBagChoice"
+                                            class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
+                                        >
+                                            <option value="">Sem mala</option>
+                                            <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
+                                                {{ bag.label }}
+                                            </option>
+                                        </select>
+                                        <button
+                                            type="button"
+                                            class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                                            :disabled="bulkAssigning"
+                                            @click="handleBulkAssign"
+                                        >
+                                            <span v-if="bulkAssigning" class="h-2 w-2 animate-ping rounded-full bg-white" aria-hidden="true" />
+                                            Enviar seleção
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
+                                            :disabled="bulkAssigning"
+                                            @click="handleBulkPacked(true)"
+                                        >
+                                            Marcar embalado
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
+                                            :disabled="bulkAssigning"
+                                            @click="handleBulkPacked(false)"
+                                        >
+                                            Voltar para pendentes
+                                        </button>
+                                    </div>
+                                </div>
+                            </transition>
                         </div>
-
-                        <div
-                            v-if="filteredPackItems.length"
-                            class="space-y-4 pt-4 pb-4"
-                        >
+                        <div v-if="filteredPackItems.length" class="divide-y divide-slate-200/70">
                             <div
                                 v-for="item in filteredPackItems"
                                 :key="item.id"
-                                class="flex flex-col gap-4 rounded-2xl bg-white/70 p-4 ring-1 ring-white/40 sm:flex-row sm:items-center sm:justify-between"
-                                :class="selection.has(item.id) ? 'ring-amber-300 ring-2' : ''"
+                                class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:gap-4"
                             >
-                                <div class="flex flex-1 items-start gap-3">
-                                    <label class="pt-2">
-                                        <input
-                                            type="checkbox"
-                                            class="h-5 w-5 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
-                                            :checked="selection.has(item.id)"
-                                            @change="toggleItemSelection(item.id, $event.target.checked)"
-                                        />
-                                    </label>
-                                    <div
-                                        class="relative flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-amber-100/60"
+                                <label class="flex items-center gap-2 text-sm font-medium text-slate-600">
+                                    <input
+                                        :value="item.id"
+                                        type="checkbox"
+                                        class="h-5 w-5 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+                                        :checked="selection.has(item.id)"
+                                        @change="toggleSelection(item.id, $event.target.checked)"
+                                    />
+                                </label>
+                                <div class="flex flex-1 gap-3">
+                                    <button
+                                        v-if="hasPhoto(item)"
+                                        type="button"
+                                        class="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl bg-slate-200 shadow-inner"
+                                        @click="openImagePreview(item)"
                                     >
                                         <img
-                                            v-if="hasPhoto(item)"
                                             :src="itemPhoto(item)"
+                                            class="h-full w-full object-cover"
                                             :alt="item.title ?? item.name"
-                                            class="max-h-full max-w-full cursor-zoom-in object-contain transition hover:scale-[1.04]"
                                             loading="lazy"
-                                            decoding="async"
-                                            @error="() => markPhotoFailed(item)"
-                                            @click.stop="openImagePreview(item)"
+                                            @error="markPhotoFailed(item)"
                                         />
-                                        <Package v-else class="h-7 w-7 text-amber-500/60" />
-                                        <button
-                                            v-if="hasPhoto(item)"
-                                            type="button"
-                                            class="absolute right-1 top-1 inline-flex h-7 w-7 items-center justify-center rounded-xl bg-white/85 text-slate-700 shadow ring-1 ring-slate-100 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-                                            @click.stop="openImagePreview(item)"
-                                            aria-label="Ampliar imagem"
-                                        >
-                                            <ZoomIn class="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <p class="text-base font-semibold text-slate-900 sm:text-lg">
-                                                {{ item.title ?? item.name }}
-                                            </p>
-                                            <span
-                                                v-if="item.priority"
-                                                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
-                                                :class="priorityBadgeClass(item.priority)"
-                                            >
-                                                {{ priorityMetaMap[item.priority]?.emoji ?? '•' }}
-                                                {{ priorityMetaMap[item.priority]?.shortLabel ?? 'Prioritário' }}
-                                            </span>
+                                        <span class="absolute inset-2 rounded-xl bg-black/20 text-xs font-semibold uppercase tracking-wide text-white">
+                                            Ver
+                                        </span>
+                                        <ZoomIn class="absolute bottom-1 right-1 h-4 w-4 text-white drop-shadow" />
+                                    </button>
+                                    <div
+                                        class="flex flex-1 flex-col rounded-2xl bg-white/80 px-3 py-2 shadow-inner shadow-white/50 ring-1 ring-white/50"
+                                    >
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <div>
+                                                <p class="text-base font-semibold text-slate-800">{{ item.title ?? item.name }}</p>
+                                                <p class="text-xs text-slate-400">
+                                                    {{ formatBagLabel(item.bag ?? '') }}
+                                                </p>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span
+                                                    class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500"
+                                                >
+                                                    {{ item.priority ? priorityMetaMap[item.priority]?.shortLabel ?? 'Prioridade' : 'Normal' }}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex items-center justify-center rounded-full bg-slate-900 px-2 py-1 text-xs font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    :disabled="isPriorityUpdating(item.id)"
+                                                    @click="cyclePriority(item)"
+                                                >
+                                                    <span v-if="isPriorityUpdating(item.id)" class="h-2 w-2 animate-ping rounded-full bg-white" aria-hidden="true" />
+                                                    {{ priorityLabel(item.priority) }}
+                                                </button>
+                                            </div>
                                         </div>
                                         <p v-if="item.notes" class="text-sm text-slate-600">{{ item.notes }}</p>
                                         <div class="flex flex-wrap gap-2 text-[11px] font-medium text-slate-500 sm:text-xs">
                                             <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 ring-1 ring-white/60">
-                                                ⚖️ {{ formatKg(item.weight ?? item.weight_kg ?? 0) }}
+                                                ⚖ {{ formatKg(item.weight ?? item.weight_kg ?? 0) }}
                                             </span>
                                             <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 ring-1 ring-white/60">
                                                 🧊 {{ formatVolume(item) ?? 'Sem volume' }}
                                             </span>
                                             <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 ring-1 ring-white/60 capitalize">
-                                                🏷️ {{ item.category ?? 'Sem categoria' }}
+                                                🏷 {{ item.category ?? 'Sem categoria' }}
                                             </span>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="space-y-3 sm:w-56">
-                                    <div class="flex flex-wrap gap-2">
-                                        <button
-                                            v-for="option in bagQuickOptions"
-                                            :key="`${item.id}-${option.value || 'none'}`"
-                                            type="button"
-                                            class="inline-flex flex-1 items-center justify-center rounded-full border border-amber-200 px-3 py-1.5 text-xs font-semibold transition sm:text-sm"
-                                            :class="[
-                                                isItemInBag(item, option.value)
-                                                    ? 'bg-amber-400 text-slate-900 shadow'
-                                                    : 'text-slate-600 hover:bg-white',
-                                                option.value && isBagLocked(option.value)
-                                                    ? 'cursor-not-allowed opacity-60 hover:bg-transparent'
-                                                    : '',
-                                            ]"
-                                            :disabled="Boolean(option.value) && isBagLocked(option.value)"
-                                            :title="option.value && isBagLocked(option.value) ? bagLockMessage(option.value) : `Enviar para ${option.label}`"
-                                            @click="assignBag(item, option.value ?? '')"
-                                        >
-                                            {{ option.label }}
-                                        </button>
-                                    </div>
-
-                                    <div class="space-y-1">
-                                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Prioridade</p>
-                                        <div class="flex flex-wrap gap-1">
+                                        <div class="mt-3 flex flex-wrap items-center gap-2">
                                             <button
-                                                v-for="option in priorityOptions"
-                                                :key="`${item.id}-priority-${option.value || 'normal'}`"
+                                                v-for="bag in bagQuickOptions"
+                                                :key="bag.value ?? 'none'"
                                                 type="button"
-                                                class="rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide transition"
+                                                class="rounded-full border px-3 py-1 text-xs font-semibold transition sm:text-sm"
                                                 :class="[
-                                                    (item.priority ?? '') === option.value
-                                                        ? `${option.chipClass} border-transparent shadow`
-                                                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
+                                                    isItemInBag(item, bag.value)
+                                                        ? 'border-emerald-300 bg-emerald-500 text-white shadow'
+                                                        : 'border-slate-200 bg-white/90 text-slate-600 hover:bg-white',
                                                 ]"
-                                                :disabled="isPriorityUpdating(item.id)"
-                                                @click="setItemPriority(item, option.value)"
+                                                :disabled="Boolean(bag.value) && isBagLocked(bag.value)"
+                                                :title="bag.value && isBagLocked(bag.value) ? bagLockMessage(bag.value) : undefined"
+                                                @click="assignBag(item, bag.value)"
                                             >
-                                                <span class="flex items-center gap-1">
-                                                    <span aria-hidden="true">{{ option.emoji }}</span>
-                                                    {{ option.shortLabel }}
-                                                </span>
+                                                {{ bag.label }}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="inline-flex items-center justify-center rounded-full bg-amber-500/15 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-amber-600 ring-1 ring-amber-300 transition hover:bg-amber-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                                                @click="openItemHelp(item)"
+                                            >
+                                                Detalhes
                                             </button>
                                         </div>
-                                    </div>
-
-                                    <div class="flex items-center gap-2">
-                                        <label class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-sm font-medium text-slate-600 ring-1 ring-black/5">
-                                            <input
-                                                type="checkbox"
-                                                class="h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-300"
-                                                :checked="item.packed"
-                                                @change="onPackedChange(item, $event.target.checked)"
-                                                :aria-label="`Marcar ${item.title ?? item.name} como embalado`"
-                                            />
-                                            Embalado
-                                        </label>
-                                        <button
-                                            type="button"
-                                            class="inline-flex items-center justify-center rounded-full bg-amber-500/15 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-amber-600 ring-1 ring-amber-300 transition hover:bg-amber-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-                                            @click="openItemHelp(item)"
-                                        >
-                                            Detalhes
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div
                             v-else
                             class="rounded-2xl border border-dashed border-slate-300/70 bg-white/60 p-8 text-center text-sm text-slate-500 sm:text-base"
@@ -678,7 +766,6 @@
                 </div>
             </template>
         </Card>
-
         <ImagePreviewModal
             v-if="previewSrc"
             v-model="previewVisible"
@@ -765,12 +852,14 @@ import {
     watchEffect,
 } from 'vue';
 import {
+    ChevronDown,
     ListChecks,
     Luggage,
     NotebookPen,
     Package,
     Plus,
     Share2,
+    SlidersHorizontal,
     X,
     ZoomIn,
 } from 'lucide-vue-next';
@@ -790,8 +879,17 @@ const numberFormatter = new Intl.NumberFormat('pt-BR');
 
 const formatKg = (value) => `${Number(value ?? 0).toFixed(1)} kg`;
 const formatLiters = (value) => `${(Number(value ?? 0) / 1000).toFixed(1)} L`;
+const formatCm3 = (value) => `${numberFormatter.format(Math.round(Number(value ?? 0)))} cm³`;
 
 const move = computed(() => page.props.move ?? null);
+const listTipText =
+    'Use a busca, filtros e ações em massa para reorganizar vários itens de uma vez só. O bloco abaixo permanece visível enquanto você rola dentro da lista.';
+const listTipPreview = 'Use a busca, filtros e ações em massa para reorganizar vários itens de uma vez só…';
+const listTipExpanded = ref(false);
+const filtersExpanded = ref(false);
+const toggleFiltersExpanded = () => {
+    filtersExpanded.value = !filtersExpanded.value;
+};
 
 watchEffect(() => {
     decisionStore.setMove(move.value);
@@ -974,6 +1072,30 @@ watch(
 );
 const failedImages = reactive(new Set());
 const showLegend = ref(false);
+const summarySections = reactive({
+    metrics: false,
+    weight: false,
+    volume: false,
+    detail: false,
+});
+const packPanelSections = reactive({
+    status: false,
+    rebalance: false,
+    timeline: false,
+    history: false,
+    notes: false,
+});
+const setAllSummarySections = (state) => {
+    Object.keys(summarySections).forEach((key) => {
+        summarySections[key] = state;
+    });
+};
+const toggleSummarySection = (key) => {
+    summarySections[key] = !summarySections[key];
+};
+const togglePanelSection = (key) => {
+    packPanelSections[key] = !packPanelSections[key];
+};
 
 const searchQuery = ref('');
 const activeFilter = ref('all');
@@ -1024,6 +1146,7 @@ const filteredPackItems = computed(() => {
     return packItems.value.filter((item) => matchesFilter(item, filter) && matchesQuery(item, query));
 });
 const selectedIds = computed(() => Array.from(selection));
+const showFiltersPanel = computed(() => filtersExpanded.value || selectedIds.value.length > 0);
 const allSelectedOnPage = computed(
     () => filteredPackItems.value.length > 0
         && filteredPackItems.value.every((item) => selection.has(item.id)),
@@ -1268,6 +1391,7 @@ const shareSummaryViaWeb = async () => {
 };
 const priorityBadgeClass = (value) => priorityMetaMap[value || 'none']?.chipClass ?? 'bg-slate-100 text-slate-600';
 const isPriorityUpdating = (id) => Boolean(priorityLoading[id]);
+const priorityLabel = (value) => priorityMetaMap[value || 'none']?.label ?? 'Normal';
 const setItemPriority = async (item, value) => {
     if (!item) {
         return;

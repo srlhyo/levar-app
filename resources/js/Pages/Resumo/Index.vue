@@ -4,106 +4,131 @@
         <template #title>Resumo</template>
         <template #subtitle>Uma visão geral das malas, pendências e itens que vão com a gente.</template>
 
-        <Card tone="slate">
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <Card tone="slate" class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p class="text-base font-semibold text-slate-900">Panorama da mudança</p>
                     <p class="text-sm text-slate-600">Acompanhe o avanço entre levar, pendentes e não levar em tempo real.</p>
                 </div>
+                <div class="flex items-center gap-3 text-xs text-slate-500 sm:text-sm">
+                    <button type="button" class="underline-offset-4 hover:underline" @click="setAllPanoramaSections(true)">Expandir tudo</button>
+                    <span class="text-slate-300">•</span>
+                    <button type="button" class="underline-offset-4 hover:underline" @click="setAllPanoramaSections(false)">Recolher tudo</button>
+                </div>
+            </div>
+
+            <section class="rounded-2xl bg-white/80">
                 <button
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-                    @click="showResumoHelp = !showResumoHelp"
-                    :aria-expanded="showResumoHelp ? 'true' : 'false'"
+                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                    @click="togglePanoramaSection('counts')"
                 >
-                    <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/15 text-[11px] font-semibold text-emerald-600">?</span>
-                    Como funciona
+                    Totais por decisão
+                    <ChevronDown class="h-4 w-4 transition" :class="panoramaSections.counts ? 'rotate-180' : ''" />
                 </button>
-            </div>
-            <transition name="fade">
-                <div
-                    v-if="showResumoHelp"
-                    class="mb-4 space-y-2 rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm"
+                <transition name="fade">
+                    <div v-if="panoramaSections.counts" class="grid gap-3 px-4 pb-4 text-center text-xs text-slate-600 sm:grid-cols-2 sm:text-sm lg:grid-cols-4">
+                        <div class="rounded-2xl bg-white/70 px-3 py-2">
+                            <p class="text-[11px] uppercase tracking-wide text-emerald-600 sm:text-xs">Vai levar</p>
+                            <p class="text-2xl font-semibold text-emerald-600">{{ stats.take }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-white/70 px-3 py-2">
+                            <p class="text-[11px] uppercase tracking-wide text-rose-500 sm:text-xs">Não levar</p>
+                            <p class="text-2xl font-semibold text-rose-500">{{ stats.leave }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-white/70 px-3 py-2">
+                            <p class="text-[11px] uppercase tracking-wide text-sky-600 sm:text-xs">Pendentes</p>
+                            <p class="text-2xl font-semibold text-sky-600">{{ stats.pending }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-white/70 px-3 py-2">
+                            <p class="text-[11px] uppercase tracking-wide text-slate-500 sm:text-xs">Indefinidos</p>
+                            <p class="text-2xl font-semibold text-slate-600">{{ stats.undecided }}</p>
+                        </div>
+                    </div>
+                </transition>
+            </section>
+
+            <section class="rounded-2xl bg-white/80">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                    @click="togglePanoramaSection('totals')"
                 >
-                    <p class="font-semibold text-slate-800">Como usar o Resumo</p>
-                    <ul class="list-disc space-y-1.5 pl-5">
-                        <li>O painel mostra o progresso total e avisa quando malas travam ou ainda existem pendências; siga os botões para Embalar ou Decidir conforme o aviso.</li>
-                        <li>Os blocos de “Capacidade das malas” espelham peso e volume do Embalar — basta acompanhar ali para saber quando redistribuir itens.</li>
-                        <li>Em “Itens por decisão”, os filtros e a barra “Selecionar todos” ficam fixos; use-os para buscar, marcar vários itens e devolver ao deck.</li>
-                        <li>Para itens já marcados como “Levar”, toque nos chips de mala para mover rapidamente entre as malas ou deixá-los “Sem mala”.</li>
-                        <li>Selecione vários itens e escolha “Enviar seleção para…” para realocar em lote sem sair desta tela.</li>
-                    </ul>
-                </div>
-            </transition>
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div class="space-y-1">
-                    <p class="text-xs uppercase tracking-wide text-slate-600">Vai levar</p>
-                    <p class="text-2xl font-semibold text-emerald-600">{{ stats.take }}</p>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-xs uppercase tracking-wide text-slate-600">Não levar</p>
-                    <p class="text-2xl font-semibold text-rose-500">{{ stats.leave }}</p>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-xs uppercase tracking-wide text-slate-600">Pendentes (fila)</p>
-                    <p class="text-2xl font-semibold text-sky-600">{{ stats.pending }}</p>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-xs uppercase tracking-wide text-slate-600">Indefinidos</p>
-                    <p class="text-2xl font-semibold text-slate-600">{{ stats.undecided }}</p>
-                </div>
-            </div>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div class="rounded-2xl bg-white/70 px-4 py-3 text-xs font-medium text-slate-600 ring-1 ring-white/40">
-                    Total catalogado: <span class="font-semibold text-slate-900">{{ stats.total }}</span>
-                </div>
-                <div class="rounded-2xl bg-white/70 px-4 py-3 text-xs font-medium text-slate-600 ring-1 ring-white/40">
-                    Processados: <span class="font-semibold text-slate-900">{{ processedSummary }}</span>
-                </div>
-                <div class="rounded-2xl bg-white/70 px-4 py-3 text-xs font-medium text-slate-600 ring-1 ring-white/40">
-                    Pendentes (total): <span class="font-semibold text-slate-900">{{ stats.pending_total ?? pendingTotal }}</span>
-                </div>
-                <div class="rounded-2xl bg-white/70 px-4 py-3 text-xs font-medium text-slate-600 ring-1 ring-white/40">
-                    Cartas no deck: <span class="font-semibold text-slate-900">{{ pendingDeckCount }}</span>
-                </div>
-            </div>
-            <div
-                class="mt-4 grid gap-3 rounded-2xl bg-white/70 px-4 py-3 text-xs text-slate-600 ring-1 ring-white/40 sm:grid-cols-3 sm:text-sm"
-            >
-                <div class="flex items-center gap-3">
-                    <span class="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 text-emerald-600">🎯</span>
-                    <div class="space-y-0.5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                            Progresso geral
-                        </p>
-                        <p class="text-sm font-semibold text-slate-800">
-                            {{ completionPercent }}% concluído
-                        </p>
+                    Totais catalogados
+                    <ChevronDown class="h-4 w-4 transition" :class="panoramaSections.totals ? 'rotate-180' : ''" />
+                </button>
+                <transition name="fade">
+                    <div v-if="panoramaSections.totals" class="grid gap-3 px-4 pb-4 text-xs text-slate-600 sm:grid-cols-2 sm:text-sm lg:grid-cols-4">
+                        <div class="rounded-2xl bg-white/70 px-4 py-3 font-medium ring-1 ring-white/40">
+                            Total catalogado:
+                            <span class="font-semibold text-slate-900">{{ stats.total }}</span>
+                        </div>
+                        <div class="rounded-2xl bg-white/70 px-4 py-3 font-medium ring-1 ring-white/40">
+                            Processados:
+                            <span class="font-semibold text-slate-900">{{ processedSummary }}</span>
+                        </div>
+                        <div class="rounded-2xl bg-white/70 px-4 py-3 font-medium ring-1 ring-white/40">
+                            Pendentes (total):
+                            <span class="font-semibold text-slate-900">{{ stats.pending_total ?? pendingTotal }}</span>
+                        </div>
+                        <div class="rounded-2xl bg-white/70 px-4 py-3 font-medium ring-1 ring-white/40">
+                            Cartas no deck:
+                            <span class="font-semibold text-slate-900">{{ pendingDeckCount }}</span>
+                        </div>
                     </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="grid h-8 w-8 place-items-center rounded-full bg-sky-100 text-sky-600">📦</span>
-                    <div class="space-y-0.5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                            Pronto para levar
-                        </p>
-                        <p class="text-sm font-semibold text-slate-800">
-                            {{ readyPercent }}% dos itens
-                        </p>
+                </transition>
+            </section>
+
+            <section class="rounded-2xl bg-white/80">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                    @click="togglePanoramaSection('progress')"
+                >
+                    Indicadores rápidos
+                    <ChevronDown class="h-4 w-4 transition" :class="panoramaSections.progress ? 'rotate-180' : ''" />
+                </button>
+                <transition name="fade">
+                    <div
+                        v-if="panoramaSections.progress"
+                        class="grid gap-3 px-4 pb-4 text-xs text-slate-600 ring-1 ring-white/40 sm:grid-cols-3 sm:text-sm"
+                    >
+                        <div class="flex items-center gap-3 rounded-2xl bg-white/70 px-3 py-2">
+                            <span class="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 text-emerald-600">🎯</span>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
+                                    Progresso geral
+                                </p>
+                                <p class="text-sm font-semibold text-slate-800">
+                                    {{ completionPercent }}% concluído
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-2xl bg-white/70 px-3 py-2">
+                            <span class="grid h-8 w-8 place-items-center rounded-full bg-sky-100 text-sky-600">📦</span>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
+                                    Pronto para levar
+                                </p>
+                                <p class="text-sm font-semibold text-slate-800">
+                                    {{ readyPercent }}% dos itens
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-2xl bg-white/70 px-3 py-2">
+                            <span class="grid h-8 w-8 place-items-center rounded-full bg-amber-100 text-amber-600">🧳</span>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
+                                    Já embalados
+                                </p>
+                                <p class="text-sm font-semibold text-slate-800">
+                                    {{ packedPercent }}% embalado
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="grid h-8 w-8 place-items-center rounded-full bg-amber-100 text-amber-600">🧳</span>
-                    <div class="space-y-0.5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                            Já embalados
-                        </p>
-                        <p class="text-sm font-semibold text-slate-800">
-                            {{ packedPercent }}% embalado
-                        </p>
-                    </div>
-                </div>
-            </div>
+                </transition>
+            </section>
         </Card>
 
         <Card
@@ -158,46 +183,116 @@
                 </div>
             </div>
 
-            <div v-if="capacitySkeletonVisible" class="grid gap-4 lg:grid-cols-2">
-                <div class="h-64 rounded-3xl bg-white/50 shadow-inner shadow-slate-100 animate-pulse" />
-                <div class="h-64 rounded-3xl bg-white/50 shadow-inner shadow-slate-100 animate-pulse" />
-            </div>
-            <div v-else class="grid gap-4 lg:grid-cols-2">
-                <WeightBar
-                    :bags="bagSummaries"
-                    :reserved-kg="stats.reservedKg ?? 0"
-                    :total-capacity-kg="totalCapacityKg"
-                    :yes-weight-kg="yesWeightKg"
-                />
-                <VolumeBar
-                    :bags="bagSummaries"
-                    :reserved-cm3="volumeReservedCm3"
-                    :total-capacity-cm3="volumeTotalCapacityCm3"
-                    :used-cm3="volumeUsedCm3"
-                />
-            </div>
+            <section class="rounded-2xl bg-white/80 space-y-3 px-4 pb-4">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-0 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                    @click="toggleCapacitySection('bars')"
+                >
+                    Resumo de capacidades
+                    <ChevronDown class="h-4 w-4 transition" :class="capacitySections.bars ? 'rotate-180' : ''" />
+                </button>
+                <transition name="fade">
+                    <div v-if="capacitySections.bars">
+                        <div class="space-y-3">
+                            <section class="rounded-2xl bg-white/90 ring-1 ring-black/5">
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                                    @click="toggleCapacityBarSection('weight')"
+                                >
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-800">Peso total disponível</p>
+                                        <p class="text-xs font-medium text-slate-500">
+                                            {{ formatKg(totalCapacityKg) }} • {{ formatKg(remainingCapacityKg) }} livres
+                                        </p>
+                                    </div>
+                                    <ChevronDown class="h-4 w-4 transition" :class="capacityBarSections.weight ? 'rotate-180' : ''" />
+                                </button>
+                                <transition name="fade">
+                                    <div v-if="capacityBarSections.weight" class="pt-3">
+                                        <div v-if="capacitySkeletonVisible" class="h-64 rounded-3xl bg-white/50 shadow-inner shadow-slate-100 animate-pulse" />
+                                        <div v-else>
+                                            <WeightBar
+                                                :bags="bagSummaries"
+                                                :reserved-kg="stats.reservedKg ?? 0"
+                                                :total-capacity-kg="totalCapacityKg"
+                                                :yes-weight-kg="yesWeightKg"
+                                            />
+                                        </div>
+                                    </div>
+                                </transition>
+                            </section>
 
-            <div v-if="suitcaseCards.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                <Suitcase
-                    v-for="bag in suitcaseCards"
-                    :key="bag.id"
-                    :name="bag.name"
-                    :dims="bag.dims"
-                    :current="bag.current"
-                    :max="bag.max"
-                    :status="bag.status"
-                    :ratio="bag.ratio"
-                    :weight="bag.weight"
-                    :volume="bag.volume"
-                />
-            </div>
-            <div
-                v-else
-                class="rounded-3xl border border-dashed border-white/50 bg-white/50 px-4 py-6 text-sm text-slate-600 sm:px-6"
-            >
-                <p class="font-semibold text-slate-700">Nenhuma mala cadastrada ainda.</p>
-                <p>Use a tela Embalar para configurar as malas e acompanhar os espaços utilizados.</p>
-            </div>
+                            <section class="rounded-2xl bg-white/90 ring-1 ring-black/5">
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                                    @click="toggleCapacityBarSection('volume')"
+                                >
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-800">Volume total disponível</p>
+                                        <p class="text-xs font-medium text-slate-500">
+                                            {{ formatLiters(volumeTotalCapacityCm3) }} ({{ formatCm3(volumeTotalCapacityCm3) }})
+                                            • {{ formatLiters(volumeRemainingCm3) }} livres
+                                        </p>
+                                    </div>
+                                    <ChevronDown class="h-4 w-4 transition" :class="capacityBarSections.volume ? 'rotate-180' : ''" />
+                                </button>
+                                <transition name="fade">
+                                    <div v-if="capacityBarSections.volume" class="pt-3">
+                                        <div v-if="capacitySkeletonVisible" class="h-64 rounded-3xl bg-white/50 shadow-inner shadow-slate-100 animate-pulse" />
+                                        <div v-else>
+                                            <VolumeBar
+                                                :bags="bagSummaries"
+                                                :reserved-cm3="volumeReservedCm3"
+                                                :total-capacity-cm3="volumeTotalCapacityCm3"
+                                                :used-cm3="volumeUsedCm3"
+                                            />
+                                        </div>
+                                    </div>
+                                </transition>
+                            </section>
+                        </div>
+                    </div>
+                </transition>
+            </section>
+
+            <section class="rounded-2xl bg-white/80">
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                    @click="toggleCapacitySection('cards')"
+                >
+                    Detalhe por mala
+                    <ChevronDown class="h-4 w-4 transition" :class="capacitySections.cards ? 'rotate-180' : ''" />
+                </button>
+                <transition name="fade">
+                    <div v-if="capacitySections.cards" class="px-4 pb-4">
+                        <div v-if="suitcaseCards.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            <Suitcase
+                                v-for="bag in suitcaseCards"
+                                :key="bag.id"
+                                :name="bag.name"
+                                :dims="bag.dims"
+                                :current="bag.current"
+                                :max="bag.max"
+                                :status="bag.status"
+                                :ratio="bag.ratio"
+                                :weight="bag.weight"
+                                :volume="bag.volume"
+                            />
+                        </div>
+                        <div
+                            v-else
+                            class="rounded-3xl border border-dashed border-white/50 bg-white/50 px-4 py-6 text-sm text-slate-600 sm:px-6"
+                        >
+                            <p class="font-semibold text-slate-700">Nenhuma mala cadastrada ainda.</p>
+                            <p>Use a tela Embalar para configurar as malas e acompanhar os espaços utilizados.</p>
+                        </div>
+                    </div>
+                </transition>
+            </section>
         </Card>
 
         <Card tone="slate" class="space-y-5">
@@ -221,48 +316,50 @@
                 </span>
             </div>
 
-            <Tabs v-model="activeTab" :items="tabItems">
-                <div v-if="totalFilteredCount" class="mt-4 space-y-4">
+            <Tabs v-model="activeTab" :items="tabItems" label="Listas por decisão">
+                <div v-if="showListCard" class="mt-4 space-y-4">
                     <div class="sticky top-16 z-20 space-y-3 rounded-3xl bg-white/90 px-4 py-3 text-sm text-slate-600 shadow ring-1 ring-black/5 backdrop-blur">
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <div class="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
-                                <div class="relative">
-                                    <input
-                                        v-model="searchQuery"
-                                        type="search"
-                                        placeholder="Buscar por nome, notas ou mala…"
-                                        class="w-56 rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-sm text-slate-700 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:w-64"
-                                    />
-                                </div>
-                                <select
-                                    v-model="selectedBagFilter"
-                                    class="rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex flex-col gap-2">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="relative flex-1 min-w-[200px] sm:min-w-[260px]">
+                                <input
+                                    v-model="searchQuery"
+                                    type="search"
+                                    placeholder="Buscar por nome, notas ou mala…"
+                                    class="w-full rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-sm text-slate-700 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                />
+                                <span
+                                    v-if="searchQuery"
+                                    class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] font-medium text-slate-400"
                                 >
-                                    <option value="all">Todas as malas</option>
-                                    <option v-for="bag in bagFilters" :key="bag.value" :value="bag.value">
-                                        {{ bag.label }}
-                                    </option>
-                                    <option value="unassigned">Sem mala</option>
-                                </select>
-                                <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-2 py-1 text-xs text-slate-600 shadow-inner shadow-slate-100">
-                                    <span>Itens por página</span>
-                                    <select
-                                        v-model.number="pageSize"
-                                        class="rounded border border-slate-200 bg-white px-2 py-1 text-xs focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-300"
-                                    >
-                                        <option v-for="option in pageSizeOptions" :key="option" :value="option">
-                                            {{ option }}
-                                        </option>
-                                    </select>
-                                </div>
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-black/5 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-                                    @click="resetFilters"
-                                >
-                                    Limpar filtros
-                                </button>
+                                    {{ totalFilteredCount }} resultado(s)
+                                </span>
                             </div>
+                            <button
+                                type="button"
+                                class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 sm:text-sm"
+                                @click="toggleFilters"
+                            >
+                                <SlidersHorizontal class="h-4 w-4" />
+                                {{ filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros' }}
+                            </button>
+                            <span
+                                v-if="filtersDirty"
+                                class="text-[11px] font-medium uppercase tracking-wide text-emerald-600"
+                            >
+                                filtros ativos
+                            </span>
+                        </div>
+                        <FilterMenu
+                            :show="showFiltersPanel"
+                            :bag-filter.sync="selectedBagFilter"
+                            :bag-options="bagFilters"
+                            :page-size.sync="pageSize"
+                            :page-options="pageSizeOptions"
+                            @clear="handleClearFilters"
+                        />
+                    </div>
                             <div class="text-xs text-slate-500 sm:text-sm">
                                 Exibindo
                                 <span class="font-semibold text-slate-700">{{ pageStart }}–{{ pageEnd }}</span>
@@ -422,8 +519,10 @@
 <script setup>
 import { Head, usePage, router } from '@inertiajs/vue3';
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
+import { ChevronDown, SlidersHorizontal } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
+import FilterMenu from '@/Components/FilterMenu.vue';
 import ItemRow from '@/Components/ItemRow.vue';
 import Suitcase from '@/Components/Suitcase.vue';
 import Tabs from '@/Components/Tabs.vue';
@@ -448,7 +547,33 @@ const goToDecidir = () => {
     router.visit('/decidir');
 };
 
-const showResumoHelp = ref(false);
+const panoramaSections = reactive({
+    counts: false,
+    totals: false,
+    progress: false,
+});
+const capacitySections = reactive({
+    bars: false,
+    cards: false,
+});
+const capacityBarSections = reactive({
+    weight: false,
+    volume: false,
+});
+const setAllPanoramaSections = (state) => {
+    Object.keys(panoramaSections).forEach((key) => {
+        panoramaSections[key] = state;
+    });
+};
+const togglePanoramaSection = (key) => {
+    panoramaSections[key] = !panoramaSections[key];
+};
+const toggleCapacitySection = (key) => {
+    capacitySections[key] = !capacitySections[key];
+};
+const toggleCapacityBarSection = (key) => {
+    capacityBarSections[key] = !capacityBarSections[key];
+};
 const activeTab = ref('take');
 const selectAllRef = ref(null);
 const selection = reactive({
@@ -510,9 +635,30 @@ const allResumoItems = computed(() => {
 });
 
 const tabItems = computed(() => [
-    { key: 'take', label: 'Levar', badge: decisionStore.yesCount },
-    { key: 'pending', label: 'Pendentes', badge: pendingItems.value.length },
-    { key: 'leave', label: 'Não levar', badge: decisionStore.noCount },
+    {
+        key: 'take',
+        label: 'Levar',
+        badge: decisionStore.yesCount,
+        icon: '✔',
+        accent: 'emerald',
+        description: 'Itens confirmados para ir',
+    },
+    {
+        key: 'pending',
+        label: 'Pendentes',
+        badge: pendingItems.value.length,
+        icon: '⏳',
+        accent: 'amber',
+        description: 'Aguardam decisão',
+    },
+    {
+        key: 'leave',
+        label: 'Não levar',
+        badge: decisionStore.noCount,
+        icon: '✖',
+        accent: 'rose',
+        description: 'Itens descartados',
+    },
 ]);
 
 const listsByTab = computed(() => ({
@@ -526,8 +672,22 @@ const rawTabItems = computed(() => listsByTab.value[activeTab.value] ?? []);
 const searchQuery = ref('');
 const selectedBagFilter = ref('all');
 const pageSizeOptions = [10, 25, 50, 100];
-const pageSize = ref(25);
+const defaultPageSize = 25;
+const pageSize = ref(defaultPageSize);
 const currentPage = ref(1);
+const filtersExpanded = ref(false);
+const filtersDirty = computed(
+    () => Boolean(searchQuery.value.trim()) || selectedBagFilter.value !== 'all' || pageSize.value !== defaultPageSize,
+);
+const showFiltersPanel = computed(() => filtersExpanded.value || filtersDirty.value);
+watch(filtersDirty, (dirty) => {
+    if (dirty) {
+        filtersExpanded.value = true;
+    }
+});
+const toggleFilters = () => {
+    filtersExpanded.value = !filtersExpanded.value;
+};
 
 const bagFilters = computed(() => {
     const seen = new Map();
@@ -573,6 +733,7 @@ const filteredItems = computed(() => {
 });
 
 const totalFilteredCount = computed(() => filteredItems.value.length);
+const showListCard = computed(() => totalFilteredCount.value > 0 || Boolean(searchQuery.value.trim()));
 
 const totalPages = computed(() => {
     if (!totalFilteredCount.value) return 0;
@@ -625,19 +786,7 @@ const emptyStates = {
 
 const currentEmpty = computed(() => emptyStates[activeTab.value] ?? emptyStates.take);
 
-const rawStats = computed(() =>
-    decisionStore.resumo.stats ?? {
-        total: 0,
-        pending: 0,
-        take: 0,
-        leave: 0,
-        undecided: 0,
-        decided: 0,
-        remaining: 0,
-        totalWeight: 0,
-        reservedKg: decisionStore.reservedKg ?? 0,
-    },
-);
+const rawStats = computed(() => decisionStore.resumo.stats ?? {});
 
 const pendingDeckCount = computed(() => rawStats.value.pending_deck ?? undecidedItems.value.length ?? 0);
 const pendingBacklog = computed(() => rawStats.value.pending ?? pendingItems.value.length ?? 0);
@@ -1049,6 +1198,15 @@ const volumeReservedCm3 = computed(() =>
     volumeStats.value?.reserved_cm3 ??
     bagSummaries.value.reduce((sum, bag) => sum + (bag.reservedVolumeAppliedCm3 ?? 0), 0),
 );
+const volumeRemainingCm3 = computed(() =>
+    volumeStats.value?.remaining_cm3 ??
+    Math.max(volumeTotalCapacityCm3.value - volumeReservedCm3.value - volumeUsedCm3.value, 0),
+);
+
+const numberFormatter = new Intl.NumberFormat('pt-BR');
+const formatKg = (value) => `${Number(value ?? 0).toFixed(1)} kg`;
+const formatLiters = (cm3Value) => `${(Number(cm3Value ?? 0) / 1000).toFixed(1)} L`;
+const formatCm3 = (value) => `${numberFormatter.format(Math.round(Number(value ?? 0))) } cm³`;
 
 const suitcaseCards = computed(() =>
     bagSummaries.value.map((bag) => {
@@ -1215,8 +1373,14 @@ const scrollListToTop = ({ window: scrollWindow = false } = {}) => {
 const resetFilters = () => {
     searchQuery.value = '';
     selectedBagFilter.value = 'all';
+    pageSize.value = defaultPageSize;
     currentPage.value = 1;
     nextTick(() => scrollListToTop());
+};
+
+const handleClearFilters = () => {
+    resetFilters();
+    filtersExpanded.value = false;
 };
 
 watch(

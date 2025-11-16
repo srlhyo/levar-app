@@ -8,6 +8,7 @@ use App\Models\Move;
 use App\Support\ChecklistSerializer;
 use App\Support\DimensionParser;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\Schema;
 
 class PackService
 {
@@ -138,6 +139,10 @@ class PackService
 
     protected function attachRecentHistory(EloquentCollection $bags, Move $move): void
     {
+        if (!Schema::hasTable('bag_activity_logs')) {
+            return;
+        }
+
         $bagIds = $bags->pluck('id')->filter()->all();
         if (empty($bagIds)) {
             return;
