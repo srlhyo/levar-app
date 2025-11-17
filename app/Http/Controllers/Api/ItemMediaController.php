@@ -133,7 +133,13 @@ class ItemMediaController extends Controller
                 $width = $image->width();
                 $height = $image->height();
 
-                $thumbImage = $manager->read($realPath)->cover(600, 600);
+                // Generate a thumbnail without relying on Image::clone(),
+                // which is not available in the current Intervention version.
+                $thumbImage = $manager->read($realPath);
+                if ($thumbImage->width() > 600 || $thumbImage->height() > 600) {
+                    $thumbImage = $thumbImage->scaleDown(600, 600);
+                }
+
                 $storage->put($thumbPath, $thumbImage->toJpeg(85)->toString());
             } else {
                 $dimensions = $realPath ? @getimagesize($realPath) : null;

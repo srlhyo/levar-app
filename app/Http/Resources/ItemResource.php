@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\MissingValue;
@@ -66,12 +67,25 @@ class ItemResource extends JsonResource
 
     private function resolveBag(): ?object
     {
-        $bag = $this->whenLoaded('bag');
+        $resource = $this->resource;
 
-        if ($bag instanceof MissingValue) {
+        if ($resource instanceof Model) {
+            if ($resource->relationLoaded('bag')) {
+                $bag = $resource->getRelation('bag');
+
+                if ($bag instanceof MissingValue) {
+                    return null;
+                }
+
+                return $bag;
+            }
+
+            // If the relation was not eager loaded we avoid triggering lazy loading.
             return null;
         }
 
-        return $bag;
+        $bag = $this->whenLoaded('bag');
+
+        return $bag instanceof MissingValue ? null : $bag;
     }
 }

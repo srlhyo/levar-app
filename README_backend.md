@@ -34,6 +34,20 @@ Thumbnail generation relies on the GD driver bundled with PHP. Ensure the `gd` a
 - Entre em `/login` usando email/senha. Cookies de sessão vêm configurados para domínios locais (`SANCTUM_STATEFUL_DOMAINS`, `SESSION_DOMAIN`).
 - Para ambiente local, o usuário `demo@example.com` (senha `password`) é seeded como admin e pode acessar rotas protegidas como `/share-inbox`.
 
+### ntfy (login/logout push)
+
+If you want ntfy to ping your phone whenever someone logs in or out:
+
+```
+NTFY_ENABLED=true
+NTFY_BASE_URL=https://ntfy.sh        # or your self-hosted endpoint
+NTFY_TOPIC=your-topic-name
+# Optional token if the topic is protected
+NTFY_TOKEN=ntfy_your_token
+```
+
+Once these variables are set and config is cached, the auth controller posts a text/plain payload on successful login/logout, including user email, IP, user-agent and timestamp. We fail silently (errors are logged via `report()`) so authentication flow is never interrupted if ntfy is unreachable.
+
 ## Entities
 
 - **Move** — relocation profile tied to a user with dynamic luggage definitions.

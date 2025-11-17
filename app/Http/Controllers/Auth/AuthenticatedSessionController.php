@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\NtfyNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,10 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
+    public function __construct(private readonly NtfyNotificationService $ntfy)
+    {
+    }
+
     public function create(): Response
     {
         return Inertia::render('Auth/Login');
@@ -34,11 +39,23 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
+        if ($user) {
+            $this->ntfy->notifyLogin($user, $request);
+        }
+
         return redirect()->intended(route('home'))->with('show_onboarding', true);
     }
 
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+
+        if ($user) {
+            $this->ntfy->notifyLogout($user, $request);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
