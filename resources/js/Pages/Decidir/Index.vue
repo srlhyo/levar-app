@@ -35,10 +35,6 @@
                     type="button"
                     class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
                     @click="toggleGuideSection('guide')"
-                    @touchstart.passive="handleUndoTouchStart"
-                    @touchmove.prevent="handleUndoTouchMove"
-                    @touchend="handleUndoTouchEnd"
-                    @touchcancel="handleUndoTouchEnd"
                 >
                     Guia rápido
                     <ChevronDown
@@ -196,7 +192,7 @@
         <transition name="slide-up">
             <div v-if="undoState.itemId" class="fixed inset-x-0 bottom-4 z-40 px-4 sm:bottom-6">
                 <div
-                    class="mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-slate-900/90 px-4 py-3 text-white shadow-2xl ring-1 ring-black/10 sm:max-w-lg select-none"
+                    class="mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-slate-900/90 px-4 py-3 text-white shadow-2xl ring-1 ring-black/10 sm:max-w-lg select-none touch-pan-y"
                     :style="undoSwipeStyle"
                     @pointerdown="handleUndoPointerDown"
                     @pointermove="handleUndoPointerMove"
@@ -436,22 +432,6 @@ const handleUndoPointerEnd = (event) => {
     endUndoDrag('pointer');
 };
 
-const handleUndoTouchStart = (event) => {
-    if (!event.touches?.length) return;
-    beginUndoDrag(event.touches[0].clientX, 'touch');
-};
-
-const handleUndoTouchMove = (event) => {
-    if (!event.touches?.length) return;
-    updateUndoDrag(event.touches[0].clientX, 'touch');
-};
-
-const handleUndoTouchEnd = (event) => {
-    const point = event.changedTouches?.[0];
-    if (!point) return;
-    updateUndoDrag(point.clientX, 'touch');
-    endUndoDrag('touch');
-};
 
 const loadDeck = async () => {
     if (!move.value?.id) {
