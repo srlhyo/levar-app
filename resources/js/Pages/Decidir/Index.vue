@@ -143,7 +143,10 @@
             </div>
         </div>
 
-        <div v-else-if="currentItem" class="flex flex-col items-center gap-8">
+        <div
+            v-else-if="currentItem"
+            class="flex flex-col items-center gap-8"
+        >
             <SwipeCard
                 ref="swipeCardRef"
                 :item="currentItem"
@@ -188,7 +191,15 @@
 
         <transition name="slide-up">
             <div v-if="undoState.itemId" class="fixed inset-x-0 bottom-4 z-40 px-4 sm:bottom-6">
-                <div class="mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-slate-900/90 px-4 py-3 text-white shadow-2xl ring-1 ring-black/10 sm:max-w-lg">
+                <div
+                    class="mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-slate-900/90 px-4 py-3 text-white shadow-2xl ring-1 ring-black/10 sm:max-w-lg select-none"
+                    :style="undoSwipeStyle"
+                    @pointerdown="handleUndoPointerDown"
+                    @pointermove="handleUndoPointerMove"
+                    @pointerup="handleUndoPointerEnd"
+                    @pointercancel="handleUndoPointerEnd"
+                    @pointerleave="handleUndoPointerEnd"
+                >
                     <div class="flex-1">
                         <p class="text-sm font-semibold">{{ undoState.label }}</p>
                         <p class="text-xs text-slate-300">Toque para desfazer em até 6 segundos</p>
@@ -275,6 +286,21 @@ const milestoneMessage = ref(null);
 const celebrationTimeout = ref(null);
 const celebratedMilestones = ref(new Set());
 const undoState = ref({ itemId: null, label: '', timer: null });
+const undoSwipe = reactive({
+    dragging: false,
+    startX: 0,
+    deltaX: 0,
+});
+
+const undoSwipeStyle = computed(() => {
+    if (!undoSwipe.dragging && undoSwipe.deltaX === 0) {
+        return null;
+    }
+    return {
+        transform: `translateX(${undoSwipe.deltaX}px)`,
+        transition: undoSwipe.dragging ? 'none' : 'transform 0.2s ease',
+    };
+});
 
 const handleDecision = async ({ type, options = {} }) => {
     const active = decisionStore.currentItem;
@@ -345,6 +371,8 @@ const clearUndoState = () => {
         window.clearTimeout(undoState.value.timer);
     }
     undoState.value = { itemId: null, label: '', timer: null };
+    undoSwipe.dragging = false;
+    undoSwipe.deltaX = 0;
 };
 
 const undoLastDecision = async () => {
@@ -359,6 +387,32 @@ const undoLastDecision = async () => {
     } finally {
         clearUndoState();
     }
+};
+
+const handleUndoPointerDown = (event) => {
+    if (!undoState.value.itemId || undoSwipe.dragging) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    undoSwipe.dragging = true;
+    undoSwipe.startX = event.clientX;
+    undoSwipe.deltaX = 0;
+    event.currentTarget?.setPointerCapture?.(event.pointerId);
+};
+
+const handleUndoPointerMove = (event) => {
+    if (!undoSwipe.dragging) return;
+    undoSwipe.deltaX = event.clientX - undoSwipe.startX;
+};
+
+const handleUndoPointerEnd = (event) => {
+    if (!undoSwipe.dragging) return;
+    event.currentTarget?.releasePointerCapture?.(event.pointerId);
+    const delta = undoSwipe.deltaX;
+    undoSwipe.dragging = false;
+    if (Math.abs(delta) > 80) {
+        clearUndoState();
+        return;
+    }
+    undoSwipe.deltaX = 0;
 };
 
 const loadDeck = async () => {

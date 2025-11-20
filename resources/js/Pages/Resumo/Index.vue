@@ -31,14 +31,44 @@
                         <div class="rounded-2xl bg-white/70 px-3 py-2">
                             <p class="text-[11px] uppercase tracking-wide text-emerald-600 sm:text-xs">Vai levar</p>
                             <p class="text-2xl font-semibold text-emerald-600">{{ stats.take }}</p>
+                            <button
+                                v-if="takeItems.length"
+                                type="button"
+                                class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-100 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-emerald-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 sm:text-xs disabled:opacity-60"
+                                :disabled="globalRequeueLoading.take"
+                                @click="handleGlobalRequeue('take')"
+                            >
+                                <span v-if="globalRequeueLoading.take" class="animate-pulse">Reinserindo…</span>
+                                <span v-else>Reinserir no Decidir</span>
+                            </button>
                         </div>
                         <div class="rounded-2xl bg-white/70 px-3 py-2">
-                            <p class="text-[11px] uppercase tracking-wide text-rose-500 sm:text-xs">Não levar</p>
-                            <p class="text-2xl font-semibold text-rose-500">{{ stats.leave }}</p>
+                            <p class="text-[11px] uppercase tracking-wide text-rose-600 sm:text-xs">Não levar</p>
+                            <p class="text-2xl font-semibold text-rose-600">{{ stats.leave }}</p>
+                            <button
+                                v-if="leaveItems.length"
+                                type="button"
+                                class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-rose-100 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-rose-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 sm:text-xs disabled:opacity-60"
+                                :disabled="globalRequeueLoading.leave"
+                                @click="handleGlobalRequeue('leave')"
+                            >
+                                <span v-if="globalRequeueLoading.leave" class="animate-pulse">Reinserindo…</span>
+                                <span v-else>Reinserir no Decidir</span>
+                            </button>
                         </div>
                         <div class="rounded-2xl bg-white/70 px-3 py-2">
-                            <p class="text-[11px] uppercase tracking-wide text-sky-600 sm:text-xs">Pendentes</p>
-                            <p class="text-2xl font-semibold text-sky-600">{{ stats.pending }}</p>
+                            <p class="text-[11px] uppercase tracking-wide text-amber-700 sm:text-xs">Pendentes</p>
+                            <p class="text-2xl font-semibold text-amber-700">{{ stats.pending }}</p>
+                            <button
+                                v-if="pendingItems.length"
+                                type="button"
+                                class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-100 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-amber-700 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 sm:text-xs disabled:opacity-60"
+                                :disabled="globalRequeueLoading.pending"
+                                @click="handleGlobalRequeue('pending')"
+                            >
+                                <span v-if="globalRequeueLoading.pending" class="animate-pulse">Reinserindo…</span>
+                                <span v-else>Reinserir no Decidir</span>
+                            </button>
                         </div>
                         <div class="rounded-2xl bg-white/70 px-3 py-2">
                             <p class="text-[11px] uppercase tracking-wide text-slate-500 sm:text-xs">Indefinidos</p>
@@ -308,10 +338,10 @@
                 <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-600">
                     ✔ Levar: <span class="font-semibold">{{ stats.take }}</span>
                 </span>
-                <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-amber-600">
+                <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-amber-700">
                     ⏳ Pendentes: <span class="font-semibold">{{ stats.pending_total ?? pendingTotal }}</span>
                 </span>
-                <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1 text-rose-500">
+                <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-3 py-1 text-rose-700">
                     ✖ Não levar: <span class="font-semibold">{{ stats.leave }}</span>
                 </span>
             </div>
@@ -424,56 +454,60 @@
                         </div>
                     </div>
 
-                    <div
-                        ref="listContainer"
-                        class="space-y-3"
-                    >
-                        <ItemRow
-                            v-for="item in currentItems"
-                            :key="item.id"
-                            :item="item"
-                            :selected="currentSelection.has(item.id)"
-                            :show-delete="false"
-                            @toggle-select="toggleSelection"
-                            :bag-options="quickBagOptions"
-                            :show-bag-actions="showBagChips"
-                            :bag-action-disabled="isItemAssigning(item.id)"
-                            @assign-bag="handleRowAssignBag"
-                        />
-                    </div>
+                    <div class="relative">
+                        <div
+                            ref="listContainer"
+                            class="max-h-[70vh] overflow-y-auto pr-1 flex flex-col gap-3"
+                        >
+                            <div class="space-y-3">
+                                <ItemRow
+                                    v-for="item in currentItems"
+                                    :key="item.id"
+                                    :item="item"
+                                    :selected="currentSelection.has(item.id)"
+                                    :show-delete="false"
+                                    @toggle-select="toggleSelection"
+                                    :bag-options="quickBagOptions"
+                                    :show-bag-actions="showBagChips"
+                                    :bag-action-disabled="isItemAssigning(item.id)"
+                                    @assign-bag="handleRowAssignBag"
+                                />
+                            </div>
 
-                    <div
-                        v-if="totalPages > 1"
-                        class="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white/70 px-4 py-2 text-xs text-slate-600 ring-1 ring-white/40 sm:text-sm"
-                    >
-                        <div class="space-x-2">
-                            <button
-                                type="button"
-                                class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
-                                :disabled="currentPage <= 1"
-                                @click="currentPage = Math.max(currentPage - 1, 1)"
+                            <div
+                                v-if="totalPages > 1"
+                                class="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white/70 px-4 py-2 text-xs text-slate-600 ring-1 ring-white/40 sm:text-sm"
                             >
-                                ← Anterior
-                            </button>
-                            <button
-                                type="button"
-                                class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
-                                :disabled="currentPage >= totalPages"
-                                @click="currentPage = Math.min(currentPage + 1, totalPages)"
-                            >
-                                Próxima →
-                            </button>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span>Página</span>
-                            <input
-                                v-model.number="currentPage"
-                                type="number"
-                                min="1"
-                                :max="totalPages"
-                                class="w-16 rounded border border-slate-200 px-2 py-1 text-center text-sm focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-300"
-                            />
-                            <span>de {{ totalPages }}</span>
+                                <div class="space-x-2">
+                                    <button
+                                        type="button"
+                                        class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                        :disabled="currentPage <= 1"
+                                        @click="currentPage = Math.max(currentPage - 1, 1)"
+                                    >
+                                        ← Anterior
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                        :disabled="currentPage >= totalPages"
+                                        @click="currentPage = Math.min(currentPage + 1, totalPages)"
+                                    >
+                                        Próxima →
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span>Página</span>
+                                    <input
+                                        v-model.number="currentPage"
+                                        type="number"
+                                        min="1"
+                                        :max="totalPages"
+                                        class="w-16 rounded border border-slate-200 px-2 py-1 text-center text-sm focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-300"
+                                    />
+                                    <span>de {{ totalPages }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -581,6 +615,11 @@ const selection = reactive({
     pending: new Set(),
     leave: new Set(),
 });
+const globalRequeueLoading = reactive({
+    take: false,
+    pending: false,
+    leave: false,
+});
 const assigningBagIds = ref(new Set());
 const bulkBagChoice = ref('');
 const bulkAssignLoading = ref(false);
@@ -633,6 +672,25 @@ const allResumoItems = computed(() => {
     });
     return Array.from(map.values());
 });
+
+const decisionLabels = {
+    take: 'Itens para levar',
+    pending: 'Pendentes',
+    leave: 'Itens que não vão',
+};
+
+const collectIdsForDecision = (key) => {
+    switch (key) {
+        case 'take':
+            return takeItems.value.map((item) => item.id);
+        case 'pending':
+            return pendingItems.value.map((item) => item.id);
+        case 'leave':
+            return leaveItems.value.map((item) => item.id);
+        default:
+            return [];
+    }
+};
 
 const tabItems = computed(() => [
     {
@@ -1501,6 +1559,27 @@ const ensureUndecided = async (ids) => {
     }
 
     await decisionStore.decideItems(toReset, 'undecided', { clearBag: true });
+};
+
+const handleGlobalRequeue = async (decisionKey) => {
+    const ids = collectIdsForDecision(decisionKey);
+    if (!ids.length) {
+        toast.info('Não há itens nessa lista.');
+        return;
+    }
+
+    const label = decisionLabels[decisionKey] ?? 'Itens';
+    globalRequeueLoading[decisionKey] = true;
+    try {
+        await ensureUndecided(ids);
+        await decisionStore.requeueItems(ids);
+        toast.success(`${label} voltaram ao Decidir ✅`);
+    } catch (error) {
+        console.error(error);
+        toast.error(`Não foi possível reinserir ${label.toLowerCase()} ❌`);
+    } finally {
+        globalRequeueLoading[decisionKey] = false;
+    }
 };
 
 const handleBulkRequeue = async () => {
