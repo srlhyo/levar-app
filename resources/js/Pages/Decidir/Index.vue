@@ -418,6 +418,9 @@ const endUndoDrag = (source) => {
 };
 
 const handleUndoPointerDown = (event) => {
+    if (event.target?.closest('button')) {
+        return;
+    }
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     if (!beginUndoDrag(event.clientX, 'pointer')) return;
     event.currentTarget?.setPointerCapture?.(event.pointerId);

@@ -188,15 +188,20 @@ const warningBadges = computed(() => {
 
 const positionX = ref(0);
 const positionY = ref(0);
+const dragDeltaX = ref(0);
+const dragDeltaY = ref(0);
+const dragIntent = ref(null);
 const isDragging = ref(false);
 const startX = ref(0);
 const startY = ref(0);
 const transitionStyle = ref('transform 0.25s ease-out');
 const isAnimating = ref(false);
 
-const HORIZONTAL_THRESHOLD = 80;
-const VERTICAL_THRESHOLD = 60;
-const VERTICAL_DAMPING = 0.2;
+const HORIZONTAL_THRESHOLD = 90;
+const VERTICAL_THRESHOLD = 140;
+const VERTICAL_DAMPING = 0.25;
+const DIRECTION_BIAS = 1.2;
+const MAX_VERTICAL_DRIFT = 80;
 
 const handlePointerDown = (event) => {
     if (props.disabled || isAnimating.value) return;
@@ -207,16 +212,34 @@ const handlePointerDown = (event) => {
     transitionStyle.value = 'none';
     startX.value = event.clientX;
     startY.value = event.clientY;
+    dragDeltaX.value = 0;
+    dragDeltaY.value = 0;
+    dragIntent.value = null;
     event.currentTarget.setPointerCapture(event.pointerId);
 };
 
 const handlePointerMove = (event) => {
     if (!isDragging.value) return;
-    if (event.cancelable) {
+    const deltaX = event.clientX - startX.value;
+    const deltaY = event.clientY - startY.value;
+    dragDeltaX.value = deltaX;
+    dragDeltaY.value = deltaY;
+
+    if (!dragIntent.value) {
+        const traveled = Math.hypot(deltaX, deltaY);
+        if (traveled > 8) {
+            dragIntent.value = Math.abs(deltaX) >= Math.abs(deltaY) ? 'horizontal' : 'vertical';
+        }
+    }
+
+    const isVertical = dragIntent.value === 'vertical';
+    if (!isVertical && event.cancelable) {
         event.preventDefault();
     }
-    positionX.value = event.clientX - startX.value;
-    positionY.value = (event.clientY - startY.value) * VERTICAL_DAMPING;
+
+    positionX.value = isVertical ? deltaX * 0.25 : deltaX;
+    const dampedY = deltaY * VERTICAL_DAMPING;
+    positionY.value = Math.max(Math.min(dampedY, MAX_VERTICAL_DRIFT), -MAX_VERTICAL_DRIFT);
 };
 
 const handlePointerEnd = (event) => {
@@ -224,18 +247,21 @@ const handlePointerEnd = (event) => {
     isDragging.value = false;
     transitionStyle.value = 'transform 0.25s ease-out';
     event.currentTarget?.releasePointerCapture?.(event.pointerId);
-
-    const deltaX = event.clientX - startX.value;
-    const deltaY = event.clientY - startY.value;
+    const deltaX = dragDeltaX.value;
+    const deltaY = dragDeltaY.value;
+    dragIntent.value = null;
     const absX = Math.abs(deltaX);
     const absY = Math.abs(deltaY);
 
-    if (absX > HORIZONTAL_THRESHOLD && absX > absY) {
+    const horizontalSwipe = absX > HORIZONTAL_THRESHOLD && absX > absY / DIRECTION_BIAS;
+    const verticalSwipe = deltaY > VERTICAL_THRESHOLD && absY > absX * DIRECTION_BIAS;
+
+    if (horizontalSwipe) {
         triggerDecision(deltaX > 0 ? 'yes' : 'no');
         return;
     }
 
-    if (deltaY > VERTICAL_THRESHOLD && absY > absX) {
+    if (verticalSwipe) {
         triggerDecision('pending');
         return;
     }
@@ -250,10 +276,17 @@ const cardStyle = computed(() => ({
 }));
 
 const overlay = computed(() => {
-    const normalizedY = VERTICAL_DAMPING ? positionY.value / VERTICAL_DAMPING : positionY.value;
-    if (normalizedY > VERTICAL_THRESHOLD) return 'pending';
-    if (positionX.value > HORIZONTAL_THRESHOLD) return 'yes';
-    if (positionX.value < -HORIZONTAL_THRESHOLD) return 'no';
+    const deltaX = dragDeltaX.value;
+    const deltaY = dragDeltaY.value;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+
+    if (deltaY > VERTICAL_THRESHOLD * 0.6 && absY > absX * DIRECTION_BIAS) {
+        return 'pending';
+    }
+
+    if (deltaX > HORIZONTAL_THRESHOLD * 0.5) return 'yes';
+    if (deltaX < -HORIZONTAL_THRESHOLD * 0.5) return 'no';
     return null;
 });
 
@@ -261,7 +294,10 @@ const resetCard = () => {
     transitionStyle.value = 'transform 0.25s ease-out';
     positionX.value = 0;
     positionY.value = 0;
+    dragDeltaX.value = 0;
+    dragDeltaY.value = 0;
     isAnimating.value = false;
+    dragIntent.value = null;
 };
 
 const emitDecision = (decision, options = {}) => {
@@ -326,10 +362,10 @@ watch(
 }
 
 .swipe-card {
-    touch-action: none;
+    touch-action: pan-y;
+    user-select: none;
 }
 .swipe-card--dragging {
     cursor: grabbing;
-    user-select: none;
 }
 </style>
