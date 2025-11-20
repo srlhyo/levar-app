@@ -35,6 +35,10 @@
                     type="button"
                     class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
                     @click="toggleGuideSection('guide')"
+                    @touchstart.passive="handleUndoTouchStart"
+                    @touchmove.prevent="handleUndoTouchMove"
+                    @touchend="handleUndoTouchEnd"
+                    @touchcancel="handleUndoTouchEnd"
                 >
                     Guia rápido
                     <ChevronDown
@@ -290,6 +294,7 @@ const undoSwipe = reactive({
     dragging: false,
     startX: 0,
     deltaX: 0,
+    source: null,
 });
 
 const undoSwipeStyle = computed(() => {
@@ -373,6 +378,7 @@ const clearUndoState = () => {
     undoState.value = { itemId: null, label: '', timer: null };
     undoSwipe.dragging = false;
     undoSwipe.deltaX = 0;
+    undoSwipe.source = null;
 };
 
 const undoLastDecision = async () => {
@@ -389,30 +395,62 @@ const undoLastDecision = async () => {
     }
 };
 
-const handleUndoPointerDown = (event) => {
-    if (!undoState.value.itemId || undoSwipe.dragging) return;
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
+const beginUndoDrag = (clientX, source) => {
+    if (!undoState.value.itemId || undoSwipe.dragging) return false;
     undoSwipe.dragging = true;
-    undoSwipe.startX = event.clientX;
+    undoSwipe.startX = clientX;
     undoSwipe.deltaX = 0;
-    event.currentTarget?.setPointerCapture?.(event.pointerId);
+    undoSwipe.source = source;
+    return true;
 };
 
-const handleUndoPointerMove = (event) => {
-    if (!undoSwipe.dragging) return;
-    undoSwipe.deltaX = event.clientX - undoSwipe.startX;
+const updateUndoDrag = (clientX, source) => {
+    if (!undoSwipe.dragging || undoSwipe.source !== source) return;
+    undoSwipe.deltaX = clientX - undoSwipe.startX;
 };
 
-const handleUndoPointerEnd = (event) => {
-    if (!undoSwipe.dragging) return;
-    event.currentTarget?.releasePointerCapture?.(event.pointerId);
+const endUndoDrag = (source) => {
+    if (!undoSwipe.dragging || undoSwipe.source !== source) return;
     const delta = undoSwipe.deltaX;
     undoSwipe.dragging = false;
+    undoSwipe.source = null;
     if (Math.abs(delta) > 80) {
         clearUndoState();
         return;
     }
     undoSwipe.deltaX = 0;
+};
+
+const handleUndoPointerDown = (event) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (!beginUndoDrag(event.clientX, 'pointer')) return;
+    event.currentTarget?.setPointerCapture?.(event.pointerId);
+};
+
+const handleUndoPointerMove = (event) => {
+    updateUndoDrag(event.clientX, 'pointer');
+};
+
+const handleUndoPointerEnd = (event) => {
+    event.currentTarget?.releasePointerCapture?.(event.pointerId);
+    endUndoDrag('pointer');
+};
+
+const handleUndoTouchStart = (event) => {
+    if (!event.touches?.length) return;
+    beginUndoDrag(event.touches[0].clientX, 'touch');
+};
+
+const handleUndoTouchMove = (event) => {
+    if (!event.touches?.length) return;
+    updateUndoDrag(event.touches[0].clientX, 'touch');
+};
+
+const handleUndoTouchEnd = (event) => {
+    const point = event.changedTouches?.[0];
+    if (!point) return;
+    updateUndoDrag(point.clientX, 'touch');
+    endUndoDrag('touch');
 };
 
 const loadDeck = async () => {

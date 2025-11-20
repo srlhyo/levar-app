@@ -457,7 +457,7 @@
                     <div class="relative">
                         <div
                             ref="listContainer"
-                            class="max-h-[70vh] overflow-y-auto pr-1 flex flex-col gap-3"
+                            class="max-h-[70vh] overflow-y-auto pr-1 flex flex-col gap-4 pb-6"
                         >
                             <div class="space-y-3">
                                 <ItemRow
@@ -476,36 +476,38 @@
 
                             <div
                                 v-if="totalPages > 1"
-                                class="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white/70 px-4 py-2 text-xs text-slate-600 ring-1 ring-white/40 sm:text-sm"
+                                class="sticky bottom-0 -mx-1 rounded-2xl bg-white/95 px-5 py-3 text-xs text-slate-600 shadow ring-1 ring-slate-200/60 sm:text-sm"
                             >
-                                <div class="space-x-2">
-                                    <button
-                                        type="button"
-                                        class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
-                                        :disabled="currentPage <= 1"
-                                        @click="currentPage = Math.max(currentPage - 1, 1)"
-                                    >
-                                        ← Anterior
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
-                                        :disabled="currentPage >= totalPages"
-                                        @click="currentPage = Math.min(currentPage + 1, totalPages)"
-                                    >
-                                        Próxima →
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span>Página</span>
-                                    <input
-                                        v-model.number="currentPage"
-                                        type="number"
-                                        min="1"
-                                        :max="totalPages"
-                                        class="w-16 rounded border border-slate-200 px-2 py-1 text-center text-sm focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-300"
-                                    />
-                                    <span>de {{ totalPages }}</span>
+                                <div class="flex flex-wrap items-center justify-between gap-3">
+                                    <div class="space-x-2">
+                                        <button
+                                            type="button"
+                                            class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                            :disabled="currentPage <= 1"
+                                            @click="currentPage = Math.max(currentPage - 1, 1)"
+                                        >
+                                            ← Anterior
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                            :disabled="currentPage >= totalPages"
+                                            @click="currentPage = Math.min(currentPage + 1, totalPages)"
+                                        >
+                                            Próxima →
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span>Página</span>
+                                        <input
+                                            v-model.number="currentPage"
+                                            type="number"
+                                            min="1"
+                                            :max="totalPages"
+                                            class="w-16 rounded border border-slate-200 px-2 py-1 text-center text-sm focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-300"
+                                        />
+                                        <span>de {{ totalPages }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
