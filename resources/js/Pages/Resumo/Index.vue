@@ -347,119 +347,121 @@
             </div>
 
             <Tabs v-model="activeTab" :items="tabItems" label="Listas por decisão">
-                <div v-if="showListCard" class="mt-4 space-y-4">
-                    <div class="sticky top-16 z-20 space-y-3 rounded-3xl bg-white/90 px-4 py-3 text-sm text-slate-600 shadow ring-1 ring-black/5 backdrop-blur">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex flex-col gap-2">
-                        <div class="flex flex-wrap items-center gap-3">
-                            <div class="relative flex-1 min-w-[200px] sm:min-w-[260px]">
-                                <input
-                                    v-model="searchQuery"
-                                    type="search"
-                                    placeholder="Buscar por nome, notas ou mala…"
-                                    class="w-full rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-sm text-slate-700 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-                                />
-                                <span
-                                    v-if="searchQuery"
-                                    class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] font-medium text-slate-400"
-                                >
-                                    {{ totalFilteredCount }} resultado(s)
-                                </span>
-                            </div>
-                            <button
-                                type="button"
-                                class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 sm:text-sm"
-                                @click="toggleFilters"
-                            >
-                                <SlidersHorizontal class="h-4 w-4" />
-                                {{ filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros' }}
-                            </button>
-                            <span
-                                v-if="filtersDirty"
-                                class="text-[11px] font-medium uppercase tracking-wide text-emerald-600"
-                            >
-                                filtros ativos
-                            </span>
-                        </div>
-                        <FilterMenu
-                            :show="showFiltersPanel"
-                            :bag-filter.sync="selectedBagFilter"
-                            :bag-options="bagFilters"
-                            :page-size.sync="pageSize"
-                            :page-options="pageSizeOptions"
-                            @clear="handleClearFilters"
-                        />
-                    </div>
-                            <div class="text-xs text-slate-500 sm:text-sm">
-                                Exibindo
-                                <span class="font-semibold text-slate-700">{{ pageStart }}–{{ pageEnd }}</span>
-                                de
-                                <span class="font-semibold text-slate-700">{{ totalFilteredCount }}</span>
-                                itens
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <label class="flex items-center gap-2 font-semibold">
-                                <input
-                                    ref="selectAllRef"
-                                    type="checkbox"
-                                    class="h-5 w-5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-400"
-                                    :checked="allSelected"
-                                    @change="toggleSelectAll"
-                                />
-                                <span>Selecionar todos</span>
-                            </label>
-                            <div class="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-200 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
-                                    :disabled="!selectedCount"
-                                    @click="handleBulkRequeue"
-                                    title="Devolver a seleção para o deck da tela Decidir"
-                                >
-                                    ↩ Voltar para o deck do Decidir
-                                </button>
-                                <span v-if="selectedCount" class="text-xs font-medium text-slate-500">
-                                    {{ selectedCount }} selecionado(s)
-                                </span>
-                            </div>
-                        </div>
-                        <div
-                            v-if="showBulkBagAssign"
-                            class="flex flex-wrap items-center gap-2 rounded-2xl bg-white/80 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 sm:text-sm"
-                        >
-                            <span class="font-semibold text-slate-700">Enviar seleção para</span>
-                            <select
-                                v-model="bulkBagChoice"
-                                class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
-                            >
-                                <option value="">Sem mala</option>
-                                <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
-                                    {{ bag.label }}
-                                </option>
-                            </select>
-                            <button
-                                type="button"
-                                class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                                :disabled="bulkAssignLoading"
-                                @click="handleBulkAssign"
-                            >
-                                <span
-                                    v-if="bulkAssignLoading"
-                                    class="h-2 w-2 animate-ping rounded-full bg-white"
-                                    aria-hidden="true"
-                                />
-                                Aplicar
-                            </button>
-                        </div>
-                    </div>
-
+                <div v-if="showListCard" class="mt-4 rounded-3xl border border-slate-200/70 bg-white/80 shadow-inner shadow-white">
                     <div class="relative">
+                        <div class="pointer-events-none absolute inset-x-0 top-0 h-6 rounded-t-3xl bg-gradient-to-b from-white via-white/80 to-transparent z-10"></div>
+                        <div class="pointer-events-none absolute inset-x-0 bottom-0 h-6 rounded-b-3xl bg-gradient-to-t from-white via-white/80 to-transparent z-10"></div>
                         <div
                             ref="listContainer"
-                            class="max-h-[70vh] overflow-y-auto pr-1 flex flex-col gap-4 pb-6"
+                            class="max-h-[72vh] overflow-y-auto pr-2 pb-6 space-y-4"
                         >
-                            <div class="space-y-3">
+                            <div class="sticky top-0 z-20 space-y-3 rounded-3xl bg-white/95 px-4 py-3 text-sm text-slate-600 shadow ring-1 ring-black/5 backdrop-blur">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex flex-wrap items-center gap-3">
+                                            <div class="relative flex-1 min-w-[200px] sm:min-w-[260px]">
+                                                <input
+                                                    v-model="searchQuery"
+                                                    type="search"
+                                                    placeholder="Buscar por nome, notas ou mala…"
+                                                    class="w-full rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-sm text-slate-700 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                                />
+                                                <span
+                                                    v-if="searchQuery"
+                                                    class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] font-medium text-slate-400"
+                                                >
+                                                    {{ totalFilteredCount }} resultado(s)
+                                                </span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 sm:text-sm"
+                                                @click="toggleFilters"
+                                            >
+                                                <SlidersHorizontal class="h-4 w-4" />
+                                                {{ filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros' }}
+                                            </button>
+                                            <span
+                                                v-if="filtersDirty"
+                                                class="text-[11px] font-medium uppercase tracking-wide text-emerald-600"
+                                            >
+                                                filtros ativos
+                                            </span>
+                                        </div>
+                                        <FilterMenu
+                                            :show="showFiltersPanel"
+                                            :bag-filter.sync="selectedBagFilter"
+                                            :bag-options="bagFilters"
+                                            :page-size.sync="pageSize"
+                                            :page-options="pageSizeOptions"
+                                            @clear="handleClearFilters"
+                                        />
+                                    </div>
+                                    <div class="text-xs text-slate-500 sm:text-sm">
+                                        Exibindo
+                                        <span class="font-semibold text-slate-700">{{ pageStart }}–{{ pageEnd }}</span>
+                                        de
+                                        <span class="font-semibold text-slate-700">{{ totalFilteredCount }}</span>
+                                        itens
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap items-center justify-between gap-3">
+                                    <label class="flex items-center gap-2 font-semibold">
+                                        <input
+                                            ref="selectAllRef"
+                                            type="checkbox"
+                                            class="h-5 w-5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-400"
+                                            :checked="allSelected"
+                                            @change="toggleSelectAll"
+                                        />
+                                        <span>Selecionar todos</span>
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-200 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+                                            :disabled="!selectedCount"
+                                            @click="handleBulkRequeue"
+                                            title="Devolver a seleção para o deck da tela Decidir"
+                                        >
+                                            ↩ Voltar para o deck do Decidir
+                                        </button>
+                                        <span v-if="selectedCount" class="text-xs font-medium text-slate-500">
+                                            {{ selectedCount }} selecionado(s)
+                                        </span>
+                                    </div>
+                                </div>
+                                <div
+                                    v-if="showBulkBagAssign"
+                                    class="flex flex-wrap items-center gap-2 rounded-2xl bg-white/80 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 sm:text-sm"
+                                >
+                                    <span class="font-semibold text-slate-700">Enviar seleção para</span>
+                                    <select
+                                        v-model="bulkBagChoice"
+                                        class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
+                                    >
+                                        <option value="">Sem mala</option>
+                                        <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
+                                            {{ bag.label }}
+                                        </option>
+                                    </select>
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                                        :disabled="bulkAssignLoading"
+                                        @click="handleBulkAssign"
+                                    >
+                                        <span
+                                            v-if="bulkAssignLoading"
+                                            class="h-2 w-2 animate-ping rounded-full bg-white"
+                                            aria-hidden="true"
+                                        />
+                                        Aplicar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3 px-4">
                                 <ItemRow
                                     v-for="item in currentItems"
                                     :key="item.id"
@@ -476,7 +478,7 @@
 
                             <div
                                 v-if="totalPages > 1"
-                                class="sticky bottom-0 -mx-1 rounded-2xl bg-white/95 px-5 py-3 text-xs text-slate-600 shadow ring-1 ring-slate-200/60 sm:text-sm"
+                                class="sticky bottom-0 rounded-2xl bg-white/95 px-4 py-3 text-xs text-slate-600 shadow ring-1 ring-slate-200/60 backdrop-blur sm:text-sm"
                             >
                                 <div class="flex flex-wrap items-center justify-between gap-3">
                                     <div class="space-x-2">
@@ -512,7 +514,6 @@
                             </div>
                         </div>
                     </div>
-
                     <transition name="slide-up">
                         <div
                             v-if="selectedCount"
