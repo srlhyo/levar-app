@@ -426,7 +426,7 @@
 
                     <div
                         ref="listContainer"
-                        class="max-h-[65vh] space-y-3 overflow-y-auto pr-1"
+                        class="space-y-3"
                     >
                         <ItemRow
                             v-for="item in currentItems"
@@ -1361,12 +1361,25 @@ const pruneAllSelection = () => {
 
 const listContainer = ref(null);
 
-const scrollListToTop = ({ window: scrollWindow = false } = {}) => {
-    if (listContainer.value) {
-        listContainer.value.scrollTo({ top: 0, behavior: 'smooth' });
+const scrollListToTop = () => {
+    const target = listContainer.value;
+    if (!target) {
+        if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        return;
     }
-    if (scrollWindow && typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const canScrollElement = target.scrollHeight - target.clientHeight > 4;
+    if (canScrollElement) {
+        target.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+
+    if (typeof window !== 'undefined') {
+        const rect = target.getBoundingClientRect();
+        const top = window.scrollY + rect.top - 120;
+        window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
     }
 };
 
