@@ -233,13 +233,19 @@ const handlePointerMove = (event) => {
     }
 
     const isVertical = dragIntent.value === 'vertical';
-    if (!isVertical && event.cancelable) {
+    if (event.cancelable) {
         event.preventDefault();
     }
 
-    positionX.value = isVertical ? deltaX * 0.25 : deltaX;
-    const dampedY = deltaY * VERTICAL_DAMPING;
-    positionY.value = Math.max(Math.min(dampedY, MAX_VERTICAL_DRIFT), -MAX_VERTICAL_DRIFT);
+    if (isVertical) {
+        positionX.value = deltaX * 0.2;
+        const dampedY = deltaY * VERTICAL_DAMPING * 1.25;
+        positionY.value = Math.max(Math.min(dampedY, MAX_VERTICAL_DRIFT * 1.2), -MAX_VERTICAL_DRIFT);
+    } else {
+        positionX.value = deltaX;
+        const dampedY = deltaY * VERTICAL_DAMPING;
+        positionY.value = Math.max(Math.min(dampedY, MAX_VERTICAL_DRIFT), -MAX_VERTICAL_DRIFT);
+    }
 };
 
 const handlePointerEnd = (event) => {
