@@ -145,7 +145,8 @@
 
         <div
             v-else-if="currentItem"
-            class="flex flex-col items-center gap-8"
+            ref="cardViewportRef"
+            class="flex min-h-[60vh] flex-col items-center justify-center gap-8 scroll-mt-20"
         >
             <SwipeCard
                 ref="swipeCardRef"
@@ -282,6 +283,7 @@ const toggleGuideSection = (key) => {
 const isProcessing = ref(false);
 const isLoading = ref(true);
 const swipeCardRef = ref(null);
+const cardViewportRef = ref(null);
 const milestoneMessage = ref(null);
 const celebrationTimeout = ref(null);
 const celebratedMilestones = ref(new Set());
@@ -312,6 +314,7 @@ const handleDecision = async ({ type, options = {} }) => {
 
     try {
         await decisionStore.applyDecision(type, options);
+        ensureCardVisible('smooth');
 
         if (type === 'pending') {
             toast.info('Item adiado ⏳');
@@ -340,6 +343,30 @@ const requestDecision = (type, options = {}) => {
 const goToResumo = () => {
     const destination = route ? route('resumo.index') : '/resumo';
     router.visit(destination);
+};
+
+const ensureCardVisible = (behavior = 'smooth') => {
+    if (typeof window === 'undefined') return;
+    const el = cardViewportRef.value;
+    if (!el || typeof el.getBoundingClientRect !== 'function') return;
+
+    requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect();
+        const viewportHeight = window.innerHeight ?? 0;
+        const topPadding = 64;
+        const bottomPadding = 80;
+        if (rect.top >= topPadding && rect.bottom <= viewportHeight - bottomPadding) {
+            return;
+        }
+        const target = rect.top < topPadding
+            ? window.scrollY + rect.top - topPadding
+            : window.scrollY + rect.bottom - (viewportHeight - bottomPadding);
+
+        window.scrollTo({
+            top: Math.max(target, 0),
+            behavior,
+        });
+    });
 };
 
 const formatDecisionLabel = (type, options) => {
@@ -491,6 +518,16 @@ watch(
         if (newId && newId !== oldId) {
             loadDeck();
         }
+    },
+);
+
+watch(
+    () => currentItem.value?.id,
+    (newId, oldId) => {
+        if (!newId) return;
+        nextTick(() => {
+            ensureCardVisible(oldId ? 'smooth' : 'auto');
+        });
     },
 );
 
