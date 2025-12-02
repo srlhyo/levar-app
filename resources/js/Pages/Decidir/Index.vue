@@ -175,28 +175,29 @@
             />
         </div>
 
-        <Card
-            v-else-if="bannerProcessedWithPendings"
-            tone="slate"
-            class="decidir-state-card space-y-4 text-left sm:text-center"
-        >
-            <div class="text-3xl sm:text-4xl">🗂️</div>
-            <div class="space-y-2">
-                <p class="text-base font-semibold text-slate-800">Há itens pendentes para decidir</p>
-                <p class="text-sm text-slate-600">
-                    Revise no Resumo e reinsira os pendentes no deck para decidir.
-                </p>
+        <section v-else-if="bannerProcessedWithPendings" class="decidir-empty-card">
+            <div class="decidir-empty-card__content">
+                <TileIcon3D tone="indigo" class="decidir-empty-card__tile">
+                    <ListChecks class="h-5 w-5" />
+                </TileIcon3D>
+                <div class="decidir-empty-card__text">
+                    <p class="decidir-empty-card__title">Há itens pendentes para decidir</p>
+                    <p class="decidir-empty-card__message">
+                        Revise o Resumo para devolver os pendentes ao deck e concluir as decisões.
+                    </p>
+                </div>
             </div>
-            <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <div class="decidir-empty-card__actions">
                 <button
                     type="button"
-                    class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                    class="decidir-empty-card__cta"
                     @click="goToResumo"
                 >
                     Ir para Resumo
+                    <span aria-hidden="true">→</span>
                 </button>
             </div>
-        </Card>
+        </section>
 
         <Card v-else tone="slate" class="decidir-state-card space-y-3 text-center">
             <div class="text-4xl">🎉</div>
@@ -253,6 +254,7 @@ import {
     ChevronDown,
     Clock,
     Heart,
+    ListChecks,
     Pointer,
     Sparkles,
     Undo2,
@@ -819,10 +821,6 @@ watch(progressPercent, (value) => {
         opacity: 1;
     }
 }
-.decidir-state-card {
-    background: radial-gradient(circle at top, rgba(99, 102, 241, 0.09), rgba(255, 255, 255, 0.95));
-    border: 1px solid rgba(148, 163, 184, 0.3);
-}
 @keyframes decidirPanelFlow {
     0% {
         opacity: 0.6;
@@ -858,5 +856,113 @@ watch(progressPercent, (value) => {
 .decidir-state-card {
     background: radial-gradient(circle at top, rgba(99, 102, 241, 0.09), rgba(255, 255, 255, 0.95));
     border: 1px solid rgba(148, 163, 184, 0.3);
+}
+.decidir-empty-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.9rem;
+    padding: 1.75rem;
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 22px 45px rgba(99, 102, 241, 0.18);
+}
+.decidir-empty-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 20% 20%, rgba(226, 232, 255, 0.8), transparent 55%);
+    pointer-events: none;
+}
+.decidir-empty-card > * {
+    position: relative;
+    z-index: 1;
+}
+.decidir-empty-card__content {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.decidir-empty-card__tile {
+    --tile-icon-size: 3rem;
+    animation: floatIcon 10s ease-in-out infinite;
+    background: linear-gradient(140deg, #6366f1, #0ea5e9, #9333ea);
+}
+.decidir-empty-card__text {
+    flex: 1;
+    min-width: 220px;
+}
+.decidir-empty-card__title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #0b1340;
+}
+.decidir-empty-card__message {
+    font-size: 0.95rem;
+    color: rgba(15, 23, 42, 0.8);
+}
+.decidir-empty-card__actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+}
+.decidir-empty-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    padding: 0.55rem 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(130deg, #475569, #64748b, #94a3b8);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.decidir-empty-card__cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.35), transparent 60%);
+    opacity: 0.6;
+    pointer-events: none;
+}
+.decidir-empty-card__cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    transform: translateX(-110%);
+    animation: decidirCtaShimmer 3.8s ease infinite;
+    pointer-events: none;
+}
+.decidir-empty-card__cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 24px 45px rgba(15, 23, 42, 0.3);
+}
+@keyframes decidirCtaShimmer {
+    0% {
+        transform: translateX(-120%);
+    }
+    100% {
+        transform: translateX(120%);
+    }
+}
+@media (max-width: 640px) {
+    .decidir-empty-card__actions {
+        justify-content: center;
+    }
+    .decidir-empty-card__content {
+        flex-direction: column;
+        text-align: center;
+    }
 }
 </style>

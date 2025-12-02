@@ -248,6 +248,7 @@
                         :key="action.label"
                         type="button"
                         class="resumo-status-card__button"
+                        :class="statusBanner.tone === 'green' ? 'resumo-status-card__button--warm' : ''"
                         @click="action.handler?.()"
                     >
                         {{ action.label }}
@@ -2138,6 +2139,44 @@ onBeforeUnmount(() => {
 }
 .resumo-status-card__button:hover {
     transform: translateY(-1px);
+}
+.resumo-status-card__button--warm {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(130deg, #fef3c7, #fbbf24, #f97316, #fb7185);
+    background-size: 220% 220%;
+    color: #78350f;
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 18px 35px rgba(249, 115, 22, 0.3);
+    animation: resumoWarmShift 8s ease-in-out infinite;
+}
+.resumo-status-card__button--warm::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.8), transparent 55%);
+    opacity: 0.6;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+.resumo-status-card__button--warm::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: translateX(-100%);
+    animation: resumoWarmShimmer 3.5s ease infinite;
+    pointer-events: none;
+}
+.resumo-status-card__button--warm:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 24px 45px rgba(249, 115, 22, 0.35);
 }
 .resumo-panel-soft__cta {
     display: flex;
