@@ -17,129 +17,143 @@
             </div>
         </transition>
 
-        <Card tone="green" class="space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <p class="text-base font-semibold text-slate-900">Como decidir</p>
-                    <p class="text-sm text-slate-600">Arraste a carta ou use os botões abaixo para classificar cada item.</p>
+        <section class="decidir-panel">
+            <div class="decidir-panel__head">
+                <div class="decidir-panel__title-block">
+                    <TileIcon3D tone="indigo" class="decidir-panel__icon">
+                        <Sparkles class="h-5 w-5" />
+                    </TileIcon3D>
+                    <div>
+                        <p class="decidir-eyebrow">Fluxo guiado</p>
+                        <h2 class="decidir-panel__title">Como decidir</h2>
+                        <p class="decidir-panel__subtitle">Arraste a carta ou use os botões abaixo para classificar cada item.</p>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3 text-xs text-slate-500 sm:text-sm">
-                    <button type="button" class="underline-offset-4 hover:underline" @click="setAllGuideSections(true)">Expandir tudo</button>
-                    <span class="text-slate-300">•</span>
-                    <button type="button" class="underline-offset-4 hover:underline" @click="setAllGuideSections(false)">Recolher tudo</button>
+                <div class="decidir-panel__actions">
+                    <button type="button" class="decidir-panel__link" @click="setAllGuideSections(true)">Expandir tudo</button>
+                    <span aria-hidden="true" class="decidir-panel__divider">•</span>
+                    <button type="button" class="decidir-panel__link" @click="setAllGuideSections(false)">Recolher tudo</button>
                 </div>
             </div>
 
-            <section class="rounded-2xl bg-white/80">
-                <button
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
-                    @click="toggleGuideSection('guide')"
-                >
-                    Guia rápido
-                    <ChevronDown
-                        class="h-4 w-4 transition"
-                        :class="guideSections.guide ? 'rotate-180' : ''"
-                    />
-                </button>
-                <transition name="fade">
-                    <div v-if="guideSections.guide" class="space-y-2 px-4 pb-3 text-xs text-slate-600 sm:text-sm">
-                        <p>Deslize a carta inteira: direita = <strong>Levar</strong>, esquerda = <strong>Não levar</strong>, para baixo = <strong>Pendentes</strong>.</p>
-                        <p>Os botões abaixo replicam os gestos e são ideais quando quiser decidir rapidamente sem arrastar.</p>
-                        <p>A ação “Desfazer” devolve o último item ao deck em até 6 segundos se algo der errado.</p>
-                    </div>
-                </transition>
-            </section>
+            <div class="decidir-accordion-group">
+                <article class="decidir-accordion">
+                    <button
+                        type="button"
+                        class="decidir-accordion__trigger"
+                        @click="toggleGuideSection('guide')"
+                    >
+                        <div class="flex items-center gap-3">
+                            <TileIcon3D tone="indigo" class="decidir-accordion__icon">
+                                <BookOpenCheck class="h-4 w-4" />
+                            </TileIcon3D>
+                            <span>Guia rápido</span>
+                        </div>
+                        <ChevronDown
+                            class="h-4 w-4 transition"
+                            :class="guideSections.guide ? 'rotate-180' : ''"
+                        />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="guideSections.guide" class="decidir-accordion__body">
+                            <p>Deslize a carta inteira: direita = <strong>Levar</strong>, esquerda = <strong>Não levar</strong>, para baixo = <strong>Pendentes</strong>.</p>
+                            <p>Os botões abaixo replicam os gestos e são ideais quando quiser decidir rapidamente sem arrastar.</p>
+                            <p>A ação “Desfazer” devolve o último item ao deck em até 6 segundos se algo der errado.</p>
+                        </div>
+                    </transition>
+                </article>
 
-            <section class="rounded-2xl bg-white/80">
-                <button
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
-                    @click="toggleGuideSection('progress')"
-                >
-                    Progresso do deck
-                    <ChevronDown
-                        class="h-4 w-4 transition"
-                        :class="guideSections.progress ? 'rotate-180' : ''"
-                    />
-                </button>
-                <transition name="fade">
-                    <div v-if="guideSections.progress" class="space-y-2 px-4 pb-3 text-xs text-slate-600 sm:text-sm">
-                        <div class="flex items-center justify-between font-medium">
-                            <span>Restantes na pilha</span>
-                            <span>{{ undecidedCount }} / {{ totalCount }}</span>
+                <article class="decidir-accordion">
+                    <button
+                        type="button"
+                        class="decidir-accordion__trigger"
+                        @click="toggleGuideSection('progress')"
+                    >
+                        <div class="flex items-center gap-3">
+                            <TileIcon3D tone="indigo" class="decidir-accordion__icon">
+                                <BarChart3 class="h-4 w-4" />
+                            </TileIcon3D>
+                            <span>Progresso do deck</span>
                         </div>
-                        <div class="h-2 rounded-full bg-slate-100">
-                            <div class="h-full rounded-full bg-emerald-500 transition-all duration-300" :style="{ width: `${progressPercent}%` }" />
-                        </div>
-                        <div class="rounded-xl bg-slate-50 px-3 py-2 text-[13px] font-medium text-slate-600 sm:text-sm">
-                            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                <span class="inline-flex items-center gap-1">
-                                    <span class="font-semibold text-emerald-600">{{ progressPercent }}%</span>
+                        <ChevronDown
+                            class="h-4 w-4 transition"
+                            :class="guideSections.progress ? 'rotate-180' : ''"
+                        />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="guideSections.progress" class="decidir-accordion__body decidir-progress">
+                            <div class="decidir-progress__row">
+                                <span>Restantes na pilha</span>
+                                <span>{{ undecidedCount }} / {{ totalCount }}</span>
+                            </div>
+                            <div class="decidir-progress__track">
+                                <div class="decidir-progress__fill" :style="{ width: `${progressPercent}%` }" />
+                            </div>
+                            <div class="decidir-progress__meta">
+                                <span>
+                                    <span class="decidir-progress__value">{{ progressPercent }}%</span>
                                     concluído
                                 </span>
-                                <span class="inline-flex items-center gap-1 text-slate-500">
-                                    Processados: <span class="font-semibold text-slate-700">{{ processedCount }}</span> / {{ totalCount }}
-                                </span>
-                                <span
-                                    v-if="backlogCount"
-                                    class="inline-flex items-center gap-1 text-amber-600"
-                                >
-                                    Fila pendente: <span class="font-semibold">{{ backlogCount }}</span>
-                                </span>
+                                <span>Processados: <span class="font-semibold text-slate-800">{{ processedCount }}</span> / {{ totalCount }}</span>
+                                <span v-if="backlogCount" class="decidir-progress__badge">Fila pendente: {{ backlogCount }}</span>
                             </div>
                         </div>
-                    </div>
-                </transition>
-            </section>
+                    </transition>
+                </article>
 
-            <section class="rounded-2xl bg-white/80">
-                <button
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
-                    @click="toggleGuideSection('legend')"
-                >
-                    Gestos e botões
-                    <ChevronDown
-                        class="h-4 w-4 transition"
-                        :class="guideSections.legend ? 'rotate-180' : ''"
-                    />
-                </button>
-                <transition name="fade">
-                    <div v-if="guideSections.legend" class="space-y-2 px-4 pb-3 text-xs text-slate-600 sm:text-sm">
-                        <div class="flex flex-wrap items-center gap-2 rounded-xl bg-white px-3 py-2">
-                            <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-1 text-rose-600">
-                                <X class="h-4 w-4" />
-                                Não levar
-                            </span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-slate-700">
-                                <Clock class="h-4 w-4" />
-                                Decidir depois
-                            </span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-emerald-600">
-                                <Heart class="h-4 w-4" />
-                                Levar
-                            </span>
+                <article class="decidir-accordion">
+                    <button
+                        type="button"
+                        class="decidir-accordion__trigger"
+                        @click="toggleGuideSection('legend')"
+                    >
+                        <div class="flex items-center gap-3">
+                            <TileIcon3D tone="indigo" class="decidir-accordion__icon">
+                                <Pointer class="h-4 w-4" />
+                            </TileIcon3D>
+                            <span>Gestos e botões</span>
                         </div>
-                        <p>Deslize a carta inteira ou toque nos botões para classificar. No celular, mantenha o toque firme para arrastar.</p>
-                    </div>
-                </transition>
-            </section>
-        </Card>
+                        <ChevronDown
+                            class="h-4 w-4 transition"
+                            :class="guideSections.legend ? 'rotate-180' : ''"
+                        />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="guideSections.legend" class="decidir-accordion__body">
+                            <div class="decidir-legend">
+                                <span class="decidir-legend__item decidir-legend__item--no">
+                                    <X class="h-4 w-4" />
+                                    Não levar
+                                </span>
+                                <span class="decidir-legend__item decidir-legend__item--pending">
+                                    <Clock class="h-4 w-4" />
+                                    Decidir depois
+                                </span>
+                                <span class="decidir-legend__item decidir-legend__item--yes">
+                                    <Heart class="h-4 w-4" />
+                                    Levar
+                                </span>
+                            </div>
+                            <p>Deslize a carta inteira ou toque nos botões para classificar. No celular, mantenha o toque firme para arrastar.</p>
+                        </div>
+                    </transition>
+                </article>
+            </div>
+        </section>
 
-        <div v-if="isLoading" class="flex flex-col items-center gap-6">
-            <div class="w-[90%] max-w-md animate-pulse rounded-3xl bg-white/50 p-8 sm:max-w-lg">
-                <div class="h-64 rounded-2xl bg-slate-200/60" />
-                <div class="mt-6 space-y-3">
-                    <div class="h-4 w-3/4 rounded bg-slate-200/80" />
-                    <div class="h-3 w-full rounded bg-slate-200/70" />
-                    <div class="h-3 w-2/3 rounded bg-slate-200/70" />
+        <div v-if="isLoading" class="decidir-skeleton">
+            <div class="decidir-skeleton__card">
+                <div class="decidir-skeleton__media" />
+                <div class="decidir-skeleton__lines">
+                    <span />
+                    <span />
+                    <span />
                 </div>
             </div>
-            <div class="flex w-full max-w-md gap-3 opacity-60 sm:max-w-lg">
-                <div class="h-14 flex-1 rounded-full bg-white/40" />
-                <div class="h-14 flex-1 rounded-full bg-white/40" />
-                <div class="h-14 flex-1 rounded-full bg-white/40" />
+            <div class="decidir-skeleton__actions">
+                <span />
+                <span />
+                <span />
             </div>
         </div>
 
@@ -164,7 +178,7 @@
         <Card
             v-else-if="bannerProcessedWithPendings"
             tone="slate"
-            class="space-y-4 text-left sm:text-center"
+            class="decidir-state-card space-y-4 text-left sm:text-center"
         >
             <div class="text-3xl sm:text-4xl">🗂️</div>
             <div class="space-y-2">
@@ -184,7 +198,7 @@
             </div>
         </Card>
 
-        <Card v-else tone="slate" class="space-y-3 text-center">
+        <Card v-else tone="slate" class="decidir-state-card space-y-3 text-center">
             <div class="text-4xl">🎉</div>
             <p class="text-base font-semibold text-slate-700">Todos os itens foram processados.</p>
             <p class="text-sm text-slate-500">Você pode revisar o resumo para ver os totais.</p>
@@ -234,9 +248,12 @@ import {
     watchEffect,
 } from 'vue';
 import {
+    BarChart3,
+    BookOpenCheck,
     ChevronDown,
     Clock,
     Heart,
+    Pointer,
     Sparkles,
     Undo2,
     X,
@@ -245,6 +262,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import Card from '@/Components/Card.vue';
 import SwipeCard from '@/Components/SwipeCard.vue';
 import SwipeActionButtons from '@/Components/SwipeActionButtons.vue';
+import TileIcon3D from '@/Components/home/TileIcon3D.vue';
 import { useDecisionStore } from '@/stores/decision';
 import { toast } from '@/utils/toast';
 
@@ -554,5 +572,291 @@ watch(progressPercent, (value) => {
 .slide-up-leave-to {
     opacity: 0;
     transform: translateY(10px);
+}
+.decidir-panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.75rem;
+    padding: 1.75rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow: 0 25px 55px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(8px);
+}
+.decidir-panel::before,
+.decidir-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.decidir-panel::before {
+    background: radial-gradient(circle at 15% -20%, rgba(236, 233, 255, 0.8), transparent 50%);
+    opacity: 0.8;
+}
+.decidir-panel::after {
+    background: linear-gradient(140deg, rgba(99, 102, 241, 0.12), rgba(14, 165, 233, 0.12));
+    animation: decidirPanelFlow 26s ease infinite;
+}
+.decidir-panel > * {
+    position: relative;
+    z-index: 1;
+}
+.decidir-panel__head {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+@media (min-width: 640px) {
+    .decidir-panel__head {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+.decidir-panel__title-block {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.decidir-panel__icon {
+    --tile-icon-size: 3.2rem;
+    animation: floatIcon 8s ease-in-out infinite;
+}
+.decidir-eyebrow {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    font-weight: 600;
+    color: #818cf8;
+}
+.decidir-panel__title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.decidir-panel__subtitle {
+    font-size: 0.95rem;
+    color: #475569;
+}
+.decidir-panel__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.decidir-panel__link {
+    font-weight: 600;
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.decidir-panel__link:hover {
+    color: #0f172a;
+}
+.decidir-panel__divider {
+    color: rgba(148, 163, 184, 0.5);
+}
+.decidir-accordion-group {
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 1rem;
+}
+.decidir-accordion {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.decidir-accordion__trigger {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+    color: #0f172a;
+}
+.decidir-accordion__icon {
+    --tile-icon-size: 2.4rem;
+}
+.decidir-accordion__body {
+    padding: 0 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    font-size: 0.9rem;
+    color: #475569;
+}
+.decidir-progress__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    color: #1e293b;
+}
+.decidir-progress__track {
+    margin-top: 0.75rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: rgba(226, 232, 240, 0.8);
+}
+.decidir-progress__fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #6366f1, #0ea5e9);
+    animation: progressGlow 1.8s ease-in-out infinite;
+    transition: width 0.3s ease;
+}
+.decidir-progress__meta {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.decidir-progress__value {
+    font-weight: 700;
+    color: #10b981;
+    margin-right: 0.3rem;
+}
+.decidir-progress__badge {
+    padding: 0.2rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(253, 230, 138, 0.3);
+    color: #b45309;
+    font-weight: 600;
+}
+.decidir-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.decidir-legend__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+.decidir-legend__item--no {
+    background: rgba(248, 113, 113, 0.15);
+    color: #b91c1c;
+    border-color: rgba(248, 113, 113, 0.4);
+}
+.decidir-legend__item--pending {
+    background: rgba(148, 163, 184, 0.12);
+    color: #334155;
+    border-color: rgba(148, 163, 184, 0.35);
+}
+.decidir-legend__item--yes {
+    background: rgba(16, 185, 129, 0.18);
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+.decidir-skeleton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+}
+.decidir-skeleton__card {
+    width: min(90%, 28rem);
+    border-radius: 1.75rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1.75rem;
+    animation: pulse 1.6s ease-in-out infinite;
+}
+.decidir-skeleton__media {
+    height: 16rem;
+    border-radius: 1.5rem;
+    background: linear-gradient(135deg, rgba(226, 232, 240, 0.6), rgba(148, 163, 184, 0.4));
+}
+.decidir-skeleton__lines {
+    margin-top: 1.25rem;
+    display: grid;
+    gap: 0.5rem;
+}
+.decidir-skeleton__lines span {
+    display: block;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: rgba(226, 232, 240, 0.8);
+}
+.decidir-skeleton__lines span:nth-child(2) {
+    width: 80%;
+}
+.decidir-skeleton__lines span:nth-child(3) {
+    width: 60%;
+}
+.decidir-skeleton__actions {
+    width: min(90%, 28rem);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    opacity: 0.6;
+}
+.decidir-skeleton__actions span {
+    height: 3.5rem;
+    border-radius: 999px;
+    background: rgba(241, 245, 249, 0.9);
+}
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+.decidir-state-card {
+    background: radial-gradient(circle at top, rgba(99, 102, 241, 0.09), rgba(255, 255, 255, 0.95));
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+@keyframes decidirPanelFlow {
+    0% {
+        opacity: 0.6;
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        opacity: 0.85;
+        transform: translate3d(-12px, -8px, 0);
+    }
+    100% {
+        opacity: 0.6;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes floatIcon {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+@keyframes progressGlow {
+    0%,
+    100% {
+        box-shadow: 0 0 0 rgba(99, 102, 241, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 18px rgba(14, 165, 233, 0.35);
+    }
+}
+.decidir-state-card {
+    background: radial-gradient(circle at top, rgba(99, 102, 241, 0.09), rgba(255, 255, 255, 0.95));
+    border: 1px solid rgba(148, 163, 184, 0.3);
 }
 </style>

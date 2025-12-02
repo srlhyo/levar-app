@@ -4,77 +4,92 @@
         <template #title>Catalogar</template>
         <template #subtitle>Tire fotos, estime peso e registre detalhes para cada item da mudança.</template>
 
-        <Card tone="green" class="space-y-6">
-            <div class="flex items-start gap-3">
-                <IconPill tone="green">
-                    <Package class="h-6 w-6" />
-                </IconPill>
-                <div class="space-y-1">
-                    <h2 class="text-lg font-semibold text-slate-800 sm:text-xl">Configuração das malas</h2>
-                    <p class="text-sm text-slate-600 sm:text-base">
+        <section class="catalog-intro">
+            <div class="catalog-intro__head">
+                <TileIcon3D tone="emerald" class="catalog-intro__icon">
+                    <Package class="h-5 w-5" />
+                </TileIcon3D>
+                <div>
+                    <p class="catalog-eyebrow">Organização inicial</p>
+                    <h2 class="catalog-intro__title">Organize os itens desde o primeiro clique</h2>
+                    <p class="catalog-intro__subtitle">
+                        Fotografe e registre detalhes em um ambiente calmo antes de enviar cada carta para o deck do Decidir.
+                    </p>
+                </div>
+            </div>
+            <div v-if="bagSummary.totalBags" class="catalog-intro__summary">
+                <div class="catalog-intro__metric">
+                    <span class="catalog-intro__metric-label">Malas configuradas</span>
+                    <span class="catalog-intro__metric-value">{{ bagSummary.totalBags }}</span>
+                </div>
+                <div class="catalog-intro__metric">
+                    <span class="catalog-intro__metric-label">Capacidade total</span>
+                    <span class="catalog-intro__metric-value">{{ formatKgLabel(bagSummary.totalCapacityKg) }}</span>
+                </div>
+                <div class="catalog-intro__metric">
+                    <span class="catalog-intro__metric-label">Peso reservado</span>
+                    <span class="catalog-intro__metric-value">{{ formatKgLabel(bagSummary.reservedKg) }}</span>
+                </div>
+                <div class="catalog-intro__metric">
+                    <span class="catalog-intro__metric-label">Volume reservado</span>
+                    <span class="catalog-intro__metric-value">{{ formatLitersLabel(bagSummary.reservedVolumeLiters) }}</span>
+                </div>
+            </div>
+            <p v-else class="catalog-intro__hint">
+                Configure as malas abaixo para acompanhar peso e volume disponíveis enquanto adiciona novos itens.
+            </p>
+        </section>
+
+        <section class="catalog-panel catalog-panel--config space-y-6">
+            <div class="catalog-section__head">
+                <TileIcon3D tone="teal" class="catalog-section__icon">
+                    <Package class="h-5 w-5" />
+                </TileIcon3D>
+                <div>
+                    <p class="catalog-eyebrow catalog-eyebrow--muted">Planejamento</p>
+                    <h2 class="catalog-section__title">Configuração das malas</h2>
+                    <p class="catalog-section__subtitle">
                         Defina quantas malas serão usadas, suas capacidades e o peso reservado para emergências.
                     </p>
                 </div>
             </div>
 
-            <div
-                v-if="bagSummary.totalBags"
-                class="grid gap-2 rounded-2xl bg-white/70 p-3 text-xs text-slate-600 ring-1 ring-emerald-50 sm:grid-cols-4 sm:text-sm"
-            >
-                <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-500">Malas</p>
-                    <p class="text-base font-semibold text-slate-900">{{ bagSummary.totalBags }}</p>
-                </div>
-                <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-500">Capacidade total</p>
-                    <p class="text-base font-semibold text-slate-900">{{ formatKgLabel(bagSummary.totalCapacityKg) }}</p>
-                </div>
-                <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-500">Peso reservado</p>
-                    <p class="text-base font-semibold text-slate-900">{{ formatKgLabel(bagSummary.reservedKg) }}</p>
-                </div>
-                <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-500">Volume reservado</p>
-                    <p class="text-base font-semibold text-slate-900">{{ formatLitersLabel(bagSummary.reservedVolumeLiters) }}</p>
-                </div>
-            </div>
-
-            <div v-if="loadingConfig" class="flex items-center gap-2 rounded-2xl bg-white/60 px-4 py-3 text-sm text-slate-600">
+            <div v-if="loadingConfig" class="catalog-panel__loading">
                 <Loader2 class="h-4 w-4 animate-spin" /> Carregando malas...
             </div>
 
             <form v-else class="space-y-6" @submit.prevent="handleSaveConfig">
                 <div class="grid gap-4 sm:grid-cols-2">
                     <label class="space-y-2">
-                        <span class="text-sm font-medium text-slate-700">Peso reservado (kg)</span>
+                        <span class="catalog-field__label">Peso reservado (kg)</span>
                         <input
                             v-model="reservedKg"
                             type="number"
                             step="0.1"
                             min="0"
-                            class="w-full rounded-2xl border border-emerald-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                            class="catalog-input"
                         />
-                        <span class="text-xs text-slate-500">Peso separado para imprevistos ou itens espontâneos.</span>
+                        <span class="catalog-field__help">Peso separado para imprevistos ou itens espontâneos.</span>
                     </label>
                     <label class="space-y-2">
-                        <span class="text-sm font-medium text-slate-700">Volume reservado (L)</span>
+                        <span class="catalog-field__label">Volume reservado (L)</span>
                         <input
                             v-model="reservedVolume"
                             type="number"
                             step="0.1"
                             min="0"
-                            class="w-full rounded-2xl border border-emerald-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                            class="catalog-input"
                         />
-                        <span class="text-xs text-slate-500">Espaço reservado em litros (1 L = 1000 cm³).</span>
+                        <span class="catalog-field__help">Espaço reservado em litros (1 L = 1000 cm³).</span>
                     </label>
                 </div>
 
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-slate-700">Malas cadastradas</span>
+                        <span class="catalog-field__label">Malas cadastradas</span>
                         <button
                             type="button"
-                            class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-emerald-400"
+                            class="catalog-cta catalog-cta--emerald"
                             @click="addBag"
                         >
                             <Plus class="h-3.5 w-3.5" /> Adicionar mala
@@ -84,24 +99,24 @@
                     <div
                         v-for="(bag, index) in bags"
                         :key="bag.id ?? index"
-                        class="rounded-2xl border border-emerald-200/70 bg-white/70 px-4 py-4 shadow-inner shadow-emerald-100"
+                        class="catalog-bag-card"
                     >
                         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-100 pb-3">
                             <div>
-                                <p class="text-sm font-semibold text-slate-800">Mala {{ index + 1 }}</p>
-                                <p class="text-xs text-slate-500">Capacidade planejada: {{ formatKgLabel(parseLocaleNumber(bag.capacity) ?? 0) }}</p>
+                                <p class="catalog-panel__label">Mala {{ index + 1 }}</p>
+                                <p class="catalog-field__help">Capacidade planejada: {{ formatKgLabel(parseLocaleNumber(bag.capacity) ?? 0) }}</p>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <button
                                     type="button"
-                                    class="inline-flex items-center rounded-full border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50"
+                                    class="catalog-chip catalog-chip--ghost"
                                     @click="duplicateBag(index)"
                                 >
                                     Duplicar
                                 </button>
                                 <button
                                     type="button"
-                                    class="inline-flex items-center rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-40"
+                                    class="catalog-chip catalog-chip--danger"
                                     :disabled="bags.length <= 1"
                                     @click="removeBag(index)"
                                 >
@@ -111,41 +126,41 @@
                         </div>
                         <div class="mt-3 grid gap-3 sm:grid-cols-2">
                             <label class="space-y-1">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Nome</span>
+                                <span class="catalog-field__label catalog-field__label--sm">Nome</span>
                                 <input
                                     v-model="bag.name"
                                     required
                                     placeholder="Ex: Mala A"
-                                    class="w-full rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                    class="catalog-input"
                                     type="text"
                                 />
                             </label>
                             <label class="space-y-1">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Código</span>
+                                <span class="catalog-field__label catalog-field__label--sm">Código</span>
                                 <input
                                     v-model="bag.code"
                                     placeholder="Opcional"
-                                    class="w-full rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                    class="catalog-input"
                                     type="text"
                                 />
                             </label>
                             <label class="space-y-1">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Capacidade (kg)</span>
+                                <span class="catalog-field__label catalog-field__label--sm">Capacidade (kg)</span>
                                 <input
                                     v-model="bag.capacity"
                                     type="number"
                                     step="0.1"
                                     min="0"
                                     placeholder="Ex: 23"
-                                    class="w-full rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                    class="catalog-input"
                                 />
                             </label>
                             <label class="space-y-1">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Dimensões</span>
+                                <span class="catalog-field__label catalog-field__label--sm">Dimensões</span>
                                 <input
                                     v-model="bag.dimensions"
                                     placeholder="Ex: 78 × 50 × 30 cm"
-                                    class="w-full rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                    class="catalog-input"
                                     type="text"
                                 />
                                 <span class="block text-[11px] text-slate-400">Use este campo apenas para referência visual.</span>
@@ -157,7 +172,7 @@
                 <div class="flex justify-end">
                     <button
                         type="submit"
-                        class="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-70"
+                        class="catalog-submit catalog-submit--secondary"
                         :disabled="savingConfig"
                     >
                         <Loader2 v-if="savingConfig" class="h-4 w-4 animate-spin" />
@@ -165,61 +180,67 @@
                     </button>
                 </div>
             </form>
-        </Card>
+        </section>
 
-        <Card tone="blue" class="space-y-6">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="flex items-start gap-3">
-                    <IconPill tone="blue">
-                        <Camera class="h-6 w-6" />
-                    </IconPill>
-                    <div class="space-y-1">
-                        <h2 class="text-lg font-semibold text-slate-800 sm:text-xl">Adicionar um novo item</h2>
-                        <p class="text-sm text-slate-600 sm:text-base">Preencha as informações abaixo para manter o catálogo organizado.</p>
+        <section class="catalog-panel catalog-panel--capture space-y-6">
+            <div class="catalog-section__head catalog-section__head--split">
+                <div class="catalog-section__intro">
+                    <TileIcon3D tone="sky" class="catalog-section__icon">
+                        <Camera class="h-5 w-5" />
+                    </TileIcon3D>
+                    <div>
+                        <p class="catalog-eyebrow catalog-eyebrow--muted">Cadastro rápido</p>
+                        <h2 class="catalog-section__title">Adicionar um novo item</h2>
+                        <p class="catalog-section__subtitle">
+                            Preencha as informações abaixo para manter o catálogo organizado e pronto para o Decidir.
+                        </p>
                     </div>
                 </div>
                 <button
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+                    class="catalog-accordion__trigger"
                     @click="showCatalogHelp = !showCatalogHelp"
                     :aria-expanded="showCatalogHelp ? 'true' : 'false'"
                 >
-                    <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15 text-[11px] font-semibold text-sky-600">?</span>
-                    Como funciona
+                    <TileIcon3D tone="aqua" class="catalog-accordion__icon">
+                        <Package class="h-4 w-4" />
+                    </TileIcon3D>
+                    <div class="text-left">
+                        <p class="catalog-accordion__label">Guia rápido</p>
+                        <p class="catalog-accordion__hint">Toque para ver as dicas essenciais</p>
+                    </div>
+                    <span class="catalog-accordion__chevron" :class="{ 'rotate-180': showCatalogHelp }">⌵</span>
                 </button>
             </div>
 
             <transition name="fade">
-                <div
-                    v-if="showCatalogHelp"
-                    class="space-y-2 rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm"
-                >
-                    <p class="font-semibold text-slate-800">Dicas rápidas</p>
-                    <ul class="list-disc space-y-1 pl-5">
+                <div v-if="showCatalogHelp" class="catalog-accordion__body">
+                    <p class="catalog-accordion__body-title">Dicas rápidas</p>
+                    <ul class="catalog-accordion__list">
                         <li>Foto, nome e descrição viram a carta do Decidir — quanto mais contexto, melhor.</li>
                         <li>Pese ou estime em kg e informe o volume em litros (ou calcule pelas dimensões).</li>
                         <li>Use a descrição para lembrar acessórios, fragilidade ou onde o item está guardado.</li>
                     </ul>
                 </div>
             </transition>
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+            <div class="catalog-capture-grid">
                 <form class="space-y-6" @submit.prevent="handleSubmit">
-                <div class="space-y-3">
-                    <label class="text-sm font-medium text-slate-700">Foto</label>
+                <div class="catalog-photo-field space-y-3">
+                    <label class="catalog-field__label">Foto</label>
 
-                    <div v-if="photo" class="relative overflow-hidden rounded-2xl shadow-inner shadow-slate-200">
+                    <div v-if="photo" class="catalog-photo-preview">
                         <img :src="photo" alt="Preview" class="h-56 w-full object-cover" />
-                        <div class="absolute inset-x-0 top-3 flex justify-end gap-2 pr-3">
+                        <div class="catalog-photo-preview__actions">
                             <button
                                 type="button"
-                                class="rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-slate-700 shadow"
+                                class="catalog-chip catalog-chip--ghost"
                                 @click="handleRemovePreview"
                             >
                                 Remover
                             </button>
                             <button
                                 type="button"
-                                class="rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-sky-600 shadow"
+                                class="catalog-chip catalog-chip--primary"
                                 @click="triggerFilePicker"
                             >
                                 Adicionar outra
@@ -230,13 +251,15 @@
                     <button
                         v-else
                         type="button"
-                        class="w-full rounded-2xl border-2 border-dashed border-sky-300/60 py-10 text-slate-500 transition hover:border-sky-400/80 hover:text-slate-600"
+                        class="catalog-upload-dropzone"
                         @click="triggerFilePicker"
                     >
-                        <div class="flex flex-col items-center gap-3">
-                            <Camera class="h-10 w-10 text-sky-500" />
-                            <span class="text-sm font-medium">Adicionar foto do item</span>
-                            <span class="text-xs text-slate-500">Capture várias fotos em sequência; elas entram na fila ao lado.</span>
+                        <div class="catalog-upload-dropzone__content">
+                            <Camera class="h-8 w-8 text-sky-500" />
+                            <span class="catalog-upload-dropzone__title">Adicionar foto do item</span>
+                            <span class="catalog-upload-dropzone__hint">
+                                Capture várias fotos em sequência; elas entram na fila ao lado.
+                            </span>
                         </div>
                     </button>
 
@@ -251,40 +274,40 @@
 
                     <div
                         v-if="photoQueue.length"
-                        class="space-y-2 rounded-2xl border border-sky-100 bg-white/70 p-3 text-xs text-slate-600"
+                        class="catalog-photo-queue"
                     >
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-semibold text-slate-800">Fila de fotos ({{ photoQueue.length }})</span>
+                        <div class="catalog-photo-queue__head">
+                            <span class="catalog-photo-queue__title">Fila de fotos ({{ photoQueue.length }})</span>
                             <button
                                 type="button"
-                                class="text-[11px] font-semibold text-rose-500 hover:underline"
+                                class="catalog-link catalog-link--danger"
                                 @click="clearPhotoQueue"
                             >
                                 Limpar fila
                             </button>
                         </div>
-                        <div class="flex gap-3 overflow-x-auto pb-1">
+                        <div class="catalog-photo-queue__list">
                             <div
                                 v-for="entry in photoQueue"
                                 :key="entry.id"
-                                class="relative flex w-24 flex-col items-center gap-2 rounded-2xl border px-2 py-2"
-                                :class="entry.id === currentPhotoId ? 'border-sky-400 bg-sky-50 shadow' : 'border-slate-200 bg-white'"
+                                class="catalog-photo-queue__item"
+                                :class="entry.id === currentPhotoId ? 'catalog-photo-queue__item--active' : ''"
                             >
                                 <span
                                     v-if="entry.id === currentPhotoId"
-                                    class="absolute left-2 top-2 rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-600"
+                                    class="catalog-photo-queue__badge"
                                 >
                                     Em uso
                                 </span>
                                 <img :src="entry.preview" alt="Fila" class="h-16 w-full rounded-xl object-cover" />
-                                <div class="flex w-full justify-between gap-1 text-[11px]">
-                                    <button type="button" class="text-sky-600" @click="setCurrentPhoto(entry.id)">Usar</button>
-                                    <button type="button" class="text-rose-500" @click="removeQueueEntry(entry.id)">Excluir</button>
+                                <div class="catalog-photo-queue__actions">
+                                    <button type="button" class="catalog-link" @click="setCurrentPhoto(entry.id)">Usar</button>
+                                    <button type="button" class="catalog-link catalog-link--danger" @click="removeQueueEntry(entry.id)">Excluir</button>
                                 </div>
                             </div>
                         </div>
-                        <div v-if="photo" class="rounded-2xl border border-sky-50 bg-sky-50/30 p-3 text-[11px] text-slate-500">
-                            <p class="mb-2 text-xs font-semibold text-slate-700">Foto selecionada</p>
+                        <div v-if="photo" class="catalog-photo-queue__detail">
+                            <p class="catalog-photo-queue__detail-title">Foto selecionada</p>
                             <img :src="photo" alt="Selecionada" class="h-32 w-full rounded-xl object-cover" />
                         </div>
                     </div>
@@ -292,45 +315,45 @@
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <label class="space-y-2">
-                        <span class="text-sm font-medium text-slate-700">Nome do item *</span>
+                        <span class="catalog-field__label">Nome do item *</span>
                         <input
                             v-model="name"
                             required
                             placeholder="Ex: Livros de cozinha"
-                            class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                            class="catalog-input"
                             type="text"
                         />
                     </label>
 
                     <label class="space-y-2">
-                        <span class="text-sm font-medium text-slate-700">Peso estimado (kg)</span>
+                        <span class="catalog-field__label">Peso estimado (kg)</span>
                         <input
                             v-model="weight"
                             step="0.1"
                             placeholder="0.0"
-                            class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                            class="catalog-input"
                             type="number"
                         />
                     </label>
                 </div>
 
                 <label class="space-y-2">
-                    <span class="text-sm font-medium text-slate-700">Descrição / notas</span>
+                    <span class="catalog-field__label">Descrição / notas</span>
                     <textarea
                         v-model="description"
                         rows="3"
                         placeholder="Inclua detalhes, estado ou observações importantes"
-                        class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                        class="catalog-textarea"
                     ></textarea>
-                    <span class="text-xs text-slate-500">Essas notas aparecem nas cartas do Decidir e ajudam a lembrar detalhes.</span>
+                    <span class="catalog-field__help">Essas notas aparecem nas cartas do Decidir e ajudam a lembrar detalhes.</span>
                 </label>
 
-                <div class="space-y-2 rounded-2xl border border-sky-100 bg-white/70 px-4 py-3">
+                <div class="catalog-utility-card space-y-2">
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <p class="text-sm font-semibold text-slate-800">Modelos rápidos</p>
+                        <p class="catalog-panel__label">Modelos rápidos</p>
                         <button
                             type="button"
-                            class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-white"
+                            class="catalog-chip catalog-chip--ghost"
                             @click="saveTemplateFromCurrent"
                         >
                             Salvar modelo atual
@@ -341,38 +364,37 @@
                             v-for="template in templates"
                             :key="template.id"
                             type="button"
-                            class="group inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition"
-                            :class="'border-sky-200 bg-white text-slate-700 hover:bg-sky-50'"
+                            class="catalog-template"
                             @click="applyTemplate(template)"
                         >
                             {{ template.name }}
                             <span
-                                class="text-[10px] text-slate-400 transition group-hover:text-slate-600"
+                                class="catalog-template__remove"
                                 @click.stop="removeTemplate(template.id)"
                             >×</span>
                         </button>
-                        <p v-if="!templates.length" class="text-xs text-slate-500">Nenhum modelo salvo ainda.</p>
+                        <p v-if="!templates.length" class="catalog-field__help">Nenhum modelo salvo ainda.</p>
                     </div>
                 </div>
 
                 <label class="space-y-2">
-                    <span class="text-sm font-medium text-slate-700">Volume estimado (litros)</span>
+                    <span class="catalog-field__label">Volume estimado (litros)</span>
                     <input
                         v-model="volumeLiters"
                         @input="onVolumeInput"
                         min="0"
                         step="0.01"
                         placeholder="Ex.: 12,5"
-                        class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                        class="catalog-input"
                         type="number"
                     />
-                    <p class="text-xs text-slate-500">
+                    <p class="catalog-field__help">
                         Informe o volume aproximado em litros. As dimensões abaixo são opcionais e servem apenas para sugerir um valor.
                     </p>
                     <button
                         v-if="calculatedVolumeLitersDisplay"
                         type="button"
-                        class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-slate-800"
+                        class="catalog-chip catalog-chip--primary"
                         @click="applyCalculatedVolume"
                     >
                         Usar {{ calculatedVolumeLitersDisplay }} L calculados
@@ -381,10 +403,10 @@
 
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-slate-700">Dimensões (cm) — opcional</span>
+                        <span class="catalog-field__label">Dimensões (cm) — opcional</span>
                         <button
                             type="button"
-                            class="text-xs font-semibold text-sky-600 underline-offset-2 hover:underline"
+                            class="catalog-link"
                             @click="showDimensionHelper = !showDimensionHelper"
                         >
                             {{ showDimensionHelper ? 'Esconder' : 'Calcular automaticamente' }}
@@ -392,31 +414,31 @@
                     </div>
                     <transition name="fade">
                         <div v-if="showDimensionHelper" class="grid grid-cols-3 gap-3">
-                            <input
-                                v-model="length"
-                                min="0"
-                                placeholder="Compr."
-                                class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                            type="number"
-                        />
-                        <input
-                            v-model="width"
-                            min="0"
-                            placeholder="Larg."
-                            class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                            type="number"
-                        />
-                        <input
-                            v-model="height"
-                            min="0"
-                            placeholder="Alt."
-                            class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                            type="number"
-                        />
+                                <input
+                                    v-model="length"
+                                    min="0"
+                                    placeholder="Compr."
+                                    class="catalog-input"
+                                type="number"
+                            />
+                                <input
+                                    v-model="width"
+                                    min="0"
+                                    placeholder="Larg."
+                                    class="catalog-input"
+                                type="number"
+                            />
+                                <input
+                                    v-model="height"
+                                    min="0"
+                                    placeholder="Alt."
+                                    class="catalog-input"
+                                type="number"
+                            />
                         </div>
                     </transition>
-                    <p class="text-xs text-slate-500">Preencha em centímetros se quiser sugerir automaticamente o volume. Ex.: 55 × 40 × 23</p>
-                    <p v-if="calculatedVolumeCm3" class="text-xs text-slate-500">
+                    <p class="catalog-field__help">Preencha em centímetros se quiser sugerir automaticamente o volume. Ex.: 55 × 40 × 23</p>
+                    <p v-if="calculatedVolumeCm3" class="catalog-field__help">
                         Volume calculado:
                         <span class="font-semibold text-slate-700">{{ calculatedVolumeLitersDisplay }} L</span>
                         ({{ calculatedVolumeCm3Display }} cm³)
@@ -425,14 +447,14 @@
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="space-y-2">
-                        <span class="text-sm font-medium text-slate-700">Categoria</span>
+                        <span class="catalog-field__label">Categoria</span>
                         <div class="flex flex-wrap gap-2">
                             <button
                                 v-for="option in categoryOptions"
                                 :key="option"
                                 type="button"
-                                class="rounded-full border px-3 py-1 text-xs font-semibold transition"
-                                :class="category === option ? 'border-sky-400 bg-sky-500/10 text-sky-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"
+                                class="catalog-category"
+                                :class="{ 'catalog-category--active': category === option }"
                                 @click="selectCategory(option)"
                             >
                                 {{ option }}
@@ -442,23 +464,23 @@
                             v-model="category"
                             type="text"
                             placeholder="Ou digite uma categoria personalizada"
-                            class="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm text-slate-800 shadow-inner shadow-slate-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                            class="catalog-input"
                         />
                     </div>
 
                     <label class="space-y-2">
-                        <span class="text-sm font-medium text-slate-700">Fragilidade</span>
-                        <div class="flex h-[42px] items-center justify-between rounded-2xl border border-sky-200 bg-white/80 px-3 shadow-inner shadow-slate-200">
-                            <span class="text-sm text-slate-700">Item frágil?</span>
+                        <span class="catalog-field__label">Fragilidade</span>
+                        <div class="catalog-fragile-toggle">
+                            <span class="catalog-field__label catalog-field__label--sm">Item frágil?</span>
                             <button
                                 type="button"
-                                class="relative inline-flex h-6 w-11 items-center rounded-full transition"
-                                :class="fragile ? 'bg-amber-400' : 'bg-slate-300'"
+                                class="catalog-switch"
+                                :class="{ 'catalog-switch--on': fragile }"
                                 @click="toggleFragile"
                             >
                                 <span
-                                    class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition"
-                                    :class="fragile ? 'translate-x-5' : 'translate-x-1'"
+                                    class="catalog-switch__thumb"
+                                    :class="{ 'catalog-switch__thumb--on': fragile }"
                                 />
                             </button>
                         </div>
@@ -468,70 +490,62 @@
                     <div class="flex justify-end">
                         <button
                             type="submit"
-                            class="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
+                            class="catalog-submit"
                             :disabled="submittingItem"
                         >
-                        <Loader2 v-if="submittingItem" class="h-4 w-4 animate-spin" />
-                        <Plus v-else class="h-4 w-4" />
-                        <span>{{ submittingItem ? 'Adicionando...' : 'Adicionar item' }}</span>
-                    </button>
+                            <Loader2 v-if="submittingItem" class="h-4 w-4 animate-spin" />
+                            <Plus v-else class="h-4 w-4" />
+                            <span>{{ submittingItem ? 'Adicionando...' : 'Adicionar item' }}</span>
+                        </button>
                     </div>
                 </form>
-                <div
-                    class="space-y-3 rounded-3xl border border-sky-100 bg-white/80 px-4 py-5 text-sm text-slate-700 shadow-inner shadow-slate-100"
-                >
-                    <p class="text-base font-semibold text-slate-900">Prévia da carta</p>
-                    <p class="text-xs text-slate-500">Veja como esse item aparecerá no Decidir antes de salvar.</p>
-                    <div
-                        class="relative overflow-hidden rounded-[28px] border border-slate-100 bg-gradient-to-br from-sky-100 to-sky-50 p-4 shadow"
-                    >
+                <div class="catalog-preview">
+                    <div class="catalog-preview__head">
+                        <p class="catalog-preview__title">Prévia da carta</p>
+                        <p class="catalog-field__help">Veja como esse item aparecerá no Decidir antes de salvar.</p>
+                    </div>
+                    <div class="catalog-preview__card">
                         <div
-                            class="mb-4 h-40 w-full rounded-2xl bg-slate-200/70"
+                            class="catalog-preview__photo"
                             :style="previewCard.photo ? { backgroundImage: `url(${previewCard.photo})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}"
                         >
                             <div
-                                v-if="previewCard.photo"
-                                class="h-full w-full rounded-2xl"
-                            ></div>
-                            <div
-                                v-else
-                                class="flex h-full w-full items-center justify-center text-slate-400"
+                                v-if="!previewCard.photo"
+                                class="catalog-preview__photo-empty"
                             >
-                                <Camera class="h-10 w-10" />
+                                <Camera class="h-8 w-8 text-white/70" />
                             </div>
                             <span
                                 v-if="previewCard.fragile"
-                                class="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full bg-amber-500/90 px-3 py-0.5 text-[11px] font-semibold text-white shadow"
+                                class="catalog-preview__badge"
                             >
                                 ⚠️ Frágil
                             </span>
                         </div>
-                        <p class="text-lg font-semibold text-slate-900">
-                            {{ previewCard.title || 'Item sem nome ainda' }}
-                        </p>
-                        <p class="text-sm text-slate-600">
-                            {{ previewCard.notes || 'Use o campo de descrição para contar a história do item.' }}
-                        </p>
-                        <div class="mt-4 grid gap-2 text-xs text-slate-500">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded-full bg-white/70 px-2 py-0.5 font-semibold text-slate-700">
+                        <div class="catalog-preview__body">
+                            <p class="catalog-preview__name">
+                                {{ previewCard.title || 'Item sem nome ainda' }}
+                            </p>
+                            <p class="catalog-preview__notes">
+                                {{ previewCard.notes || 'Use o campo de descrição para contar a história do item.' }}
+                            </p>
+                            <div class="catalog-preview__tags">
+                                <span class="catalog-preview__pill">
                                     ⚖️ {{ previewCard.weightLabel }}
                                 </span>
-                                <span class="rounded-full bg-white/70 px-2 py-0.5 font-semibold text-slate-700">
+                                <span class="catalog-preview__pill">
                                     🧊 {{ previewCard.volumeLabel }}
                                 </span>
                             </div>
-                            <p class="capitalize">
+                            <p class="catalog-preview__meta">
                                 🏷️ {{ previewCard.category || 'Sem categoria' }}
                             </p>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-500">
-                        Dica: fotos bem iluminadas e títulos específicos deixam o baralho muito mais agradável.
-                    </p>
+                    <p class="catalog-field__help">Dica: fotos bem iluminadas e títulos específicos deixam o baralho muito mais agradável.</p>
                 </div>
             </div>
-        </Card>
+        </section>
     </AppLayout>
 </template>
 
@@ -539,10 +553,9 @@
 import axios from 'axios';
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch, watchEffect } from 'vue';
-import { Camera, Loader2, Package, Plus, Trash2 } from 'lucide-vue-next';
+import { Camera, Loader2, Package, Plus } from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import Card from '@/Components/Card.vue';
-import IconPill from '@/Components/IconPill.vue';
+import TileIcon3D from '@/Components/home/TileIcon3D.vue';
 import { toast } from '@/utils/toast';
 import { useDecisionStore } from '@/stores/decision';
 
@@ -1100,3 +1113,650 @@ watch(photoQueue, (queue) => {
 }, { deep: true });
 
 </script>
+
+<style scoped>
+.catalog-intro {
+    position: relative;
+    margin-bottom: 1.75rem;
+    border-radius: 1.9rem;
+    padding: 1.75rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(45, 212, 191, 0.12), rgba(59, 130, 246, 0.12));
+    border: 1px solid rgba(45, 212, 191, 0.35);
+    box-shadow: 0 30px 65px rgba(15, 118, 110, 0.15);
+    overflow: hidden;
+}
+.catalog-intro::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 10% 0%, rgba(209, 250, 229, 0.85), transparent 55%);
+    pointer-events: none;
+}
+.catalog-intro__head {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+.catalog-intro__icon {
+    --tile-icon-size: 3.4rem;
+}
+.catalog-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.35em;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #14b8a6;
+}
+.catalog-eyebrow--muted {
+    color: #0f766e;
+}
+.catalog-intro__title {
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: #022c22;
+}
+.catalog-intro__subtitle {
+    margin-top: 0.35rem;
+    font-size: 0.95rem;
+    color: #0f172a;
+}
+.catalog-intro__summary {
+    position: relative;
+    z-index: 1;
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.catalog-intro__metric {
+    border-radius: 1.35rem;
+    padding: 1rem;
+    border: 1px solid rgba(45, 212, 191, 0.35);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.catalog-intro__metric-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #047857;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+}
+.catalog-intro__metric-value {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #022c22;
+}
+.catalog-intro__hint {
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    color: #0f172a;
+    position: relative;
+    z-index: 1;
+}
+
+.catalog-panel {
+    position: relative;
+    border-radius: 1.9rem;
+    padding: 1.75rem;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+}
+.catalog-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(circle at 90% 0%, rgba(240, 255, 244, 0.8), transparent 60%);
+}
+.catalog-panel > * {
+    position: relative;
+    z-index: 1;
+}
+.catalog-panel--capture::before {
+    background: radial-gradient(circle at 85% 0%, rgba(219, 234, 254, 0.9), transparent 60%);
+}
+.catalog-panel--config::before {
+    background: radial-gradient(circle at 10% 0%, rgba(187, 247, 208, 0.85), transparent 55%);
+}
+.catalog-section__head {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.catalog-section__head--split {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.catalog-section__intro {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.catalog-section__icon {
+    --tile-icon-size: 3.1rem;
+    animation: catalogFloat 10s ease-in-out infinite;
+}
+.catalog-section__title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-section__subtitle {
+    font-size: 0.95rem;
+    color: #475569;
+}
+.catalog-panel__loading {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    border-radius: 1.25rem;
+    background: rgba(240, 253, 244, 0.85);
+    padding: 0.85rem 1.25rem;
+    color: #0f766e;
+    font-weight: 600;
+}
+.catalog-field__label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-field__label--sm {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: #0f766e;
+}
+.catalog-field__help {
+    font-size: 0.78rem;
+    color: #64748b;
+    display: block;
+}
+.catalog-panel__label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-input,
+.catalog-textarea {
+    width: 100%;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    background: rgba(255, 255, 255, 0.92);
+    padding: 0.65rem 0.95rem;
+    font-size: 0.95rem;
+    color: #0f172a;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 12px 25px rgba(15, 23, 42, 0.05);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.catalog-input:focus,
+.catalog-textarea:focus {
+    outline: none;
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+.catalog-textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+.catalog-panel__section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.catalog-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.catalog-cta:active {
+    transform: scale(0.97);
+}
+.catalog-cta--emerald {
+    color: white;
+    background: linear-gradient(135deg, rgba(5, 150, 105, 1), rgba(16, 185, 129, 0.95));
+    box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3);
+}
+.catalog-bag-card {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 25px 45px rgba(15, 23, 42, 0.08);
+    padding: 1.2rem;
+}
+.catalog-utility-card {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(255, 255, 255, 0.92);
+    padding: 1rem 1.2rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.catalog-bag-card__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-bag-card__meta {
+    font-size: 0.8rem;
+    color: #475569;
+}
+.catalog-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.catalog-chip--ghost {
+    border-color: rgba(45, 212, 191, 0.4);
+    color: #047857;
+    background: rgba(240, 253, 250, 0.9);
+}
+.catalog-chip--danger {
+    border-color: rgba(248, 113, 113, 0.4);
+    color: #b91c1c;
+    background: rgba(254, 242, 242, 0.9);
+}
+.catalog-chip--primary {
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #1d4ed8;
+    background: rgba(239, 246, 255, 0.95);
+}
+.catalog-template {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    border: 1px solid rgba(125, 211, 252, 0.4);
+    background: rgba(240, 253, 244, 0.85);
+    color: #036666;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35rem 0.9rem;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.catalog-template:hover {
+    background: rgba(187, 247, 208, 0.9);
+}
+.catalog-template__remove {
+    font-size: 0.75rem;
+    color: #0f766e;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+.catalog-template__remove:hover {
+    color: #b91c1c;
+}
+.catalog-category {
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    padding: 0.35rem 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    background: rgba(255, 255, 255, 0.95);
+    transition: all 0.2s ease;
+}
+.catalog-category--active {
+    color: #065f46;
+    border-color: rgba(16, 185, 129, 0.45);
+    background: rgba(209, 250, 229, 0.9);
+    box-shadow: 0 12px 25px rgba(16, 185, 129, 0.2);
+}
+.catalog-fragile-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(248, 250, 252, 0.9);
+}
+.catalog-switch {
+    position: relative;
+    width: 48px;
+    height: 24px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.5);
+    transition: background 0.2s ease;
+}
+.catalog-switch--on {
+    background: linear-gradient(120deg, rgba(245, 158, 11, 0.9), rgba(250, 204, 21, 0.9));
+}
+.catalog-switch__thumb {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 5px 10px rgba(15, 23, 42, 0.1);
+    transition: transform 0.2s ease;
+}
+.catalog-switch__thumb--on {
+    transform: translateX(22px);
+}
+.catalog-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 1.6rem;
+    padding: 0.65rem 1.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(120deg, rgba(15, 118, 110, 1), rgba(6, 182, 212, 0.95));
+    box-shadow: 0 20px 35px rgba(6, 182, 212, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.catalog-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.catalog-submit:active {
+    transform: scale(0.98);
+}
+.catalog-capture-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.catalog-photo-field {
+    position: relative;
+}
+.catalog-photo-preview {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(45, 212, 191, 0.4);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        0 18px 35px rgba(16, 185, 129, 0.18);
+}
+.catalog-photo-preview__actions {
+    position: absolute;
+    inset: 0.9rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+.catalog-upload-dropzone {
+    width: 100%;
+    border: 2px dashed rgba(16, 185, 129, 0.5);
+    border-radius: 1.7rem;
+    background: rgba(236, 253, 245, 0.8);
+    padding: 2.5rem 1.5rem;
+    color: #0f172a;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.catalog-upload-dropzone:hover {
+    border-color: rgba(45, 212, 191, 0.8);
+    box-shadow: 0 20px 35px rgba(16, 185, 129, 0.25);
+}
+.catalog-upload-dropzone__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    text-align: center;
+}
+.catalog-upload-dropzone__title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-upload-dropzone__hint {
+    font-size: 0.8rem;
+    color: #475569;
+}
+.catalog-photo-queue {
+    border-radius: 1.6rem;
+    border: 1px solid rgba(125, 211, 252, 0.4);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    font-size: 0.8rem;
+    color: #475569;
+}
+.catalog-photo-queue__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.catalog-photo-queue__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-link {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-link--danger {
+    color: #b91c1c;
+}
+.catalog-photo-queue__list {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+}
+.catalog-photo-queue__item {
+    position: relative;
+    width: 5.8rem;
+    border-radius: 1.3rem;
+    padding: 0.4rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.catalog-photo-queue__item--active {
+    border-color: rgba(14, 165, 233, 0.6);
+    box-shadow: 0 12px 25px rgba(14, 165, 233, 0.2);
+}
+.catalog-photo-queue__badge {
+    position: absolute;
+    left: 0.4rem;
+    top: 0.4rem;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 0.15rem 0.5rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #047857;
+}
+.catalog-photo-queue__actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.25rem;
+    margin-top: 0.35rem;
+}
+.catalog-photo-queue__detail {
+    margin-top: 0.75rem;
+    border-radius: 1.2rem;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    background: rgba(222, 247, 236, 0.7);
+    padding: 0.75rem;
+}
+.catalog-photo-queue__detail-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.4rem;
+}
+.catalog-preview {
+    border-radius: 1.9rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(255, 255, 255, 0.92);
+    padding: 1.4rem;
+    box-shadow: 0 28px 55px rgba(15, 23, 42, 0.08);
+}
+.catalog-preview__head {
+    margin-bottom: 0.75rem;
+}
+.catalog-preview__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-preview__card {
+    border-radius: 1.6rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: radial-gradient(circle at 20% -10%, rgba(167, 243, 208, 0.4), transparent 55%), rgba(255, 255, 255, 0.96);
+    padding: 1rem;
+    box-shadow: 0 30px 50px rgba(15, 118, 110, 0.12);
+}
+.catalog-preview__photo {
+    border-radius: 1.2rem;
+    height: 180px;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(226, 232, 240, 0.8);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 0.85rem;
+}
+.catalog-preview__photo-empty {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.5), rgba(45, 212, 191, 0.35));
+}
+.catalog-preview__badge {
+    position: absolute;
+    left: 0.85rem;
+    top: 0.85rem;
+    border-radius: 999px;
+    background: rgba(251, 146, 60, 0.85);
+    color: white;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    box-shadow: 0 10px 20px rgba(251, 146, 60, 0.2);
+}
+.catalog-preview__body {
+    display: grid;
+    gap: 0.4rem;
+}
+.catalog-preview__name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-preview__notes {
+    font-size: 0.9rem;
+    color: #475569;
+}
+.catalog-preview__tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+.catalog-preview__pill {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.catalog-preview__meta {
+    font-size: 0.85rem;
+    color: #475569;
+}
+.catalog-submit--secondary {
+    background: linear-gradient(120deg, rgba(45, 212, 191, 0.95), rgba(16, 185, 129, 0.95));
+    box-shadow: 0 18px 30px rgba(16, 185, 129, 0.25);
+}
+.catalog-accordion__trigger {
+    flex: 1;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    background: rgba(248, 250, 252, 0.95);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 600;
+    color: #0f172a;
+    box-shadow: 0 18px 35px rgba(59, 130, 246, 0.15);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.catalog-accordion__trigger:active {
+    transform: scale(0.98);
+}
+.catalog-accordion__icon {
+    --tile-icon-size: 2.6rem;
+}
+.catalog-accordion__label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+.catalog-accordion__hint {
+    font-size: 0.75rem;
+    color: #475569;
+}
+.catalog-accordion__chevron {
+    margin-left: auto;
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+    color: #475569;
+}
+.catalog-accordion__body {
+    border-radius: 1.4rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(255, 255, 255, 0.92);
+    padding: 1rem 1.2rem;
+    font-size: 0.85rem;
+    color: #475569;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.catalog-accordion__body-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.4rem;
+}
+.catalog-accordion__list {
+    list-style: disc;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.35rem;
+}
+.catalog-capture-grid form {
+    background: rgba(255, 255, 255, 0.9);
+}
+@keyframes catalogFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+</style>

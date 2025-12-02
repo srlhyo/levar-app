@@ -1,16 +1,6 @@
 <template>
     <transition name="fade">
         <div v-if="show" class="flex flex-wrap items-center gap-3 text-xs text-slate-600 sm:text-sm">
-            <select
-                v-model="internalBagFilter"
-                class="rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
-            >
-                <option value="all">Todas as malas</option>
-                <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
-                    {{ bag.label }}
-                </option>
-                <option value="unassigned">Sem mala</option>
-            </select>
             <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-2 py-1 text-xs text-slate-600 shadow-inner shadow-slate-100">
                 <span>Itens por página</span>
                 <select
@@ -41,14 +31,6 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-    bagFilter: {
-        type: String,
-        default: 'all',
-    },
-    bagOptions: {
-        type: Array,
-        default: () => [],
-    },
     pageSize: {
         type: Number,
         default: 25,
@@ -59,12 +41,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['update:bagFilter', 'update:pageSize', 'clear']);
-
-const internalBagFilter = computed({
-    get: () => props.bagFilter,
-    set: (value) => emit('update:bagFilter', value),
-});
+const emit = defineEmits(['update:pageSize', 'clear']);
 
 const internalPageSize = computed({
     get: () => props.pageSize,

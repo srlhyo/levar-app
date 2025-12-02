@@ -4,244 +4,317 @@
         <template #title>Resumo</template>
         <template #subtitle>Uma visão geral das malas, pendências e itens que vão com a gente.</template>
 
-        <Card tone="slate" class="space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <p class="text-base font-semibold text-slate-900">Panorama da mudança</p>
-                    <p class="text-sm text-slate-600">Acompanhe o avanço entre levar, pendentes e não levar em tempo real.</p>
+        <section class="resumo-panel">
+            <div class="resumo-panel__head">
+                <div class="resumo-panel__title-block">
+                    <TileIcon3D tone="slate" class="resumo-panel__icon">
+                        <Layers3 class="h-5 w-5" />
+                    </TileIcon3D>
+                    <div>
+                        <p class="resumo-eyebrow">Panorama consolidado</p>
+                        <h2 class="resumo-panel__title">Panorama da mudança</h2>
+                        <p class="resumo-panel__subtitle">
+                            Indicadores vivos com totais, pendências e atalhos rápidos para reequilibrar a mudança.
+                        </p>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3 text-xs text-slate-500 sm:text-sm">
-                    <button type="button" class="underline-offset-4 hover:underline" @click="setAllPanoramaSections(true)">Expandir tudo</button>
-                    <span class="text-slate-300">•</span>
-                    <button type="button" class="underline-offset-4 hover:underline" @click="setAllPanoramaSections(false)">Recolher tudo</button>
+                <div class="resumo-panel__toggles">
+                    <button type="button" class="resumo-panel__link" @click="setAllPanoramaSections(true)">Expandir tudo</button>
+                    <span aria-hidden="true" class="resumo-panel__divider">•</span>
+                    <button type="button" class="resumo-panel__link" @click="setAllPanoramaSections(false)">Recolher tudo</button>
                 </div>
             </div>
 
-            <section class="rounded-2xl bg-white/80">
-                <button
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
-                    @click="togglePanoramaSection('counts')"
-                >
-                    Totais por decisão
-                    <ChevronDown class="h-4 w-4 transition" :class="panoramaSections.counts ? 'rotate-180' : ''" />
-                </button>
-                <transition name="fade">
-                    <div v-if="panoramaSections.counts" class="grid gap-3 px-4 pb-4 text-center text-xs text-slate-600 sm:grid-cols-2 sm:text-sm lg:grid-cols-4">
-                        <div class="rounded-2xl bg-white/70 px-3 py-2">
-                            <p class="text-[11px] uppercase tracking-wide text-emerald-600 sm:text-xs">Vai levar</p>
-                            <p class="text-2xl font-semibold text-emerald-600">{{ stats.take }}</p>
-                            <button
-                                v-if="takeItems.length"
-                                type="button"
-                                class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-100 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-emerald-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 sm:text-xs disabled:opacity-60"
-                                :disabled="globalRequeueLoading.take"
-                                @click="handleGlobalRequeue('take')"
-                            >
-                                <span v-if="globalRequeueLoading.take" class="animate-pulse">Reinserindo…</span>
-                                <span v-else>Reinserir no Decidir</span>
-                            </button>
-                        </div>
-                        <div class="rounded-2xl bg-white/70 px-3 py-2">
-                            <p class="text-[11px] uppercase tracking-wide text-rose-600 sm:text-xs">Não levar</p>
-                            <p class="text-2xl font-semibold text-rose-600">{{ stats.leave }}</p>
-                            <button
-                                v-if="leaveItems.length"
-                                type="button"
-                                class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-rose-100 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-rose-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 sm:text-xs disabled:opacity-60"
-                                :disabled="globalRequeueLoading.leave"
-                                @click="handleGlobalRequeue('leave')"
-                            >
-                                <span v-if="globalRequeueLoading.leave" class="animate-pulse">Reinserindo…</span>
-                                <span v-else>Reinserir no Decidir</span>
-                            </button>
-                        </div>
-                        <div class="rounded-2xl bg-white/70 px-3 py-2">
-                            <p class="text-[11px] uppercase tracking-wide text-amber-700 sm:text-xs">Pendentes</p>
-                            <p class="text-2xl font-semibold text-amber-700">{{ stats.pending }}</p>
-                            <button
-                                v-if="pendingItems.length"
-                                type="button"
-                                class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-100 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-amber-700 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 sm:text-xs disabled:opacity-60"
-                                :disabled="globalRequeueLoading.pending"
-                                @click="handleGlobalRequeue('pending')"
-                            >
-                                <span v-if="globalRequeueLoading.pending" class="animate-pulse">Reinserindo…</span>
-                                <span v-else>Reinserir no Decidir</span>
-                            </button>
-                        </div>
-                        <div class="rounded-2xl bg-white/70 px-3 py-2">
-                            <p class="text-[11px] uppercase tracking-wide text-slate-500 sm:text-xs">Indefinidos</p>
-                            <p class="text-2xl font-semibold text-slate-600">{{ stats.undecided }}</p>
-                        </div>
-                    </div>
-                </transition>
-            </section>
-
-            <section class="rounded-2xl bg-white/80">
-                <button
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
-                    @click="togglePanoramaSection('totals')"
-                >
-                    Totais catalogados
-                    <ChevronDown class="h-4 w-4 transition" :class="panoramaSections.totals ? 'rotate-180' : ''" />
-                </button>
-                <transition name="fade">
-                    <div v-if="panoramaSections.totals" class="grid gap-3 px-4 pb-4 text-xs text-slate-600 sm:grid-cols-2 sm:text-sm lg:grid-cols-4">
-                        <div class="rounded-2xl bg-white/70 px-4 py-3 font-medium ring-1 ring-white/40">
-                            Total catalogado:
-                            <span class="font-semibold text-slate-900">{{ stats.total }}</span>
-                        </div>
-                        <div class="rounded-2xl bg-white/70 px-4 py-3 font-medium ring-1 ring-white/40">
-                            Processados:
-                            <span class="font-semibold text-slate-900">{{ processedSummary }}</span>
-                        </div>
-                        <div class="rounded-2xl bg-white/70 px-4 py-3 font-medium ring-1 ring-white/40">
-                            Pendentes (total):
-                            <span class="font-semibold text-slate-900">{{ stats.pending_total ?? pendingTotal }}</span>
-                        </div>
-                        <div class="rounded-2xl bg-white/70 px-4 py-3 font-medium ring-1 ring-white/40">
-                            Cartas no deck:
-                            <span class="font-semibold text-slate-900">{{ pendingDeckCount }}</span>
-                        </div>
-                    </div>
-                </transition>
-            </section>
-
-            <section class="rounded-2xl bg-white/80">
-                <button
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
-                    @click="togglePanoramaSection('progress')"
-                >
-                    Indicadores rápidos
-                    <ChevronDown class="h-4 w-4 transition" :class="panoramaSections.progress ? 'rotate-180' : ''" />
-                </button>
-                <transition name="fade">
-                    <div
-                        v-if="panoramaSections.progress"
-                        class="grid gap-3 px-4 pb-4 text-xs text-slate-600 ring-1 ring-white/40 sm:grid-cols-3 sm:text-sm"
+            <div class="resumo-accordion-group">
+                <article class="resumo-accordion">
+                    <button
+                        type="button"
+                        class="resumo-accordion__trigger"
+                        @click="togglePanoramaSection('counts')"
                     >
-                        <div class="flex items-center gap-3 rounded-2xl bg-white/70 px-3 py-2">
-                            <span class="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 text-emerald-600">🎯</span>
-                            <div class="space-y-0.5">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                                    Progresso geral
-                                </p>
-                                <p class="text-sm font-semibold text-slate-800">
-                                    {{ completionPercent }}% concluído
-                                </p>
+                        <div class="resumo-accordion__title">
+                            <TileIcon3D tone="emerald" class="resumo-accordion__icon">
+                                <Gauge class="h-4 w-4" />
+                            </TileIcon3D>
+                            <span>Totais por decisão</span>
+                        </div>
+                        <ChevronDown class="h-4 w-4 transition" :class="panoramaSections.counts ? 'rotate-180' : ''" />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="panoramaSections.counts" class="resumo-accordion__body">
+                            <div class="resumo-summary-grid">
+                                <div class="resumo-summary-card resumo-summary-card--emerald">
+                                    <div class="resumo-summary-card__icon-wrap">
+                                        <TileIcon3D tone="emerald" class="resumo-summary-card__icon">
+                                            <Check class="h-4 w-4" />
+                                        </TileIcon3D>
+                                    </div>
+                                    <div>
+                                        <p class="resumo-summary-card__label">Vai levar</p>
+                                        <p class="resumo-summary-card__value">{{ stats.take }}</p>
+                                        <button
+                                            v-if="takeItems.length"
+                                            type="button"
+                                            class="resumo-summary-card__action"
+                                            :disabled="globalRequeueLoading.take"
+                                            @click="handleGlobalRequeue('take')"
+                                        >
+                                            <span v-if="globalRequeueLoading.take" class="animate-pulse">Reinserindo…</span>
+                                            <span v-else>Reinserir no Decidir</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="resumo-summary-card resumo-summary-card--amber">
+                                    <div class="resumo-summary-card__icon-wrap">
+                                        <TileIcon3D tone="amber" class="resumo-summary-card__icon">
+                                            <Clock class="h-4 w-4" />
+                                        </TileIcon3D>
+                                    </div>
+                                    <div>
+                                        <p class="resumo-summary-card__label">Pendentes</p>
+                                        <p class="resumo-summary-card__value">{{ stats.pending }}</p>
+                                        <button
+                                            v-if="pendingItems.length"
+                                            type="button"
+                                            class="resumo-summary-card__action"
+                                            :disabled="globalRequeueLoading.pending"
+                                            @click="handleGlobalRequeue('pending')"
+                                        >
+                                            <span v-if="globalRequeueLoading.pending" class="animate-pulse">Reinserindo…</span>
+                                            <span v-else>Reinserir no Decidir</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="resumo-summary-card resumo-summary-card--rose">
+                                    <div class="resumo-summary-card__icon-wrap">
+                                        <TileIcon3D tone="crimson" class="resumo-summary-card__icon">
+                                            <X class="h-4 w-4" />
+                                        </TileIcon3D>
+                                    </div>
+                                    <div>
+                                        <p class="resumo-summary-card__label">Não levar</p>
+                                        <p class="resumo-summary-card__value">{{ stats.leave }}</p>
+                                        <button
+                                            v-if="leaveItems.length"
+                                            type="button"
+                                            class="resumo-summary-card__action"
+                                            :disabled="globalRequeueLoading.leave"
+                                            @click="handleGlobalRequeue('leave')"
+                                        >
+                                            <span v-if="globalRequeueLoading.leave" class="animate-pulse">Reinserindo…</span>
+                                            <span v-else>Reinserir no Decidir</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="resumo-summary-card resumo-summary-card--slate">
+                                    <div class="resumo-summary-card__icon-wrap">
+                                        <TileIcon3D tone="slate" class="resumo-summary-card__icon">
+                                            <Layers3 class="h-4 w-4" />
+                                        </TileIcon3D>
+                                    </div>
+                                    <div>
+                                        <p class="resumo-summary-card__label">Indefinidos</p>
+                                        <p class="resumo-summary-card__value">{{ stats.undecided }}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 rounded-2xl bg-white/70 px-3 py-2">
-                            <span class="grid h-8 w-8 place-items-center rounded-full bg-sky-100 text-sky-600">📦</span>
-                            <div class="space-y-0.5">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                                    Pronto para levar
-                                </p>
-                                <p class="text-sm font-semibold text-slate-800">
-                                    {{ readyPercent }}% dos itens
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 rounded-2xl bg-white/70 px-3 py-2">
-                            <span class="grid h-8 w-8 place-items-center rounded-full bg-amber-100 text-amber-600">🧳</span>
-                            <div class="space-y-0.5">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                                    Já embalados
-                                </p>
-                                <p class="text-sm font-semibold text-slate-800">
-                                    {{ packedPercent }}% embalado
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </transition>
-            </section>
-        </Card>
+                    </transition>
+                </article>
 
-        <Card
+                <article class="resumo-accordion">
+                    <button
+                        type="button"
+                        class="resumo-accordion__trigger"
+                        @click="togglePanoramaSection('totals')"
+                    >
+                        <div class="resumo-accordion__title">
+                            <TileIcon3D tone="slate" class="resumo-accordion__icon">
+                                <ListChecks class="h-4 w-4" />
+                            </TileIcon3D>
+                            <span>Totais catalogados</span>
+                        </div>
+                        <ChevronDown class="h-4 w-4 transition" :class="panoramaSections.totals ? 'rotate-180' : ''" />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="panoramaSections.totals" class="resumo-accordion__body">
+                            <div class="resumo-totals-grid">
+                                <div class="resumo-total-card resumo-total-card--slate">
+                                    <TileIcon3D tone="slate" class="resumo-total-card__icon">
+                                        <Layers3 class="h-4 w-4" />
+                                    </TileIcon3D>
+                                    <div>
+                                        <p class="resumo-total-card__label">Total catalogado</p>
+                                        <p class="resumo-total-card__value">{{ stats.total }}</p>
+                                    </div>
+                                </div>
+                                <div class="resumo-total-card resumo-total-card--emerald">
+                                    <TileIcon3D tone="emerald" class="resumo-total-card__icon">
+                                        <Activity class="h-4 w-4" />
+                                    </TileIcon3D>
+                                    <div>
+                                        <p class="resumo-total-card__label">Processados</p>
+                                        <p class="resumo-total-card__value">{{ processedSummary }}</p>
+                                    </div>
+                                </div>
+                                <div class="resumo-total-card resumo-total-card--amber">
+                                    <TileIcon3D tone="amber" class="resumo-total-card__icon">
+                                        <Clock class="h-4 w-4" />
+                                    </TileIcon3D>
+                                    <div>
+                                        <p class="resumo-total-card__label">Pendentes (total)</p>
+                                        <p class="resumo-total-card__value">{{ stats.pending_total ?? pendingTotal }}</p>
+                                    </div>
+                                </div>
+                                <div class="resumo-total-card resumo-total-card--indigo">
+                                    <TileIcon3D tone="indigo" class="resumo-total-card__icon">
+                                        <Archive class="h-4 w-4" />
+                                    </TileIcon3D>
+                                    <div>
+                                        <p class="resumo-total-card__label">Cartas no deck</p>
+                                        <p class="resumo-total-card__value">{{ pendingDeckCount }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </transition>
+                </article>
+
+                <article class="resumo-accordion">
+                    <button
+                        type="button"
+                        class="resumo-accordion__trigger"
+                        @click="togglePanoramaSection('progress')"
+                    >
+                        <div class="resumo-accordion__title">
+                            <TileIcon3D tone="indigo" class="resumo-accordion__icon">
+                                <BarChart3 class="h-4 w-4" />
+                            </TileIcon3D>
+                            <span>Indicadores rápidos</span>
+                        </div>
+                        <ChevronDown class="h-4 w-4 transition" :class="panoramaSections.progress ? 'rotate-180' : ''" />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="panoramaSections.progress" class="resumo-accordion__body">
+                            <div class="resumo-quickstats">
+                                <div class="resumo-quickstat">
+                                    <TileIcon3D tone="emerald" class="resumo-quickstat__icon">
+                                        <Activity class="h-4 w-4" />
+                                    </TileIcon3D>
+                                    <div>
+                                        <p class="resumo-quickstat__label">Progresso geral</p>
+                                        <p class="resumo-quickstat__value">{{ completionPercent }}% concluído</p>
+                                    </div>
+                                </div>
+                                <div class="resumo-quickstat">
+                                    <TileIcon3D tone="sky" class="resumo-quickstat__icon">
+                                        <Package class="h-4 w-4" />
+                                    </TileIcon3D>
+                                    <div>
+                                        <p class="resumo-quickstat__label">Pronto para levar</p>
+                                        <p class="resumo-quickstat__value">{{ readyPercent }}% dos itens</p>
+                                    </div>
+                                </div>
+                                <div class="resumo-quickstat">
+                                    <TileIcon3D tone="amber" class="resumo-quickstat__icon">
+                                        <Archive class="h-4 w-4" />
+                                    </TileIcon3D>
+                                    <div>
+                                        <p class="resumo-quickstat__label">Já embalados</p>
+                                        <p class="resumo-quickstat__value">{{ packedPercent }}% embalado</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </transition>
+                </article>
+            </div>
+        </section>
+
+        <section
             v-if="statusBanner"
-            :tone="statusBanner.tone ?? 'slate'"
-            class="flex flex-col gap-3"
+            class="resumo-status-card"
+            :class="`resumo-status-card--${statusBanner.tone ?? 'slate'}`"
         >
-            <div class="flex items-start gap-3">
-                <span class="text-3xl" aria-hidden="true">{{ statusBanner.emoji }}</span>
-                <div>
-                    <p class="text-base font-semibold text-slate-900">{{ statusBanner.title }}</p>
-                    <p class="text-sm text-slate-600">{{ statusBanner.message }}</p>
+            <TileIcon3D :tone="statusBanner.tone ?? 'slate'" class="resumo-status-card__icon">
+                <span aria-hidden="true" class="text-xl">{{ statusBanner.emoji }}</span>
+            </TileIcon3D>
+            <div class="resumo-status-card__body">
+                <p class="resumo-status-card__title">{{ statusBanner.title }}</p>
+                <p class="resumo-status-card__message">{{ statusBanner.message }}</p>
+                <div class="resumo-status-card__actions">
+                    <button
+                        v-for="action in statusBanner.actions"
+                        :key="action.label"
+                        type="button"
+                        class="resumo-status-card__button"
+                        @click="action.handler?.()"
+                    >
+                        {{ action.label }}
+                    </button>
                 </div>
             </div>
-            <div class="flex flex-wrap gap-2">
-                <button
-                    v-for="action in statusBanner.actions"
-                    :key="action.label"
-                    type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
-                    @click="action.handler?.()"
-                >
-                    {{ action.label }}
-                </button>
-            </div>
-        </Card>
+        </section>
 
-        <Card tone="slate" class="space-y-6">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div class="space-y-1">
-                    <p class="text-base font-semibold text-slate-900">Capacidade das malas</p>
-                    <p class="text-sm text-slate-600">
+        <section class="resumo-panel-soft">
+            <div class="resumo-panel-soft__head">
+                <div>
+                    <p class="resumo-eyebrow resumo-eyebrow--muted">Capacidade das malas</p>
+                    <h2 class="resumo-panel-soft__title">Distribua peso e volume com segurança</h2>
+                    <p class="resumo-panel-soft__subtitle">
                         Monitore peso e volume de cada mala. Quando algo lotar, siga para Embalar ou reinsira itens no deck do Decidir.
                     </p>
                 </div>
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <button
-                        type="button"
-                        class="inline-flex items-center justify-center gap-2 rounded-full bg-yellow-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow transition hover:bg-yellow-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-200"
-                        @click="goToPack"
-                    >
+                <div class="resumo-panel-soft__cta">
+                    <button type="button" class="resumo-cta resumo-cta--warm" @click="goToPack">
                         Abrir Embalar
                     </button>
-                    <button
-                        type="button"
-                        class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-                        @click="goToDecidir"
-                    >
+                    <button type="button" class="resumo-cta resumo-cta--cool" @click="goToDecidir">
                         Ir para Decidir
-                        <span aria-hidden="true" class="text-base">→</span>
+                        <span aria-hidden="true">→</span>
                     </button>
                 </div>
             </div>
 
-            <section class="rounded-2xl bg-white/80 space-y-3 px-4 pb-4">
-                <button
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-0 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
-                    @click="toggleCapacitySection('bars')"
-                >
-                    Resumo de capacidades
-                    <ChevronDown class="h-4 w-4 transition" :class="capacitySections.bars ? 'rotate-180' : ''" />
-                </button>
-                <transition name="fade">
-                    <div v-if="capacitySections.bars">
-                        <div class="space-y-3">
-                            <section class="rounded-2xl bg-white/90 ring-1 ring-black/5">
+            <div class="resumo-accordion-group resumo-accordion-group--soft">
+                <article class="resumo-accordion resumo-accordion--ghost">
+                    <button
+                        type="button"
+                        class="resumo-accordion__trigger"
+                        @click="toggleCapacitySection('bars')"
+                    >
+                        <div class="resumo-accordion__title">
+                            <TileIcon3D tone="sky" class="resumo-accordion__icon">
+                                <RefreshCcw class="h-4 w-4" />
+                            </TileIcon3D>
+                            <span>Resumo de capacidades</span>
+                        </div>
+                        <ChevronDown class="h-4 w-4 transition" :class="capacitySections.bars ? 'rotate-180' : ''" />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="capacitySections.bars" class="resumo-accordion__body space-y-3">
+                            <div class="resumo-capacity-card">
                                 <button
                                     type="button"
-                                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                                    class="resumo-capacity-card__trigger"
                                     @click="toggleCapacityBarSection('weight')"
                                 >
-                                    <div>
-                                        <p class="text-sm font-semibold text-slate-800">Peso total disponível</p>
-                                        <p class="text-xs font-medium text-slate-500">
-                                            {{ formatKg(totalCapacityKg) }} • {{ formatKg(remainingCapacityKg) }} livres
-                                        </p>
+                                    <div class="resumo-capacity-card__label">
+                                        <TileIcon3D tone="emerald" class="resumo-capacity-card__icon">
+                                            <Weight class="h-4 w-4" />
+                                        </TileIcon3D>
+                                        <div>
+                                            <p class="resumo-capacity-card__title">Peso total disponível</p>
+                                            <p class="resumo-capacity-card__meta">
+                                                {{ formatKg(totalCapacityKg) }} • {{ formatKg(remainingCapacityKg) }} livres
+                                            </p>
+                                        </div>
                                     </div>
                                     <ChevronDown class="h-4 w-4 transition" :class="capacityBarSections.weight ? 'rotate-180' : ''" />
                                 </button>
                                 <transition name="fade">
-                                    <div v-if="capacityBarSections.weight" class="pt-3">
-                                        <div v-if="capacitySkeletonVisible" class="h-64 rounded-3xl bg-white/50 shadow-inner shadow-slate-100 animate-pulse" />
+                                    <div v-if="capacityBarSections.weight" class="resumo-capacity-card__body">
+                                        <div v-if="capacitySkeletonVisible" class="resumo-capacity-card__skeleton" />
                                         <div v-else>
                                             <WeightBar
                                                 :bags="bagSummaries"
@@ -252,26 +325,31 @@
                                         </div>
                                     </div>
                                 </transition>
-                            </section>
+                            </div>
 
-                            <section class="rounded-2xl bg-white/90 ring-1 ring-black/5">
+                            <div class="resumo-capacity-card">
                                 <button
                                     type="button"
-                                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
+                                    class="resumo-capacity-card__trigger"
                                     @click="toggleCapacityBarSection('volume')"
                                 >
-                                    <div>
-                                        <p class="text-sm font-semibold text-slate-800">Volume total disponível</p>
-                                        <p class="text-xs font-medium text-slate-500">
-                                            {{ formatLiters(volumeTotalCapacityCm3) }} ({{ formatCm3(volumeTotalCapacityCm3) }})
-                                            • {{ formatLiters(volumeRemainingCm3) }} livres
-                                        </p>
+                                    <div class="resumo-capacity-card__label">
+                                        <TileIcon3D tone="indigo" class="resumo-capacity-card__icon">
+                                            <Cuboid class="h-4 w-4" />
+                                        </TileIcon3D>
+                                        <div>
+                                            <p class="resumo-capacity-card__title">Volume total disponível</p>
+                                            <p class="resumo-capacity-card__meta">
+                                                {{ formatLiters(volumeTotalCapacityCm3) }} ({{ formatCm3(volumeTotalCapacityCm3) }})
+                                                • {{ formatLiters(volumeRemainingCm3) }} livres
+                                            </p>
+                                        </div>
                                     </div>
                                     <ChevronDown class="h-4 w-4 transition" :class="capacityBarSections.volume ? 'rotate-180' : ''" />
                                 </button>
                                 <transition name="fade">
-                                    <div v-if="capacityBarSections.volume" class="pt-3">
-                                        <div v-if="capacitySkeletonVisible" class="h-64 rounded-3xl bg-white/50 shadow-inner shadow-slate-100 animate-pulse" />
+                                    <div v-if="capacityBarSections.volume" class="resumo-capacity-card__body">
+                                        <div v-if="capacitySkeletonVisible" class="resumo-capacity-card__skeleton" />
                                         <div v-else>
                                             <VolumeBar
                                                 :bags="bagSummaries"
@@ -282,72 +360,190 @@
                                         </div>
                                     </div>
                                 </transition>
-                            </section>
+                            </div>
                         </div>
-                    </div>
-                </transition>
-            </section>
+                    </transition>
+                </article>
 
-            <section class="rounded-2xl bg-white/80">
-                <button
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-4 py-2 text-left text-sm font-semibold text-slate-700 sm:text-base"
-                    @click="toggleCapacitySection('cards')"
-                >
-                    Detalhe por mala
-                    <ChevronDown class="h-4 w-4 transition" :class="capacitySections.cards ? 'rotate-180' : ''" />
-                </button>
-                <transition name="fade">
-                    <div v-if="capacitySections.cards" class="px-4 pb-4">
-                        <div v-if="suitcaseCards.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                            <Suitcase
-                                v-for="bag in suitcaseCards"
-                                :key="bag.id"
-                                :name="bag.name"
-                                :dims="bag.dims"
-                                :current="bag.current"
-                                :max="bag.max"
-                                :status="bag.status"
-                                :ratio="bag.ratio"
-                                :weight="bag.weight"
-                                :volume="bag.volume"
-                            />
+                <article class="resumo-accordion resumo-accordion--ghost">
+                    <button
+                        type="button"
+                        class="resumo-accordion__trigger"
+                        @click="toggleCapacitySection('cards')"
+                    >
+                        <div class="resumo-accordion__title">
+                            <TileIcon3D tone="slate" class="resumo-accordion__icon">
+                                <Briefcase class="h-4 w-4" />
+                            </TileIcon3D>
+                            <span>Detalhe por mala</span>
                         </div>
-                        <div
-                            v-else
-                            class="rounded-3xl border border-dashed border-white/50 bg-white/50 px-4 py-6 text-sm text-slate-600 sm:px-6"
-                        >
-                            <p class="font-semibold text-slate-700">Nenhuma mala cadastrada ainda.</p>
-                            <p>Use a tela Embalar para configurar as malas e acompanhar os espaços utilizados.</p>
+                        <ChevronDown class="h-4 w-4 transition" :class="capacitySections.cards ? 'rotate-180' : ''" />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="capacitySections.cards" class="resumo-accordion__body">
+                            <div v-if="suitcaseCards.length" class="resumo-suitcase-grid">
+                                <Suitcase
+                                    v-for="bag in suitcaseCards"
+                                    :key="bag.id"
+                                    :name="bag.name"
+                                    :dims="bag.dims"
+                                    :current="bag.current"
+                                    :max="bag.max"
+                                    :status="bag.status"
+                                    :ratio="bag.ratio"
+                                    :weight="bag.weight"
+                                    :volume="bag.volume"
+                                />
+                            </div>
+                            <div v-else class="resumo-empty-card">
+                                <p class="font-semibold text-slate-800">Nenhuma mala cadastrada ainda.</p>
+                                <p class="text-sm text-slate-600">Use a tela Embalar para configurar as malas e acompanhar os espaços utilizados.</p>
+                            </div>
                         </div>
-                    </div>
-                </transition>
-            </section>
-        </Card>
+                    </transition>
+                </article>
+            </div>
+        </section>
 
-        <Card tone="slate" class="space-y-5">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                    <p class="text-base font-semibold text-slate-900">Itens por decisão</p>
-                    <p class="text-sm text-slate-600">
-                        Navegue pelos itens marcados como levar, pendentes ou não levar.
-                    </p>
+        <section class="resumo-items-card">
+            <div class="resumo-items-card__head">
+                <div class="resumo-items-card__title-block">
+                    <TileIcon3D tone="slate" class="resumo-items-card__icon resumo-items-card__icon--glow">
+                        <ListChecks class="h-5 w-5" />
+                    </TileIcon3D>
+                    <div>
+                        <p class="resumo-eyebrow resumo-eyebrow--muted">Listas por decisão</p>
+                        <h2 class="resumo-items-card__title">Itens por decisão</h2>
+                        <p class="resumo-items-card__subtitle">
+                            Navegue pelos itens marcados como levar, pendentes ou não levar com filtros avançados e seleção rápida.
+                        </p>
+                    </div>
                 </div>
             </div>
-            <div class="flex flex-wrap items-center gap-2 text-xs text-slate-600 sm:text-sm">
-                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-600">
-                    ✔ Levar: <span class="font-semibold">{{ stats.take }}</span>
+            <div class="resumo-badge-row">
+                <span class="resumo-badge resumo-badge--emerald">
+                    <TileIcon3D tone="emerald" class="resumo-badge__icon">
+                        <Check class="h-3.5 w-3.5" />
+                    </TileIcon3D>
+                    <span>Levar</span>
+                    <span class="resumo-badge__value">{{ stats.take }}</span>
                 </span>
-                <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-amber-700">
-                    ⏳ Pendentes: <span class="font-semibold">{{ stats.pending_total ?? pendingTotal }}</span>
+                <span class="resumo-badge resumo-badge--amber">
+                    <TileIcon3D tone="amber" class="resumo-badge__icon">
+                        <Clock class="h-3.5 w-3.5" />
+                    </TileIcon3D>
+                    <span>Pendentes</span>
+                    <span class="resumo-badge__value">{{ stats.pending_total ?? pendingTotal }}</span>
                 </span>
-                <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-3 py-1 text-rose-700">
-                    ✖ Não levar: <span class="font-semibold">{{ stats.leave }}</span>
+                <span class="resumo-badge resumo-badge--rose">
+                    <TileIcon3D tone="rose" class="resumo-badge__icon">
+                        <X class="h-3.5 w-3.5" />
+                    </TileIcon3D>
+                    <span>Não levar</span>
+                    <span class="resumo-badge__value">{{ stats.leave }}</span>
                 </span>
             </div>
 
             <Tabs v-model="activeTab" :items="tabItems" label="Listas por decisão">
-                <div v-if="showListCard" class="mt-4 rounded-3xl border border-slate-200/70 bg-white/80 shadow-inner shadow-white">
+                <div v-if="showListCard" class="resumo-items-shell">
+                    <div class="resumo-filter-panel">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="resumo-search-grid">
+                                <div class="resumo-search-card">
+                                    <TileIcon3D tone="slate" class="resumo-search-card__icon">
+                                        <Search class="h-4 w-4" />
+                                    </TileIcon3D>
+                                    <div class="resumo-search-card__body">
+                                        <p class="resumo-search-card__label">Buscar itens</p>
+                                        <input
+                                            v-model="searchQuery"
+                                            type="search"
+                                            placeholder="Buscar por nome, notas ou mala…"
+                                            class="resumo-search-card__input"
+                                        />
+                                        <span class="resumo-search-card__meta">
+                                            {{ totalFilteredCount }} resultado(s)
+                                        </span>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="resumo-filter-toggle"
+                                    @click="toggleFilters"
+                                >
+                                    <SlidersHorizontal class="h-4 w-4" />
+                                    {{ filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros' }}
+                                </button>
+                                <FilterMenu
+                                    :show="showFiltersPanel"
+                                    :page-size.sync="pageSize"
+                                    :page-options="pageSizeOptions"
+                                    @clear="handleClearFilters"
+                                />
+                            </div>
+                            <div class="resumo-list-meta">
+                                Exibindo
+                                <span class="font-semibold text-slate-900">{{ pageStart }}–{{ pageEnd }}</span>
+                                de
+                                <span class="font-semibold text-slate-900">{{ totalFilteredCount }}</span>
+                                itens
+                            </div>
+                        </div>
+                        <div class="resumo-select-row">
+                            <label class="resumo-select-all">
+                                <input
+                                    ref="selectAllRef"
+                                    type="checkbox"
+                                    class="resumo-select-all__input"
+                                    :checked="allSelected"
+                                    @change="toggleSelectAll"
+                                />
+                                <span>Selecionar todos</span>
+                            </label>
+                            <div class="resumo-select-actions">
+                                <button
+                                    type="button"
+                                    class="resumo-cta resumo-cta--cool resumo-cta--compact"
+                                    :disabled="!selectedCount"
+                                    @click="handleBulkRequeue"
+                                    title="Devolver a seleção para o deck da tela Decidir"
+                                >
+                                    ↩ Voltar para o deck do Decidir
+                                </button>
+                                <span v-if="selectedCount" class="resumo-select-count">
+                                    {{ selectedCount }} selecionado(s)
+                                </span>
+                            </div>
+                        </div>
+                        <div
+                            v-if="showBulkBagAssign"
+                            class="resumo-bulk-assign"
+                        >
+                            <span class="font-semibold text-slate-800">Enviar seleção para</span>
+                            <select
+                                v-model="bulkBagChoice"
+                                class="resumo-bulk-assign__select"
+                            >
+                                <option value="">Sem mala</option>
+                                <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
+                                    {{ bag.label }}
+                                </option>
+                            </select>
+                            <button
+                                type="button"
+                                class="resumo-bulk-assign__action"
+                                :disabled="bulkAssignLoading"
+                                @click="handleBulkAssign"
+                            >
+                                <span
+                                    v-if="bulkAssignLoading"
+                                    class="h-2 w-2 animate-ping rounded-full bg-white"
+                                    aria-hidden="true"
+                                />
+                                Aplicar
+                            </button>
+                        </div>
+                    </div>
                     <div class="relative">
                         <div class="pointer-events-none absolute inset-x-0 top-0 h-6 rounded-t-3xl bg-gradient-to-b from-white via-white/80 to-transparent z-10"></div>
                         <div class="pointer-events-none absolute inset-x-0 bottom-0 h-6 rounded-b-3xl bg-gradient-to-t from-white via-white/80 to-transparent z-10"></div>
@@ -355,112 +551,6 @@
                             ref="listContainer"
                             class="max-h-[72vh] overflow-y-auto pr-2 pb-6 space-y-4"
                         >
-                            <div class="sticky top-0 z-20 space-y-3 rounded-3xl bg-white/95 px-4 py-3 text-sm text-slate-600 shadow ring-1 ring-black/5 backdrop-blur">
-                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div class="flex flex-col gap-2">
-                                        <div class="flex flex-wrap items-center gap-3">
-                                            <div class="relative flex-1 min-w-[200px] sm:min-w-[260px]">
-                                                <input
-                                                    v-model="searchQuery"
-                                                    type="search"
-                                                    placeholder="Buscar por nome, notas ou mala…"
-                                                    class="w-full rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-sm text-slate-700 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-                                                />
-                                                <span
-                                                    v-if="searchQuery"
-                                                    class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] font-medium text-slate-400"
-                                                >
-                                                    {{ totalFilteredCount }} resultado(s)
-                                                </span>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 sm:text-sm"
-                                                @click="toggleFilters"
-                                            >
-                                                <SlidersHorizontal class="h-4 w-4" />
-                                                {{ filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros' }}
-                                            </button>
-                                            <span
-                                                v-if="filtersDirty"
-                                                class="text-[11px] font-medium uppercase tracking-wide text-emerald-600"
-                                            >
-                                                filtros ativos
-                                            </span>
-                                        </div>
-                                        <FilterMenu
-                                            :show="showFiltersPanel"
-                                            :bag-filter.sync="selectedBagFilter"
-                                            :bag-options="bagFilters"
-                                            :page-size.sync="pageSize"
-                                            :page-options="pageSizeOptions"
-                                            @clear="handleClearFilters"
-                                        />
-                                    </div>
-                                    <div class="text-xs text-slate-500 sm:text-sm">
-                                        Exibindo
-                                        <span class="font-semibold text-slate-700">{{ pageStart }}–{{ pageEnd }}</span>
-                                        de
-                                        <span class="font-semibold text-slate-700">{{ totalFilteredCount }}</span>
-                                        itens
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap items-center justify-between gap-3">
-                                    <label class="flex items-center gap-2 font-semibold">
-                                        <input
-                                            ref="selectAllRef"
-                                            type="checkbox"
-                                            class="h-5 w-5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-400"
-                                            :checked="allSelected"
-                                            @change="toggleSelectAll"
-                                        />
-                                        <span>Selecionar todos</span>
-                                    </label>
-                                    <div class="flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-200 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
-                                            :disabled="!selectedCount"
-                                            @click="handleBulkRequeue"
-                                            title="Devolver a seleção para o deck da tela Decidir"
-                                        >
-                                            ↩ Voltar para o deck do Decidir
-                                        </button>
-                                        <span v-if="selectedCount" class="text-xs font-medium text-slate-500">
-                                            {{ selectedCount }} selecionado(s)
-                                        </span>
-                                    </div>
-                                </div>
-                                <div
-                                    v-if="showBulkBagAssign"
-                                    class="flex flex-wrap items-center gap-2 rounded-2xl bg-white/80 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 sm:text-sm"
-                                >
-                                    <span class="font-semibold text-slate-700">Enviar seleção para</span>
-                                    <select
-                                        v-model="bulkBagChoice"
-                                        class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
-                                    >
-                                        <option value="">Sem mala</option>
-                                        <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
-                                            {{ bag.label }}
-                                        </option>
-                                    </select>
-                                    <button
-                                        type="button"
-                                        class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                                        :disabled="bulkAssignLoading"
-                                        @click="handleBulkAssign"
-                                    >
-                                        <span
-                                            v-if="bulkAssignLoading"
-                                            class="h-2 w-2 animate-ping rounded-full bg-white"
-                                            aria-hidden="true"
-                                        />
-                                        Aplicar
-                                    </button>
-                                </div>
-                            </div>
-
                             <div class="space-y-3 px-4">
                                 <ItemRow
                                     v-for="item in currentItems"
@@ -469,22 +559,18 @@
                                     :selected="currentSelection.has(item.id)"
                                     :show-delete="false"
                                     @toggle-select="toggleSelection"
-                                    :bag-options="quickBagOptions"
-                                    :show-bag-actions="showBagChips"
-                                    :bag-action-disabled="isItemAssigning(item.id)"
-                                    @assign-bag="handleRowAssignBag"
                                 />
                             </div>
 
                             <div
                                 v-if="totalPages > 1"
-                                class="sticky bottom-0 rounded-2xl bg-white/95 px-4 py-3 text-xs text-slate-600 shadow ring-1 ring-slate-200/60 backdrop-blur sm:text-sm"
+                                class="resumo-pagination"
                             >
                                 <div class="flex flex-wrap items-center justify-between gap-3">
                                     <div class="space-x-2">
                                         <button
                                             type="button"
-                                            class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                            class="resumo-pagination__button"
                                             :disabled="currentPage <= 1"
                                             @click="currentPage = Math.max(currentPage - 1, 1)"
                                         >
@@ -492,21 +578,21 @@
                                         </button>
                                         <button
                                             type="button"
-                                            class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                            class="resumo-pagination__button"
                                             :disabled="currentPage >= totalPages"
                                             @click="currentPage = Math.min(currentPage + 1, totalPages)"
                                         >
                                             Próxima →
                                         </button>
                                     </div>
-                                    <div class="flex items-center gap-2">
+                                    <div class="resumo-pagination__meta">
                                         <span>Página</span>
                                         <input
                                             v-model.number="currentPage"
                                             type="number"
                                             min="1"
                                             :max="totalPages"
-                                            class="w-16 rounded border border-slate-200 px-2 py-1 text-center text-sm focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-300"
+                                            class="resumo-pagination__input"
                                         />
                                         <span>de {{ totalPages }}</span>
                                     </div>
@@ -517,19 +603,19 @@
                     <transition name="slide-up">
                         <div
                             v-if="selectedCount"
-                            class="sticky bottom-0 inset-x-0 rounded-3xl bg-white/90 p-3 shadow-[0_-6px_12px_rgba(0,0,0,0.06)] backdrop-blur sm:relative sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none"
+                            class="resumo-selection-bar"
                         >
                             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
                                 <button
                                     type="button"
-                                    class="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                                    class="resumo-cta resumo-cta--cool"
                                     @click="handleBulkRequeue"
                                 >
                                     ↩ Voltar para o deck do Decidir
                                 </button>
                                 <button
                                     type="button"
-                                    class="inline-flex items-center justify-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                                    class="resumo-cta resumo-cta--ghost"
                                     @click="clearCurrentSelection"
                                 >
                                     Limpar seleção
@@ -542,13 +628,13 @@
 
                 <div
                     v-else
-                    class="mt-4 rounded-3xl border border-dashed border-slate-300/80 bg-white/70 p-6 text-center text-sm text-slate-600"
+                    class="resumo-empty-card mt-4 text-center"
                 >
-                    <p class="text-base font-semibold text-slate-700">{{ currentEmpty.title }}</p>
-                    <p class="mt-1 text-sm text-slate-500">{{ currentEmpty.description }}</p>
+                    <p class="text-base font-semibold text-slate-800">{{ currentEmpty.title }}</p>
+                    <p class="mt-1 text-sm text-slate-600">{{ currentEmpty.description }}</p>
                 </div>
             </Tabs>
-        </Card>
+        </section>
 
     </AppLayout>
 </template>
@@ -556,12 +642,30 @@
 <script setup>
 import { Head, usePage, router } from '@inertiajs/vue3';
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue';
-import { ChevronDown, SlidersHorizontal } from 'lucide-vue-next';
+import {
+    Activity,
+    Archive,
+    BarChart3,
+    Briefcase,
+    Check,
+    ChevronDown,
+    Clock,
+    Cuboid,
+    Gauge,
+    Layers3,
+    ListChecks,
+    Package,
+    Search,
+    RefreshCcw,
+    SlidersHorizontal,
+    X,
+    Weight,
+} from 'lucide-vue-next';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import Card from '@/Components/Card.vue';
 import FilterMenu from '@/Components/FilterMenu.vue';
 import ItemRow from '@/Components/ItemRow.vue';
 import Suitcase from '@/Components/Suitcase.vue';
+import TileIcon3D from '@/Components/home/TileIcon3D.vue';
 import Tabs from '@/Components/Tabs.vue';
 import VolumeBar from '@/Components/VolumeBar.vue';
 import WeightBar from '@/Components/WeightBar.vue';
@@ -623,7 +727,6 @@ const globalRequeueLoading = reactive({
     pending: false,
     leave: false,
 });
-const assigningBagIds = ref(new Set());
 const bulkBagChoice = ref('');
 const bulkAssignLoading = ref(false);
 
@@ -655,19 +758,6 @@ const bagLabelMap = computed(() => {
     });
     return map;
 });
-const quickBagOptions = computed(() => {
-    if (!bagOptions.value.length) return [];
-    const base = bagOptions.value.slice(0, 3);
-    const combined = [...base, { value: '', label: 'Sem mala' }];
-    const seen = new Set();
-    return combined.filter((option) => {
-        const key = option.value ?? '';
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
-});
-
 const allResumoItems = computed(() => {
     const map = new Map();
     [...takeItems.value, ...pendingItems.value, ...undecidedItems.value, ...leaveItems.value].forEach((item) => {
@@ -731,14 +821,13 @@ const listsByTab = computed(() => ({
 const rawTabItems = computed(() => listsByTab.value[activeTab.value] ?? []);
 
 const searchQuery = ref('');
-const selectedBagFilter = ref('all');
 const pageSizeOptions = [10, 25, 50, 100];
 const defaultPageSize = 25;
 const pageSize = ref(defaultPageSize);
 const currentPage = ref(1);
 const filtersExpanded = ref(false);
 const filtersDirty = computed(
-    () => Boolean(searchQuery.value.trim()) || selectedBagFilter.value !== 'all' || pageSize.value !== defaultPageSize,
+    () => Boolean(searchQuery.value.trim()) || pageSize.value !== defaultPageSize,
 );
 const showFiltersPanel = computed(() => filtersExpanded.value || filtersDirty.value);
 watch(filtersDirty, (dirty) => {
@@ -750,38 +839,12 @@ const toggleFilters = () => {
     filtersExpanded.value = !filtersExpanded.value;
 };
 
-const bagFilters = computed(() => {
-    const seen = new Map();
-    rawTabItems.value.forEach((item) => {
-        const code = item.bag ?? item.bag_code ?? null;
-        if (!code) return;
-        if (!seen.has(code)) {
-            const label = item.bag_name
-                ? item.bag_name
-                : `Mala ${String(code).toUpperCase()}`;
-            seen.set(String(code), { value: String(code), label });
-        }
-    });
-    return Array.from(seen.values()).sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
-});
-const showBagChips = computed(() => activeTab.value === 'take' && hasBagOptions.value);
-
 const normalize = (value) => (value ?? '').toString().toLowerCase();
 
 const filteredItems = computed(() => {
     const query = normalize(searchQuery.value);
-    const bagFilter = selectedBagFilter.value;
 
     return rawTabItems.value.filter((item) => {
-        if (bagFilter === 'unassigned' && (item.bag ?? item.bag_code ?? null)) {
-            return false;
-        }
-        if (bagFilter !== 'all' && bagFilter !== 'unassigned') {
-            if (String(item.bag ?? item.bag_code ?? '') !== bagFilter) {
-                return false;
-            }
-        }
-
         if (!query) return true;
 
         const bagLabel = item.bag_name ?? (item.bag ? `Mala ${item.bag}` : '');
@@ -1424,12 +1487,7 @@ const listContainer = ref(null);
 
 const scrollListToTop = () => {
     const target = listContainer.value;
-    if (!target) {
-        if (typeof window !== 'undefined') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        return;
-    }
+    if (!target) return;
 
     const canScrollElement = target.scrollHeight - target.clientHeight > 4;
     if (canScrollElement) {
@@ -1446,7 +1504,6 @@ const scrollListToTop = () => {
 
 const resetFilters = () => {
     searchQuery.value = '';
-    selectedBagFilter.value = 'all';
     pageSize.value = defaultPageSize;
     currentPage.value = 1;
     nextTick(() => scrollListToTop());
@@ -1476,7 +1533,7 @@ watch(
     },
 );
 
-watch([searchQuery, selectedBagFilter], () => {
+watch(searchQuery, () => {
     currentPage.value = 1;
     scrollListToTop();
 });
@@ -1488,7 +1545,6 @@ watch(pageSize, () => {
 
 watch(activeTab, () => {
     searchQuery.value = '';
-    selectedBagFilter.value = 'all';
     currentPage.value = 1;
     scrollListToTop();
 });
@@ -1604,34 +1660,7 @@ const handleBulkRequeue = async () => {
     }
 };
 
-const setItemAssigning = (id, value) => {
-    const key = String(id);
-    const next = new Set(assigningBagIds.value);
-    if (value) {
-        next.add(key);
-    } else {
-        next.delete(key);
-    }
-    assigningBagIds.value = next;
-};
-
-const isItemAssigning = (id) => assigningBagIds.value.has(String(id));
-
 const formatBagLabel = (value) => bagLabelMap.value[value ?? ''] ?? 'Sem mala';
-
-const handleRowAssignBag = async ({ id, bag }) => {
-    if (!id) return;
-    setItemAssigning(id, true);
-    try {
-        await decisionStore.assignBag(id, bag ?? '');
-        toast.success(bag ? `Enviado para ${formatBagLabel(bag)}` : 'Removido da mala');
-    } catch (error) {
-        console.error(error);
-        toast.error('Não foi possível atualizar a mala ❌');
-    } finally {
-        setItemAssigning(id, false);
-    }
-};
 
 const handleBulkAssign = async () => {
     if (!selectedIds.value.length) return;
@@ -1694,5 +1723,983 @@ onBeforeUnmount(() => {
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+.resumo-panel,
+.resumo-panel-soft,
+.resumo-items-card {
+    position: relative;
+    border-radius: 1.75rem;
+    padding: 1.75rem;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 28px 60px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+}
+.resumo-panel::before,
+.resumo-panel::after,
+.resumo-panel-soft::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.resumo-panel::before {
+    background: radial-gradient(circle at 10% -10%, rgba(226, 232, 240, 0.92), transparent 55%);
+}
+.resumo-panel::after {
+    background: linear-gradient(135deg, rgba(148, 163, 184, 0.18), rgba(129, 140, 248, 0.12), rgba(94, 234, 212, 0.08));
+    animation: resumoAurora 26s ease infinite;
+}
+.resumo-items-card::before,
+.resumo-items-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.resumo-items-card::before {
+    background: radial-gradient(circle at 15% -10%, rgba(226, 232, 240, 0.9), transparent 60%);
+}
+.resumo-items-card::after {
+    background: linear-gradient(140deg, rgba(129, 140, 248, 0.18), rgba(147, 197, 253, 0.16), rgba(94, 234, 212, 0.12));
+    animation: resumoAurora 28s ease infinite;
+}
+.resumo-panel-soft::before {
+    background: radial-gradient(circle at 90% 10%, rgba(203, 213, 225, 0.5), transparent 60%);
+}
+.resumo-panel > *,
+.resumo-panel-soft > *,
+.resumo-items-card > * {
+    position: relative;
+    z-index: 1;
+}
+.resumo-panel__head,
+.resumo-panel-soft__head,
+.resumo-items-card__head {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+@media (min-width: 640px) {
+    .resumo-panel__head,
+    .resumo-panel-soft__head {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+.resumo-panel__title-block,
+.resumo-items-card__title-block {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.resumo-panel__icon,
+.resumo-items-card__icon {
+    --tile-icon-size: 3.3rem;
+    animation: resumoFloat 12s ease-in-out infinite;
+}
+.resumo-items-card__icon--glow {
+    --tile-icon-size: 3.4rem;
+    box-shadow:
+        inset 0 2px 6px rgba(255, 255, 255, 0.5),
+        0 18px 40px rgba(15, 23, 42, 0.1);
+}
+.resumo-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.45em;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #818cf8;
+}
+.resumo-eyebrow--muted {
+    color: #94a3b8;
+}
+.resumo-panel__title,
+.resumo-items-card__title,
+.resumo-panel-soft__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+@media (min-width: 640px) {
+    .resumo-panel__title,
+    .resumo-panel-soft__title,
+    .resumo-items-card__title {
+        font-size: 1.9rem;
+    }
+}
+.resumo-panel__subtitle,
+.resumo-panel-soft__subtitle,
+.resumo-items-card__subtitle {
+    color: #475569;
+    font-size: 0.95rem;
+}
+.resumo-panel__toggles {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.resumo-panel__link {
+    font-weight: 600;
+    color: #0ea5e9;
+    text-decoration: none;
+}
+.resumo-panel__link:hover {
+    text-decoration: underline;
+}
+.resumo-panel__divider {
+    color: rgba(148, 163, 184, 0.5);
+}
+.resumo-accordion-group {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.resumo-accordion {
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 20px 35px rgba(15, 23, 42, 0.05);
+}
+.resumo-accordion--ghost {
+    background: rgba(248, 250, 252, 0.9);
+}
+.resumo-accordion__trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 1.5rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.resumo-accordion__title {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-size: 1rem;
+}
+.resumo-accordion__icon {
+    --tile-icon-size: 2.5rem;
+}
+.resumo-accordion__body {
+    padding: 0 1.25rem 1.25rem;
+    color: #475569;
+}
+.resumo-summary-grid {
+    display: grid;
+    gap: 1rem;
+}
+@media (min-width: 640px) {
+    .resumo-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (min-width: 1024px) {
+    .resumo-summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+.resumo-summary-card {
+    border-radius: 1.5rem;
+    padding: 1.1rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        0 25px 40px rgba(15, 23, 42, 0.12);
+}
+.resumo-summary-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent 70%);
+    pointer-events: none;
+}
+.resumo-summary-card--emerald {
+    border-color: rgba(52, 211, 153, 0.2);
+    background: linear-gradient(135deg, #0ea5e9, #10b981, #34d399);
+}
+.resumo-summary-card--rose {
+    border-color: rgba(248, 113, 113, 0.3);
+    background: linear-gradient(135deg, #ef4444, #dc2626, #f97316);
+}
+.resumo-summary-card--amber {
+    border-color: rgba(251, 191, 36, 0.3);
+    background: linear-gradient(135deg, #fde047, #fbbf24, #fb923c);
+    color: #1f2937;
+}
+.resumo-summary-card--slate {
+    border-color: rgba(148, 163, 184, 0.3);
+    background: linear-gradient(135deg, #e2e8f0, #cbd5f5, #d1fae5);
+    color: #0f172a;
+}
+.resumo-summary-card__label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.85);
+}
+.resumo-summary-card__value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+.resumo-summary-card--amber .resumo-summary-card__value,
+.resumo-summary-card--slate .resumo-summary-card__value {
+    color: #0f172a;
+}
+.resumo-summary-card--amber .resumo-summary-card__label,
+.resumo-summary-card--slate .resumo-summary-card__label {
+    color: rgba(15, 23, 42, 0.7);
+}
+.resumo-summary-card__action {
+    margin-top: 0.75rem;
+    width: 100%;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    padding: 0.45rem 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.92);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.resumo-summary-card__action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.07);
+}
+.resumo-summary-card__icon-wrap {
+    flex-shrink: 0;
+}
+.resumo-summary-card__icon {
+    --tile-icon-size: 3rem;
+}
+.resumo-summary-card__action:disabled {
+    opacity: 0.5;
+}
+.resumo-totals-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+@media (min-width: 640px) {
+    .resumo-totals-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (min-width: 1024px) {
+    .resumo-totals-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+.resumo-total-card {
+    border-radius: 1.4rem;
+    padding: 1rem;
+    background: rgba(248, 250, 252, 0.95);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        0 20px 40px rgba(15, 23, 42, 0.08);
+    color: #0f172a;
+}
+.resumo-total-card--slate {
+    background: linear-gradient(135deg, rgba(226, 232, 240, 0.95), rgba(203, 213, 225, 0.9));
+}
+.resumo-total-card--emerald {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(16, 185, 129, 0.18));
+    color: #064e3b;
+}
+.resumo-total-card--amber {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(249, 115, 22, 0.1));
+    color: #78350f;
+}
+.resumo-total-card--indigo {
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.2), rgba(99, 102, 241, 0.13));
+    color: #1e1b4b;
+}
+.resumo-total-card__label {
+    font-weight: 600;
+    color: rgba(15, 23, 42, 0.7);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+}
+.resumo-total-card__value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+.resumo-total-card__icon {
+    --tile-icon-size: 2.8rem;
+}
+.resumo-quickstats {
+    display: grid;
+    gap: 0.75rem;
+}
+@media (min-width: 640px) {
+    .resumo-quickstats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+.resumo-quickstat {
+    display: flex;
+    gap: 0.85rem;
+    align-items: center;
+    padding: 0.9rem 1rem;
+    border-radius: 1.5rem;
+    background: rgba(248, 250, 252, 0.95);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+}
+.resumo-quickstat__icon {
+    --tile-icon-size: 2.6rem;
+}
+.resumo-quickstat__label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #94a3b8;
+    font-weight: 600;
+}
+.resumo-quickstat__value {
+    font-weight: 700;
+    color: #0f172a;
+}
+.resumo-status-card {
+    margin-top: 1.5rem;
+    border-radius: 1.75rem;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 25px 50px rgba(15, 23, 42, 0.08);
+}
+.resumo-status-card--emerald {
+    border-color: rgba(16, 185, 129, 0.25);
+    background: linear-gradient(120deg, rgba(16, 185, 129, 0.12), rgba(255, 255, 255, 0.92));
+}
+.resumo-status-card--amber {
+    border-color: rgba(251, 191, 36, 0.25);
+    background: linear-gradient(120deg, rgba(251, 191, 36, 0.12), rgba(255, 255, 255, 0.94));
+}
+.resumo-status-card--rose {
+    border-color: rgba(244, 114, 182, 0.25);
+    background: linear-gradient(120deg, rgba(244, 114, 182, 0.12), rgba(255, 255, 255, 0.94));
+}
+.resumo-status-card__icon {
+    --tile-icon-size: 3rem;
+}
+.resumo-status-card__body {
+    flex: 1;
+}
+.resumo-status-card__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+.resumo-status-card__message {
+    color: #475569;
+    margin-top: 0.3rem;
+}
+.resumo-status-card__actions {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.resumo-status-card__button {
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(15, 23, 42, 0.04);
+    color: #0f172a;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    transition: transform 0.15s ease;
+}
+.resumo-status-card__button:hover {
+    transform: translateY(-1px);
+}
+.resumo-panel-soft__cta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+@media (min-width: 640px) {
+    .resumo-panel-soft__cta {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+.resumo-cta {
+    position: relative;
+    z-index: 0;
+    border-radius: 999px;
+    padding: 0.7rem 1.5rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.resumo-cta--ghost {
+    background: rgba(248, 250, 252, 0.9);
+    color: #0f172a;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+}
+.resumo-cta--compact {
+    padding: 0.45rem 1rem;
+    font-size: 0.85rem;
+}
+.resumo-cta--warm {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(130deg, #fef3c7, #fbbf24, #f97316, #fb7185);
+    background-size: 220% 220%;
+    color: #78350f;
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 25px 45px rgba(249, 115, 22, 0.35);
+    animation: resumoWarmShift 8s ease-in-out infinite;
+}
+.resumo-cta--warm::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.8), transparent 55%);
+    opacity: 0.6;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+.resumo-cta--warm::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: translateX(-100%);
+    animation: resumoWarmShimmer 3.5s ease infinite;
+    pointer-events: none;
+}
+.resumo-cta--warm:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 32px 55px rgba(249, 115, 22, 0.4);
+}
+.resumo-cta--primary {
+    background: linear-gradient(120deg, #10b981, #06b6d4);
+    color: white;
+    box-shadow: 0 20px 40px rgba(6, 182, 212, 0.25);
+}
+.resumo-cta--cool {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(130deg, #e0f2fe, #38bdf8, #6366f1, #8b5cf6);
+    background-size: 220% 220%;
+    color: #0f172a;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 25px 45px rgba(79, 70, 229, 0.32);
+    animation: resumoCoolShift 9s ease-in-out infinite;
+}
+.resumo-cta--cool::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.9), transparent 60%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0.55;
+}
+.resumo-cta--cool::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    transform: translateX(-120%);
+    animation: resumoCoolShimmer 4s ease infinite;
+    pointer-events: none;
+}
+.resumo-cta--cool:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 32px 55px rgba(79, 70, 229, 0.42);
+}
+.resumo-accordion-group--soft .resumo-accordion {
+    background: rgba(255, 255, 255, 0.9);
+}
+.resumo-capacity-card {
+    border-radius: 1.5rem;
+    background: rgba(248, 250, 252, 0.95);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    padding: 0.75rem;
+}
+.resumo-capacity-card__trigger {
+    width: 100%;
+    border-radius: 1.25rem;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+.resumo-capacity-card__label {
+    display: flex;
+    gap: 0.85rem;
+    align-items: center;
+}
+.resumo-capacity-card__icon {
+    --tile-icon-size: 2.6rem;
+}
+.resumo-capacity-card__title {
+    font-size: 1rem;
+}
+.resumo-capacity-card__meta {
+    font-size: 0.85rem;
+    color: #475569;
+}
+.resumo-capacity-card__body {
+    margin-top: 0.75rem;
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    border: 1px dashed rgba(148, 163, 184, 0.4);
+}
+.resumo-capacity-card__skeleton {
+    height: 14rem;
+    border-radius: 1.25rem;
+    background: linear-gradient(90deg, rgba(226, 232, 240, 0.6), rgba(248, 250, 252, 0.7), rgba(226, 232, 240, 0.6));
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease infinite;
+}
+.resumo-suitcase-grid {
+    display: grid;
+    gap: 1rem;
+}
+@media (min-width: 768px) {
+    .resumo-suitcase-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (min-width: 1280px) {
+    .resumo-suitcase-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+.resumo-empty-card {
+    border-radius: 1.75rem;
+    border: 1px dashed rgba(148, 163, 184, 0.6);
+    padding: 1.5rem;
+    background: rgba(248, 250, 252, 0.8);
+    color: #475569;
+}
+.resumo-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.resumo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(248, 250, 252, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    color: #0f172a;
+}
+.resumo-badge--emerald {
+    border-color: rgba(16, 185, 129, 0.2);
+    color: #047857;
+}
+.resumo-badge--amber {
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #92400e;
+}
+.resumo-badge--rose {
+    border-color: rgba(244, 114, 182, 0.3);
+    color: #be185d;
+}
+.resumo-badge__icon {
+    --tile-icon-size: 2.4rem;
+}
+.resumo-badge__value {
+    font-weight: 700;
+    color: #0f172a;
+}
+.resumo-items-shell {
+    margin-top: 1.5rem;
+    border-radius: 1.9rem;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    background: linear-gradient(145deg, rgba(241, 245, 249, 0.92), rgba(226, 232, 240, 0.85));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.75),
+        0 30px 45px rgba(15, 23, 42, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+.resumo-items-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, rgba(148, 163, 184, 0.15), rgba(129, 140, 248, 0.15), rgba(45, 212, 191, 0.12));
+    animation: resumoItemsAurora 26s ease infinite;
+    pointer-events: none;
+}
+.resumo-items-shell::after {
+    content: '';
+    position: absolute;
+    inset: 0.8rem;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    pointer-events: none;
+}
+.resumo-filter-panel {
+    border-radius: 1.75rem;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 22px 45px rgba(15, 23, 42, 0.12);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    backdrop-filter: blur(16px);
+    position: relative;
+    overflow: hidden;
+}
+.resumo-filter-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.65), transparent 60%);
+    pointer-events: none;
+}
+.resumo-search-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.resumo-search-card {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 15px 35px rgba(15, 23, 42, 0.08);
+}
+.resumo-search-card__icon {
+    --tile-icon-size: 2.8rem;
+}
+.resumo-search-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.resumo-search-card__label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: #94a3b8;
+    font-weight: 600;
+}
+.resumo-search-card__input {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    padding: 0.6rem 0.9rem;
+    font-size: 0.95rem;
+    color: #0f172a;
+    background: rgba(248, 250, 252, 0.9);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.resumo-search-card__input:focus {
+    outline: none;
+    border-color: rgba(14, 165, 233, 0.4);
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+}
+.resumo-search-card__meta {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+}
+.resumo-filter-toggle {
+    border-radius: 999px;
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: #0f172a;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 12px 25px rgba(15, 23, 42, 0.08);
+}
+.resumo-filter-pill {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    color: #10b981;
+}
+.resumo-list-meta {
+    font-size: 0.85rem;
+    color: #475569;
+}
+.resumo-select-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.resumo-select-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.resumo-select-all__input {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 0.4rem;
+    border: 1px solid rgba(148, 163, 184, 0.6);
+}
+.resumo-select-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.resumo-chip-button {
+    border-radius: 999px;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #047857;
+    background: rgba(236, 253, 245, 0.9);
+}
+.resumo-chip-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.resumo-select-count {
+    font-size: 0.8rem;
+    color: #475569;
+}
+.resumo-bulk-assign {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 1.25rem;
+    background: rgba(248, 250, 252, 0.9);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+.resumo-bulk-assign__select {
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    background: white;
+    color: #0f172a;
+}
+.resumo-bulk-assign__action {
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #0f172a;
+    color: white;
+}
+.resumo-pagination {
+    position: sticky;
+    bottom: 0;
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0.85rem 1.25rem;
+    box-shadow: 0 -15px 30px rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    backdrop-filter: blur(10px);
+}
+.resumo-pagination__button {
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    padding: 0.35rem 0.9rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.resumo-pagination__button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.resumo-pagination__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.resumo-pagination__input {
+    width: 3.5rem;
+    text-align: center;
+    border-radius: 0.65rem;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    padding: 0.2rem 0.4rem;
+}
+.resumo-selection-bar {
+    position: sticky;
+    bottom: 0;
+    border-radius: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(140deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.82));
+    color: white;
+    box-shadow: 0 -22px 44px rgba(15, 23, 42, 0.32);
+    border: 1px solid rgba(15, 23, 42, 0.35);
+}
+
+@keyframes resumoAurora {
+    0% {
+        transform: translate(0, 0);
+    }
+    50% {
+        transform: translate(-5%, 5%);
+    }
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+@keyframes resumoFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes resumoWarmShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes resumoWarmShimmer {
+    0% {
+        transform: translateX(-120%);
+        opacity: 0;
+    }
+    40% {
+        opacity: 0.8;
+    }
+    70% {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes resumoCoolShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes resumoCoolShimmer {
+    0% {
+        transform: translateX(-140%);
+        opacity: 0;
+    }
+    40% {
+        opacity: 0.9;
+    }
+    70% {
+        transform: translateX(140%);
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes resumoItemsAurora {
+    0% {
+        opacity: 0.6;
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        opacity: 0.9;
+        transform: translate3d(-12px, 8px, 0);
+    }
+    100% {
+        opacity: 0.6;
+        transform: translate3d(0, 0, 0);
+    }
 }
 </style>

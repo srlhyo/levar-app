@@ -3,122 +3,131 @@
     <AppLayout>
         <template #title>Embalar</template>
         <template #subtitle>Distribua os itens nas malas A e B e marque o que já está pronto.</template>
-
-        <Card tone="slate" class="space-y-5">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <p class="text-base font-semibold text-slate-900">Resumo das malas</p>
-                    <p class="text-sm text-slate-600">
-                        Embale cada mala com cuidado. Quando o peso ou volume chegar em 100%, ela trava automaticamente.
-                    </p>
+        <section class="embalar-panel">
+            <div class="embalar-panel__head">
+                <div class="embalar-panel__title-block">
+                    <TileIcon3D tone="amber" class="embalar-panel__icon">
+                        <Luggage class="h-5 w-5" />
+                    </TileIcon3D>
+                    <div>
+                        <p class="embalar-panel__eyebrow">Fluxo de embalagem</p>
+                        <h2 class="embalar-panel__title">Resumo das malas</h2>
+                        <p class="embalar-panel__subtitle">
+                            Embale cada mala com cuidado. Quando o peso ou volume chegar em 100%, ela trava automaticamente.
+                        </p>
+                    </div>
                 </div>
+            </div>
+            <div class="embalar-panel__toggles">
+                <button type="button" @click="setAllSummarySections(true)">Expandir tudo</button>
+                <span aria-hidden="true">•</span>
+                <button type="button" @click="setAllSummarySections(false)">Recolher tudo</button>
+            </div>
+
+            <section class="embalar-accordion">
                 <button
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                    @click="showLegend = !showLegend"
-                    aria-expanded="showLegend ? 'true' : 'false'"
+                    class="embalar-accordion__trigger"
+                    @click="toggleSummarySection('guide')"
                 >
-                    <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500">?</span>
-                    Como funciona
+                    <span class="embalar-accordion__title">
+                        <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                            <BookOpenCheck class="h-4 w-4" />
+                        </TileIcon3D>
+                        Guia rápido
+                    </span>
+                    <ChevronDown class="h-4 w-4 transition" :class="summarySections.guide ? 'rotate-180' : ''" />
                 </button>
-            </div>
-            <transition name="fade">
-                <div
-                    v-if="showLegend"
-                    class="space-y-2 rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm"
-                >
-                    <p class="font-semibold text-slate-800">Como usar esta etapa</p>
-                    <ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed">
-                        <li>Os cartões exibem peso, volume e categoria em forma de selos e possuem botões para enviar direto para as malas.</li>
-                        <li>Ao marcar “Embalado”, o item entra na mala escolhida; “Sem mala” tira o item da mala e o deixa pendente.</li>
-                        <li>Notas e checklist ficam abaixo: escolha uma mala, registre lembretes e salve para ver o histórico.</li>
-                        <li>Quando uma mala estiver cheia/chegando ao limite, veja a “Sugestão de redistribuição” para mover um item pesado.</li>
-                        <li>Use “Atualizações recentes” para entender rapidamente quem entrou/saiu de cada mala e “Gerar resumo” para compartilhar o que já foi embalado.</li>
-                    </ul>
-                </div>
-            </transition>
-            <div class="flex items-center gap-3 text-xs text-slate-500 sm:text-sm">
-                <button type="button" class="underline-offset-4 hover:underline" @click="setAllSummarySections(true)">Expandir tudo</button>
-                <span class="text-slate-300">•</span>
-                <button type="button" class="underline-offset-4 hover:underline" @click="setAllSummarySections(false)">Recolher tudo</button>
-            </div>
+                <transition name="fade">
+                    <div v-if="summarySections.guide" class="embalar-accordion__body embalar-accordion__body--text">
+                        <p class="font-semibold text-slate-800">Como usar esta etapa</p>
+                        <ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-slate-600">
+                            <li>Os cartões exibem peso, volume e categoria em forma de selos e possuem botões para enviar direto para as malas.</li>
+                            <li>Ao marcar “Embalado”, o item entra na mala escolhida; “Sem mala” tira o item da mala e o deixa pendente.</li>
+                            <li>Notas e checklist ficam abaixo: escolha uma mala, registre lembretes e salve para ver o histórico.</li>
+                            <li>Quando uma mala estiver cheia/chegando ao limite, veja a “Sugestão de redistribuição” para mover um item pesado.</li>
+                            <li>Use “Atualizações recentes” para entender rapidamente quem entrou/saiu de cada mala e “Gerar resumo” para compartilhar o que já foi embalado.</li>
+                        </ul>
+                    </div>
+                </transition>
+            </section>
 
-            <section class="rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
+            <section class="embalar-accordion">
                 <button
                     type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-0 py-1 text-left text-sm font-semibold text-slate-700"
+                    class="embalar-accordion__trigger"
                     @click="toggleSummarySection('metrics')"
                 >
-                    Indicadores rápidos
+                    <span class="embalar-accordion__title">
+                        <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                            <Gauge class="h-4 w-4" />
+                        </TileIcon3D>
+                        Indicadores rápidos
+                    </span>
                     <ChevronDown class="h-4 w-4 transition" :class="summarySections.metrics ? 'rotate-180' : ''" />
                 </button>
                 <transition name="fade">
-                    <div v-if="summarySections.metrics" class="mt-3 grid gap-3 sm:grid-cols-3">
-                        <div class="flex items-center gap-3 rounded-2xl bg-white px-3 py-2">
-                            <span class="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 text-emerald-600">⚖️</span>
-                            <div class="space-y-0.5">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                                    Peso carregado
-                                </p>
-                                <p class="text-sm font-semibold text-slate-800">
+                    <div v-if="summarySections.metrics" class="embalar-metric-grid">
+                        <div class="embalar-metric">
+                            <TileIcon3D tone="amber" class="embalar-metric__icon">
+                                <Gauge class="h-4 w-4" />
+                            </TileIcon3D>
+                            <div>
+                                <p class="embalar-metric__label">Peso carregado</p>
+                                <p class="embalar-metric__value">
                                     {{ formatKg(packUsedWeightKg) }} / {{ formatKg(packTotalCapacityKg) }}
                                 </p>
-                                <p class="text-[11px] text-slate-500 sm:text-xs">
+                                <p class="embalar-metric__hint">
                                     {{ formatKg(packRemainingWeightKg) }} livres • {{ formatKg(packReservedKg) }} reservado
                                 </p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 rounded-2xl bg-white px-3 py-2">
-                            <span class="grid h-8 w-8 place-items-center rounded-full bg-sky-100 text-sky-600">🧊</span>
-                            <div class="space-y-0.5">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                                    Volume ocupado
-                                </p>
-                                <p class="text-sm font-semibold text-slate-800">
+                        <div class="embalar-metric">
+                            <TileIcon3D tone="slate" class="embalar-metric__icon">
+                                <Droplet class="h-4 w-4" />
+                            </TileIcon3D>
+                            <div>
+                                <p class="embalar-metric__label">Volume utilizado</p>
+                                <p class="embalar-metric__value">
                                     {{ formatLiters(packUsedVolumeCm3) }} / {{ formatLiters(packTotalVolumeCm3) }}
                                 </p>
-                                <p class="text-[11px] text-slate-500 sm:text-xs">
+                                <p class="embalar-metric__hint">
                                     {{ formatLiters(packRemainingVolumeCm3) }} livres • {{ formatLiters(packReservedVolumeCm3) }} reservado
                                 </p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 rounded-2xl bg-white px-3 py-2">
-                            <span
-                                class="grid h-8 w-8 place-items-center rounded-full"
-                                :class="lockedBagsCount ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'"
-                            >
-                                🧳
-                            </span>
-                            <div class="space-y-0.5">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[0.7rem]">
-                                    Status das malas
+                        <div class="embalar-metric">
+                            <TileIcon3D tone="emerald" class="embalar-metric__icon">
+                                <Sparkles class="h-4 w-4" />
+                            </TileIcon3D>
+                            <div>
+                                <p class="embalar-metric__label">Itens no deck</p>
+                                <p class="embalar-metric__value">
+                                    {{ packItems.length }}
                                 </p>
-                                <p class="text-sm font-semibold" :class="lockedBagsCount ? 'text-rose-600' : 'text-slate-800'">
-                                    {{ lockedBagsCount }} bloqueada(s) • {{ totalBagsCount }} no total
-                                </p>
-                                <p class="text-[11px] text-slate-500 sm:text-xs">
-                                    {{ packedCount }} itens embalados de {{ packItems.length }}
-                                </p>
+                                <p class="embalar-metric__hint">Prontos para embalar</p>
                             </div>
                         </div>
                     </div>
                 </transition>
             </section>
 
-            <section class="rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
+            <section class="embalar-accordion">
                 <button
                     type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-0 py-1 text-left text-sm font-semibold text-slate-700"
+                    class="embalar-accordion__trigger"
                     @click="toggleSummarySection('weight')"
                 >
-                    Peso total disponível
+                    <span class="embalar-accordion__title">
+                        <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                            <Gauge class="h-4 w-4" />
+                        </TileIcon3D>
+                        Peso total disponível
+                    </span>
                     <ChevronDown class="h-4 w-4 transition" :class="summarySections.weight ? 'rotate-180' : ''" />
                 </button>
-                <p class="text-[11px] font-medium text-slate-500 sm:text-xs">
-                    {{ formatKg(packTotalCapacityKg) }} de capacidade • {{ formatKg(packRemainingWeightKg) }} livres
-                </p>
                 <transition name="fade">
-                    <div v-if="summarySections.weight" class="pt-3">
+                    <div v-if="summarySections.weight" class="embalar-accordion__body">
                         <WeightBar
                             :bags="rawPackBags"
                             :reserved-kg="packReservedKg"
@@ -129,20 +138,25 @@
                 </transition>
             </section>
 
-            <section class="rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
+            <section class="embalar-accordion">
                 <button
                     type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-0 py-1 text-left text-sm font-semibold text-slate-700"
+                    class="embalar-accordion__trigger"
                     @click="toggleSummarySection('volume')"
                 >
-                    Volume total disponível
+                    <span class="embalar-accordion__title">
+                        <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                            <Droplet class="h-4 w-4" />
+                        </TileIcon3D>
+                        Volume total disponível
+                    </span>
                     <ChevronDown class="h-4 w-4 transition" :class="summarySections.volume ? 'rotate-180' : ''" />
                 </button>
-                <p class="text-[11px] font-medium text-slate-500 sm:text-xs">
+                <p class="embalar-accordion__meta">
                     {{ formatLiters(packTotalVolumeCm3) }} ({{ formatCm3(packTotalVolumeCm3) }}) • {{ formatLiters(packRemainingVolumeCm3) }} livres
                 </p>
                 <transition name="fade">
-                    <div v-if="summarySections.volume" class="pt-3">
+                    <div v-if="summarySections.volume" class="embalar-accordion__body">
                         <VolumeBar
                             :bags="rawPackBags"
                             :reserved-cm3="packReservedVolumeCm3"
@@ -153,17 +167,22 @@
                 </transition>
             </section>
 
-            <section class="rounded-2xl bg-white/80 px-4 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
+            <section class="embalar-accordion">
                 <button
                     type="button"
-                    class="flex w-full items-center justify-between rounded-2xl px-0 py-1 text-left text-sm font-semibold text-slate-700"
+                    class="embalar-accordion__trigger"
                     @click="toggleSummarySection('detail')"
                 >
-                    Detalhe por mala
+                    <span class="embalar-accordion__title">
+                        <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                            <Luggage class="h-4 w-4" />
+                        </TileIcon3D>
+                        Detalhe por mala
+                    </span>
                     <ChevronDown class="h-4 w-4 transition" :class="summarySections.detail ? 'rotate-180' : ''" />
                 </button>
                 <transition name="fade">
-                    <div v-if="summarySections.detail" class="pt-3">
+                    <div v-if="summarySections.detail" class="embalar-accordion__body">
                         <div v-if="suitcaseSummaries.length" class="grid gap-4 md:grid-cols-2">
                             <Suitcase
                                 v-for="bag in suitcaseSummaries"
@@ -181,7 +200,7 @@
                         </div>
                         <div
                             v-else
-                            class="rounded-3xl border border-dashed border-white/50 bg-white/50 px-4 py-6 text-sm text-slate-600 sm:px-6"
+                            class="embalar-empty"
                         >
                             <p class="font-semibold text-slate-700">Nenhuma mala cadastrada ainda.</p>
                             <p>Use a tela Embalar para configurar as malas e acompanhar os espaços utilizados.</p>
@@ -189,12 +208,12 @@
                     </div>
                 </transition>
             </section>
-        </Card>
+        </section>
 
         <Card
             v-if="statusBanner"
             :tone="statusBanner.tone ?? 'slate'"
-            class="mt-4 space-y-3"
+            class="embalar-status-card mt-4 space-y-3"
         >
             <button
                 type="button"
@@ -202,7 +221,9 @@
                 @click="togglePanelSection('status')"
             >
                 <span class="flex items-center gap-3">
-                    <span class="text-3xl" aria-hidden="true">{{ statusBanner.emoji }}</span>
+                    <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                        <span aria-hidden="true">{{ statusBanner.emoji }}</span>
+                    </TileIcon3D>
                     <span>{{ statusBanner.title }}</span>
                 </span>
                 <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.status ? 'rotate-180' : ''" />
@@ -217,7 +238,7 @@
         <Card
             v-if="rebalanceSuggestion"
             tone="slate"
-            class="mt-4 space-y-3"
+            class="embalar-status-card mt-4 space-y-3"
         >
             <button
                 type="button"
@@ -225,7 +246,9 @@
                 @click="togglePanelSection('rebalance')"
             >
                 <span class="flex items-center gap-3">
-                    <span class="text-3xl" aria-hidden="true">🔄</span>
+                    <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                        <span aria-hidden="true">🔄</span>
+                    </TileIcon3D>
                     <span>{{ rebalanceSuggestion.title }}</span>
                 </span>
                 <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.rebalance ? 'rotate-180' : ''" />
@@ -261,9 +284,11 @@
         <Card
             v-else
             tone="slate"
-            class="mt-4 flex items-start gap-3 text-sm text-slate-600"
+            class="embalar-status-card mt-4 flex items-start gap-3 text-sm text-slate-600"
         >
-            <span class="text-2xl" aria-hidden="true">✅</span>
+            <TileIcon3D tone="emerald" class="embalar-accordion__icon">
+                <span aria-hidden="true">✅</span>
+            </TileIcon3D>
             <div>
                 <p class="text-base font-semibold text-slate-900">Tudo equilibrado</p>
                 <p>As malas estão abaixo do limite. Assim que alguma ficar cheia, sugeriremos automaticamente o que mover.</p>
@@ -272,9 +297,11 @@
 
         <div
             v-if="allPackedBanner && packItems.length"
-            class="mt-4 flex items-start gap-3 rounded-2xl bg-green-50 p-4 text-green-800 shadow-sm ring-1 ring-green-200"
+            class="embalar-banner mt-4 flex items-start gap-3 rounded-2xl bg-green-50 p-4 text-green-800 shadow-sm ring-1 ring-green-200"
         >
-            <span class="text-2xl">🎉</span>
+            <TileIcon3D tone="emerald" class="embalar-accordion__icon">
+                <span aria-hidden="true">🎉</span>
+            </TileIcon3D>
             <div>
                 <p class="text-base font-semibold">Tudo embalado!</p>
                 <p class="text-sm">Você pode revisar no Resumo para ajustar as malas finalizadas.</p>
@@ -284,17 +311,22 @@
         <Card
             v-if="priorityTimeline.visible"
             tone="slate"
-            class="mt-4 space-y-4"
+            class="embalar-panel-soft mt-4 space-y-4"
         >
             <button
                 type="button"
                 class="flex w-full items-center justify-between gap-3 rounded-2xl px-2 py-1 text-left text-sm font-semibold text-slate-900"
                 @click="togglePanelSection('timeline')"
             >
-                <span class="flex flex-col text-left">
-                    <span>Linha do tempo das prioridades</span>
-                    <span class="text-xs font-normal text-slate-500">
-                        Use as etiquetas para visualizar rapidamente o que ainda está fora das malas.
+                <span class="flex items-center gap-3">
+                    <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                        <ListChecks class="h-4 w-4" />
+                    </TileIcon3D>
+                    <span class="flex flex-col text-left">
+                        <span>Linha do tempo das prioridades</span>
+                        <span class="text-xs font-normal text-slate-500">
+                            Use as etiquetas para visualizar rapidamente o que ainda está fora das malas.
+                        </span>
                     </span>
                 </span>
                 <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.timeline ? 'rotate-180' : ''" />
@@ -339,16 +371,21 @@
         <Card
             v-if="bagHistoryFeed.length"
             tone="slate"
-            class="mt-4 space-y-3"
+            class="embalar-panel-soft mt-4 space-y-3"
         >
             <button
                 type="button"
                 class="flex w-full items-center justify-between gap-3 rounded-2xl px-2 py-1 text-left text-sm font-semibold text-slate-900"
                 @click="togglePanelSection('history')"
             >
-                <span class="flex flex-col text-left">
-                    <span>Atualizações recentes</span>
-                    <span class="text-xs font-normal text-slate-500">Últimos movimentos registrados nas malas.</span>
+                <span class="flex items-center gap-3">
+                    <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                        <History class="h-4 w-4" />
+                    </TileIcon3D>
+                    <span class="flex flex-col text-left">
+                        <span>Atualizações recentes</span>
+                        <span class="text-xs font-normal text-slate-500">Últimos movimentos registrados nas malas.</span>
+                    </span>
                 </span>
                 <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.history ? 'rotate-180' : ''" />
             </button>
@@ -374,7 +411,7 @@
         <Card
             v-if="bagNotesTargets.length"
             tone="slate"
-            class="mt-4 space-y-4"
+            class="embalar-panel-soft mt-4 space-y-4"
         >
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <button
@@ -384,14 +421,19 @@
                     :aria-expanded="packPanelSections.notes ? 'true' : 'false'"
                     @click="togglePanelSection('notes')"
                 >
-                    <span class="flex flex-col text-left">
-                        <span class="inline-flex items-center gap-2">
-                            <span>Notas e checklist das malas</span>
-                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                                {{ packPanelSections.notes ? 'Recolher' : 'Expandir' }}
+                    <span class="flex items-center gap-3">
+                        <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                            <NotebookPen class="h-4 w-4" />
+                        </TileIcon3D>
+                        <span class="flex flex-col text-left">
+                            <span class="inline-flex items-center gap-2">
+                                <span>Notas e checklist das malas</span>
+                                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                    {{ packPanelSections.notes ? 'Recolher' : 'Expandir' }}
+                                </span>
                             </span>
+                            <span class="text-xs font-normal text-slate-500">Guarde lembretes importantes e marque o que já está pronto em cada mala.</span>
                         </span>
-                        <span class="text-xs font-normal text-slate-500">Guarde lembretes importantes e marque o que já está pronto em cada mala.</span>
                     </span>
                     <ChevronDown class="h-4 w-4 text-slate-500 transition" :class="packPanelSections.notes ? 'rotate-180' : ''" />
                 </button>
@@ -526,11 +568,13 @@
             </transition>
         </Card>
 
-        <Card tone="yellow" class="space-y-4">
+        <Card tone="yellow" class="embalar-items-card space-y-4">
             <template v-if="packItems.length">
-                <div class="rounded-2xl bg-white/70 px-3 py-3 text-xs text-slate-600 ring-1 ring-black/5 sm:text-sm">
-                    <div class="flex items-start gap-2 pb-2">
-                        <Package class="mt-[2px] h-4 w-4 text-amber-500" />
+                <div class="embalar-items-info text-xs text-slate-600 sm:text-sm">
+                    <div class="flex items-start gap-3">
+                        <TileIcon3D tone="amber" class="embalar-accordion__icon">
+                            <Package class="h-4 w-4" />
+                        </TileIcon3D>
                         <div class="flex-1">
                             <p class="text-xs leading-relaxed text-slate-600 sm:text-sm">
                                 {{ listTipExpanded ? listTipText : listTipPreview }}
@@ -548,112 +592,122 @@
                         ref="listContainer"
                         class="relative max-h-[65vh] overflow-y-auto pr-1"
                     >
-                        <div
-                            class="sticky top-0 z-20 space-y-3 rounded-2xl bg-white/95 px-3 py-3 shadow ring-1 ring-black/5 backdrop-blur supports-[backdrop-filter]:backdrop-blur"
-                        >
-                            <div class="flex flex-wrap items-center gap-3">
-                                <div class="relative flex-1 min-w-[200px] sm:min-w-[260px]">
-                                    <input
-                                        v-model="searchQuery"
-                                        type="search"
-                                        placeholder="Buscar por nome, notas ou categoria…"
-                                        class="w-full rounded-full border border-slate-200 bg-white/90 px-3 py-2 text-sm text-slate-700 shadow-inner shadow-slate-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-                                    />
-                                    <span
-                                        v-if="searchQuery"
-                                        class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] font-medium text-slate-400"
-                                    >
-                                        {{ filteredPackItems.length }} resultado(s)
-                                    </span>
+                        <div class="sticky top-0 z-20 space-y-3">
+                            <div class="embalar-search-shell">
+                                <div class="embalar-filter-panel">
+                                    <div class="embalar-search-grid">
+                                        <div class="embalar-search-card">
+                                            <TileIcon3D tone="amber" class="embalar-search-card__icon">
+                                                <Search class="h-4 w-4" />
+                                            </TileIcon3D>
+                                            <div class="embalar-search-card__body">
+                                                <p class="embalar-search-card__label">Buscar itens</p>
+                                                <input
+                                                    v-model="searchQuery"
+                                                    type="search"
+                                                    placeholder="Buscar por nome, notas ou mala…"
+                                                    class="embalar-search-card__input"
+                                                />
+                                                <span class="embalar-search-card__meta">
+                                                    {{ filteredPackItems.length }} resultado(s)
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            class="embalar-filter-toggle"
+                                            @click="toggleFiltersExpanded"
+                                        >
+                                            <SlidersHorizontal class="h-4 w-4" />
+                                            {{ filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros' }}
+                                        </button>
+                                    </div>
+                                    <transition name="fade">
+                                        <div
+                                            v-if="showFiltersPanel"
+                                            class="embalar-advanced-panel space-y-3"
+                                        >
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <button
+                                                    v-for="option in filterOptions"
+                                                    :key="option.value"
+                                                    type="button"
+                                                    class="embalar-advanced-chip"
+                                                    :class="{
+                                                        'embalar-advanced-chip--active': activeFilter === option.value,
+                                                    }"
+                                                    @click="setActiveFilter(option.value)"
+                                                >
+                                                    {{ option.label }}
+                                                </button>
+                                            </div>
+                                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                                <label class="embalar-select-all">
+                                                    <input
+                                                        type="checkbox"
+                                                        class="embalar-select-all__input"
+                                                        :checked="allSelectedOnPage"
+                                                        @change="toggleSelectAllOnPage($event.target.checked)"
+                                                    />
+                                                    Selecionar todos da lista
+                                                </label>
+                                                <span
+                                                    v-if="selectedIds.length"
+                                                    class="text-xs font-medium text-amber-900 sm:text-sm"
+                                                >
+                                                    {{ selectedIds.length }} selecionado(s)
+                                                </span>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2" v-if="selectedIds.length">
+                                                <select
+                                                    v-model="bulkBagChoice"
+                                                    class="embalar-select"
+                                                >
+                                                    <option value="">Sem mala</option>
+                                                    <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
+                                                        {{ bag.label }}
+                                                    </option>
+                                                </select>
+                                                <button
+                                                    type="button"
+                                                    class="embalar-action embalar-action--primary"
+                                                    :disabled="bulkAssigning"
+                                                    @click="handleBulkAssign"
+                                                >
+                                                    <span
+                                                        v-if="bulkAssigning"
+                                                        class="h-2 w-2 animate-ping rounded-full bg-white"
+                                                        aria-hidden="true"
+                                                    />
+                                                    Enviar seleção
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="embalar-action embalar-action--ghost"
+                                                    :disabled="bulkAssigning"
+                                                    @click="handleBulkPacked(true)"
+                                                >
+                                                    Marcar embalado
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="embalar-action embalar-action--ghost"
+                                                    :disabled="bulkAssigning"
+                                                    @click="handleBulkPacked(false)"
+                                                >
+                                                    Voltar para pendentes
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </transition>
                                 </div>
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 sm:text-sm"
-                                    @click="toggleFiltersExpanded"
-                                >
-                                    <SlidersHorizontal class="h-4 w-4" />
-                                    {{ filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros' }}
-                                </button>
                             </div>
-                            <transition name="fade">
-                                <div
-                                    v-if="showFiltersPanel"
-                                    class="space-y-2 rounded-2xl bg-white/80 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 sm:text-sm"
-                                >
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <button
-                                            v-for="option in filterOptions"
-                                            :key="option.value"
-                                            type="button"
-                                            class="rounded-full border px-3 py-1 text-xs font-semibold transition sm:text-sm"
-                                            :class="[
-                                                activeFilter === option.value
-                                                    ? 'border-emerald-300 bg-emerald-500 text-white shadow'
-                                                    : 'border-slate-200 bg-white/80 text-slate-600 hover:bg-white',
-                                            ]"
-                                            @click="setActiveFilter(option.value)"
-                                        >
-                                            {{ option.label }}
-                                        </button>
-                                    </div>
-                                    <div class="flex flex-wrap items-center justify-between gap-2">
-                                        <label class="inline-flex items-center gap-2 font-semibold text-slate-700">
-                                            <input
-                                                type="checkbox"
-                                                class="h-5 w-5 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
-                                                :checked="allSelectedOnPage"
-                                                @change="toggleSelectAllOnPage($event.target.checked)"
-                                            />
-                                            Selecionar todos da lista
-                                        </label>
-                                        <span v-if="selectedIds.length" class="text-xs font-medium text-slate-500">
-                                            {{ selectedIds.length }} selecionado(s)
-                                        </span>
-                                    </div>
-                                    <div class="flex flex-wrap items-center gap-2" v-if="selectedIds.length">
-                                        <select
-                                            v-model="bulkBagChoice"
-                                            class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:text-sm"
-                                        >
-                                            <option value="">Sem mala</option>
-                                            <option v-for="bag in bagOptions" :key="bag.value" :value="bag.value">
-                                                {{ bag.label }}
-                                            </option>
-                                        </select>
-                                        <button
-                                            type="button"
-                                            class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                                            :disabled="bulkAssigning"
-                                            @click="handleBulkAssign"
-                                        >
-                                            <span v-if="bulkAssigning" class="h-2 w-2 animate-ping rounded-full bg-white" aria-hidden="true" />
-                                            Enviar seleção
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
-                                            :disabled="bulkAssigning"
-                                            @click="handleBulkPacked(true)"
-                                        >
-                                            Marcar embalado
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
-                                            :disabled="bulkAssigning"
-                                            @click="handleBulkPacked(false)"
-                                        >
-                                            Voltar para pendentes
-                                        </button>
-                                    </div>
-                                </div>
-                            </transition>
                         </div>
-                        <div v-if="filteredPackItems.length" class="divide-y divide-slate-200/70">
+                        <div v-if="filteredPackItems.length" class="embalar-item-list divide-y divide-transparent">
                             <div
                                 v-for="item in filteredPackItems"
                                 :key="item.id"
-                                class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:gap-4"
+                                class="embalar-item-row flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:gap-4"
                             >
                                 <label class="flex items-center gap-2 text-sm font-medium text-slate-600">
                                     <input
@@ -668,7 +722,7 @@
                                     <button
                                         v-if="hasPhoto(item)"
                                         type="button"
-                                        class="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl bg-slate-200 shadow-inner"
+                                        class="embalar-item-media relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl"
                                         @click="openImagePreview(item)"
                                     >
                                         <img
@@ -683,9 +737,7 @@
                                         </span>
                                         <ZoomIn class="absolute bottom-1 right-1 h-4 w-4 text-white drop-shadow" />
                                     </button>
-                                    <div
-                                        class="flex flex-1 flex-col rounded-2xl bg-white/80 px-3 py-2 shadow-inner shadow-white/50 ring-1 ring-white/50"
-                                    >
+                                    <div class="embalar-item-card flex flex-1 flex-col rounded-2xl px-3 py-2">
                                         <div class="flex flex-wrap items-center justify-between gap-2">
                                             <div>
                                                 <p class="text-base font-semibold text-slate-800">{{ item.title ?? item.name }}</p>
@@ -694,9 +746,7 @@
                                                 </p>
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <span
-                                                    class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500"
-                                                >
+                                                <span class="embalar-item-chip">
                                                     {{ item.priority ? priorityMetaMap[item.priority]?.shortLabel ?? 'Prioridade' : 'Normal' }}
                                                 </span>
                                                 <button
@@ -712,13 +762,13 @@
                                         </div>
                                         <p v-if="item.notes" class="text-sm text-slate-600">{{ item.notes }}</p>
                                         <div class="flex flex-wrap gap-2 text-[11px] font-medium text-slate-500 sm:text-xs">
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 ring-1 ring-white/60">
+                                            <span class="embalar-item-badge">
                                                 ⚖ {{ formatKg(item.weight ?? item.weight_kg ?? 0) }}
                                             </span>
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 ring-1 ring-white/60">
+                                            <span class="embalar-item-badge">
                                                 🧊 {{ formatVolume(item) ?? 'Sem volume' }}
                                             </span>
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 ring-1 ring-white/60 capitalize">
+                                            <span class="embalar-item-badge capitalize">
                                                 🏷 {{ item.category ?? 'Sem categoria' }}
                                             </span>
                                         </div>
@@ -852,14 +902,20 @@ import {
     watchEffect,
 } from 'vue';
 import {
+    BookOpenCheck,
     ChevronDown,
+    Droplet,
+    Gauge,
+    History,
     ListChecks,
     Luggage,
     NotebookPen,
     Package,
     Plus,
+    Search,
     Share2,
     SlidersHorizontal,
+    Sparkles,
     X,
     ZoomIn,
 } from 'lucide-vue-next';
@@ -872,6 +928,7 @@ import { useDecisionStore } from '@/stores/decision';
 import { toast } from '@/utils/toast';
 import ImagePreviewModal from '@/Components/ImagePreviewModal.vue';
 import OverlayModal from '@/Components/OverlayModal.vue';
+import TileIcon3D from '@/Components/home/TileIcon3D.vue';
 
 const decisionStore = useDecisionStore();
 const page = usePage();
@@ -1039,6 +1096,7 @@ const bagIdFromRaw = (bag) => {
     return '';
 };
 
+
 watch(
     rawPackBags,
     (bags) => {
@@ -1071,10 +1129,9 @@ watch(
     { immediate: true },
 );
 const failedImages = reactive(new Set());
-const showLegend = ref(false);
 const summarySections = reactive({
+    guide: false,
     metrics: false,
-    weight: false,
     volume: false,
     detail: false,
 });
@@ -2119,3 +2176,447 @@ const formatHistoryMessage = (entry) => {
     }
 };
 </script>
+<style scoped>
+.embalar-panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.75rem;
+    padding: 1.75rem;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(251, 146, 60, 0.25);
+    box-shadow: 0 28px 60px rgba(249, 115, 22, 0.15);
+}
+.embalar-panel::before,
+.embalar-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.embalar-panel::before {
+    background: radial-gradient(circle at 15% -15%, rgba(255, 247, 237, 0.95), transparent 55%);
+}
+.embalar-panel::after {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(249, 115, 22, 0.15), rgba(236, 72, 153, 0.18));
+    animation: embalarAurora 28s ease infinite;
+}
+.embalar-panel > * {
+    position: relative;
+    z-index: 1;
+}
+.embalar-panel__head {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+@media (min-width: 640px) {
+    .embalar-panel__head {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+.embalar-panel__title-block {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.embalar-panel__icon {
+    --tile-icon-size: 3.3rem;
+    animation: embalarFloat 9s ease-in-out infinite;
+}
+.embalar-panel__eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.45em;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #fb923c;
+}
+.embalar-panel__title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.embalar-panel__subtitle {
+    font-size: 0.95rem;
+    color: #475569;
+}
+.embalar-panel__toggles {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #475569;
+    margin-top: 0.5rem;
+}
+.embalar-panel__toggles button {
+    font-weight: 600;
+}
+.embalar-accordion {
+    margin-top: 1rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(248, 113, 113, 0.15);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem 1.25rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.embalar-accordion__trigger {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.embalar-accordion__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+.embalar-accordion__icon {
+    --tile-icon-size: 2.4rem;
+}
+.embalar-accordion__meta {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.embalar-accordion__body {
+    margin-top: 0.9rem;
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 0.75rem;
+}
+.embalar-accordion__body--text {
+    background: rgba(255, 247, 237, 0.75);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.embalar-metric-grid {
+    display: grid;
+    gap: 0.85rem;
+}
+@media (min-width: 640px) {
+    .embalar-metric-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+.embalar-metric {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 1.4rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.embalar-metric__icon {
+    --tile-icon-size: 2.8rem;
+}
+.embalar-metric__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #fb923c;
+}
+.embalar-metric__value {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.embalar-metric__hint {
+    font-size: 0.8rem;
+    color: #475569;
+}
+.embalar-empty {
+    border-radius: 1.5rem;
+    border: 1px dashed rgba(249, 115, 22, 0.3);
+    background: rgba(255, 247, 237, 0.7);
+    padding: 1.5rem;
+    text-align: center;
+    color: #9a3412;
+}
+.embalar-status-card {
+    border-radius: 1.6rem;
+    background: radial-gradient(circle at 85% -10%, rgba(254, 226, 226, 0.8), transparent 60%), rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+    box-shadow: 0 20px 45px rgba(249, 115, 22, 0.12);
+}
+.embalar-items-card {
+    border-radius: 1.75rem;
+    background: radial-gradient(circle at 12% -15%, rgba(255, 237, 213, 0.9), transparent 55%), rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(249, 115, 22, 0.25);
+    box-shadow: 0 26px 55px rgba(249, 115, 22, 0.18);
+}
+.embalar-items-info {
+    border-radius: 1.4rem;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    padding: 1.25rem;
+}
+.embalar-item-list {
+    margin-top: 1rem;
+}
+.embalar-item-row {
+    border-top: 1px solid rgba(253, 230, 138, 0.25);
+}
+.embalar-item-media {
+    background: rgba(248, 250, 252, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.embalar-item-card {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 20px 45px rgba(15, 23, 42, 0.08);
+}
+.embalar-item-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid rgba(249, 115, 22, 0.35);
+    padding: 0.2rem 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #b45309;
+}
+.embalar-item-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 0.35rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+}
+.embalar-banner {
+    border-radius: 1.5rem;
+    background: linear-gradient(135deg, rgba(22, 163, 74, 0.12), rgba(34, 197, 94, 0.2));
+    border: 1px solid rgba(34, 197, 94, 0.25);
+}
+.embalar-panel-soft {
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.93);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+@keyframes embalarAurora {
+    0% {
+        opacity: 0.6;
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        opacity: 0.85;
+        transform: translate3d(14px, -10px, 0);
+    }
+    100% {
+        opacity: 0.6;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes embalarFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+.embalar-search-shell {
+    margin-top: 0.75rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(249, 115, 22, 0.4);
+    background: linear-gradient(145deg, rgba(255, 247, 237, 0.95), rgba(255, 237, 213, 0.9));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 28px 55px rgba(249, 115, 22, 0.18);
+    position: relative;
+    overflow: hidden;
+}
+.embalar-search-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, rgba(255, 213, 153, 0.35), rgba(251, 191, 36, 0.25), rgba(249, 115, 22, 0.3));
+    opacity: 0.35;
+    animation: embalarAurora 26s ease infinite;
+    pointer-events: none;
+}
+.embalar-search-shell::after {
+    content: '';
+    position: absolute;
+    inset: 0.75rem;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    pointer-events: none;
+}
+.embalar-filter-panel {
+    position: relative;
+    z-index: 1;
+    border-radius: 1.75rem;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 25px 45px rgba(15, 23, 42, 0.12);
+}
+.embalar-search-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+.embalar-search-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.9rem 1.1rem;
+    width: 100%;
+    border-radius: 1.6rem;
+    border: 1px solid rgba(249, 115, 22, 0.35);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 247, 237, 0.92));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.75),
+        0 20px 40px rgba(249, 115, 22, 0.16);
+}
+.embalar-search-card__icon {
+    --tile-icon-size: 2.3rem;
+}
+.embalar-search-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+.embalar-search-card__label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    color: #c2410c;
+    font-weight: 600;
+}
+.embalar-search-card__input {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid rgba(249, 115, 22, 0.35);
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
+    color: #78350f;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+.embalar-search-card__input:focus {
+    outline: none;
+    border-color: rgba(249, 115, 22, 0.65);
+    box-shadow: 0 0 0 2px rgba(253, 186, 116, 0.45);
+}
+.embalar-search-card__meta {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #b45309;
+}
+.embalar-filter-toggle {
+    border-radius: 999px;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    color: #7c2d12;
+    border: 1px solid rgba(249, 115, 22, 0.35);
+    background: linear-gradient(135deg, rgba(255, 247, 237, 0.95), rgba(255, 237, 213, 0.9));
+    box-shadow: 0 18px 35px rgba(249, 115, 22, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.embalar-filter-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 22px 40px rgba(249, 115, 22, 0.25);
+}
+.embalar-advanced-panel {
+    border-radius: 1.5rem;
+    border: 1px dashed rgba(249, 115, 22, 0.35);
+    background: rgba(255, 250, 245, 0.9);
+    padding: 0.85rem 1rem;
+    font-size: 0.85rem;
+    color: #92400e;
+}
+.embalar-advanced-chip {
+    border-radius: 999px;
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    padding: 0.35rem 0.95rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #92400e;
+    background: rgba(255, 255, 255, 0.85);
+    transition: all 0.2s ease;
+}
+.embalar-advanced-chip--active {
+    border-color: rgba(16, 185, 129, 0.7);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.25));
+    color: #065f46;
+    box-shadow: 0 12px 24px rgba(5, 150, 105, 0.2);
+}
+.embalar-select-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #92400e;
+}
+.embalar-select-all__input {
+    height: 1.3rem;
+    width: 1.3rem;
+    border-radius: 0.4rem;
+    border: 1px solid rgba(249, 115, 22, 0.4);
+    color: #f97316;
+}
+.embalar-select {
+    border-radius: 999px;
+    border: 1px solid rgba(249, 115, 22, 0.35);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0.45rem 1rem;
+    font-size: 0.8rem;
+    color: #7c2d12;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+.embalar-action {
+    border-radius: 999px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+}
+.embalar-action--primary {
+    color: white;
+    background: linear-gradient(120deg, rgba(15, 118, 110, 0.95), rgba(5, 150, 105, 0.92));
+    box-shadow: 0 15px 30px rgba(5, 150, 105, 0.25);
+}
+.embalar-action--primary:disabled {
+    opacity: 0.55;
+}
+.embalar-action--ghost {
+    color: #92400e;
+    border: 1px solid rgba(249, 115, 22, 0.25);
+    background: rgba(255, 255, 255, 0.92);
+}
+.embalar-action--ghost:disabled {
+    opacity: 0.55;
+}
+</style>

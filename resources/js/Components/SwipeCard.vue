@@ -9,24 +9,24 @@
         @pointerleave="handlePointerEnd"
         @pointercancel="handlePointerEnd"
     >
-        <div class="overflow-hidden rounded-3xl bg-white/90 shadow-lg/30 shadow-slate-200 ring-1 ring-black/5 backdrop-blur-sm">
-            <div class="relative flex h-80 w-full items-center justify-center bg-slate-900/5">
+        <div class="swipe-card__surface">
+            <div class="swipe-card__media">
                 <img
                     v-if="hasPhoto"
                     :src="itemPhoto"
                     :alt="item.title ?? item.name"
-                    class="max-h-full max-w-full select-none object-contain"
+                    class="swipe-card__photo"
                     loading="lazy"
                     decoding="async"
                     draggable="false"
                     @dragstart.prevent
                     @error="handleImageError"
                 />
-                <Package v-else class="h-24 w-24 text-emerald-400/40" />
+                <Package v-else class="h-24 w-24 text-indigo-200" />
                 <button
                     v-if="hasPhoto"
                     type="button"
-                    class="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow ring-1 ring-white/80 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    class="swipe-card__media-button"
                     @pointerdown.stop
                     @click.stop="openImageModal"
                     aria-label="Ampliar imagem"
@@ -35,34 +35,34 @@
                 </button>
             </div>
 
-            <div class="space-y-2 p-6">
-                <h3 class="text-2xl font-semibold text-slate-900">{{ item.title ?? item.name }}</h3>
-                <p v-if="item.weight" class="text-sm text-slate-600">
+            <div class="swipe-card__body">
+                <h3 class="swipe-card__title">{{ item.title ?? item.name }}</h3>
+                <p v-if="item.weight" class="swipe-card__meta">
                     Peso: {{ Number(item.weight).toFixed(2) }} kg
                 </p>
-                <p v-if="volumeLabel" class="text-sm text-slate-600">
+                <p v-if="volumeLabel" class="swipe-card__meta">
                     Volume: <span class="font-medium text-slate-700">{{ volumeLabel }}</span>
                 </p>
-                <div class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                    <span v-if="categoryText" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                <div class="swipe-card__tags">
+                    <span v-if="categoryText" class="swipe-card__chip">
                         {{ categoryText }}
                     </span>
                     <span
                         v-if="props.item.fragile"
-                        class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700"
+                        class="swipe-card__chip swipe-card__chip--alert"
                     >
                         <AlertTriangle class="h-3.5 w-3.5" />
                         Frágil
                     </span>
                 </div>
-                <p v-if="item.notes" class="text-sm text-slate-600">
+                <p v-if="item.notes" class="swipe-card__meta">
                     {{ item.notes }}
                 </p>
-                <div v-if="warningBadges.length" class="flex flex-wrap gap-2 pt-2">
+                <div v-if="warningBadges.length" class="swipe-card__warnings">
                     <span
                         v-for="warning in warningBadges"
                         :key="warning"
-                        class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 ring-1 ring-amber-200"
+                        class="swipe-card__warning"
                     >
                         <AlertTriangle class="h-3 w-3" />
                         {{ warning }}
@@ -74,7 +74,7 @@
         <transition name="fade">
             <div
                 v-if="overlay === 'yes'"
-                class="pointer-events-none absolute top-8 right-8 rotate-12 rounded-full bg-emerald-500 px-6 py-3 text-lg font-semibold text-white shadow"
+                class="swipe-card__badge swipe-card__badge--yes"
             >
                 LEVAR
             </div>
@@ -82,7 +82,7 @@
         <transition name="fade">
             <div
                 v-if="overlay === 'no'"
-                class="pointer-events-none absolute top-8 left-8 -rotate-12 rounded-full bg-rose-500 px-6 py-3 text-lg font-semibold text-white shadow"
+                class="swipe-card__badge swipe-card__badge--no"
             >
                 NÃO LEVAR
             </div>
@@ -90,7 +90,7 @@
         <transition name="fade">
             <div
                 v-if="overlay === 'pending'"
-                class="pointer-events-none absolute top-8 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow"
+                class="swipe-card__badge swipe-card__badge--pending"
             >
                 DECIDIR DEPOIS
             </div>
@@ -353,5 +353,156 @@ watch(
 }
 .swipe-card--dragging {
     cursor: grabbing;
+}
+.swipe-card__surface {
+    overflow: hidden;
+    border-radius: 1.75rem;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow:
+        0 25px 60px rgba(15, 23, 42, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px);
+    position: relative;
+}
+.swipe-card__surface::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(14, 165, 233, 0.08));
+    opacity: 0.8;
+    animation: cardAurora 24s ease infinite;
+}
+.swipe-card__surface > * {
+    position: relative;
+    z-index: 1;
+}
+.swipe-card__media {
+    position: relative;
+    display: flex;
+    height: 18rem;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.35), transparent 55%),
+        linear-gradient(140deg, rgba(248, 250, 252, 0.92), rgba(219, 234, 254, 0.9));
+}
+.swipe-card__photo {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    user-select: none;
+}
+.swipe-card__media-button {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #0f172a;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+.swipe-card__body {
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.swipe-card__title {
+    font-size: 1.65rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+.swipe-card__meta {
+    font-size: 0.95rem;
+    color: #475569;
+}
+.swipe-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.swipe-card__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(226, 232, 240, 0.7);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.swipe-card__chip--alert {
+    background: rgba(253, 230, 138, 0.5);
+    color: #b45309;
+}
+.swipe-card__warnings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding-top: 0.4rem;
+}
+.swipe-card__warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    background: rgba(253, 230, 138, 0.25);
+    color: #92400e;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.75rem;
+    border: 1px solid rgba(251, 191, 36, 0.4);
+}
+.swipe-card__badge {
+    pointer-events: none;
+    position: absolute;
+    top: 1.5rem;
+    padding: 0.65rem 1.5rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #fff;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25);
+}
+.swipe-card__badge--yes {
+    right: 2rem;
+    transform: rotate(8deg);
+    background: linear-gradient(135deg, #34d399, #10b981);
+}
+.swipe-card__badge--no {
+    left: 2rem;
+    transform: rotate(-8deg);
+    background: linear-gradient(135deg, #fb7185, #ef4444);
+}
+.swipe-card__badge--pending {
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #fcd34d, #fbbf24);
+    color: #1f2937;
+}
+@keyframes cardAurora {
+    0% {
+        opacity: 0.55;
+        transform: translateY(0);
+    }
+    50% {
+        opacity: 0.9;
+        transform: translateY(-6px);
+    }
+    100% {
+        opacity: 0.55;
+        transform: translateY(0);
+    }
 }
 </style>

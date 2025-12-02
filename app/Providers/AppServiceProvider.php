@@ -90,5 +90,11 @@ class AppServiceProvider extends ServiceProvider
                 'show_onboarding' => session()->pull('show_onboarding', false),
             ];
         });
+
+        Inertia::share('ui', function () {
+            return [
+                'onboarding_modals_enabled' => config('easytrip.onboarding_modals_enabled', true),
+            ];
+        });
     }
 }

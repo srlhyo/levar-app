@@ -28,7 +28,7 @@
                         <span class="flex items-center gap-3">
                             <span
                                 v-if="tab.icon"
-                                class="grid h-8 w-8 place-items-center rounded-full border text-sm font-semibold transition"
+                                class="tab-icon-base"
                                 :class="iconClass(tab.key)"
                             >
                                 {{ tab.icon }}
@@ -85,31 +85,31 @@ const current = computed(() => {
 
 const accentStyles = {
     emerald: {
-        iconActive: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-        iconInactive: 'border-emerald-100 bg-emerald-50 text-emerald-500',
-        badgeActive: 'bg-emerald-500/15 text-emerald-600',
-        badgeInactive: 'bg-emerald-50 text-emerald-600',
+        iconActive: 'tabs-icon tabs-icon--emerald-active',
+        iconInactive: 'tabs-icon tabs-icon--emerald',
+        badgeActive: 'tabs-badge tabs-badge--emerald-active',
+        badgeInactive: 'tabs-badge tabs-badge--emerald',
         buttonRing: 'ring-emerald-50 border-emerald-100',
     },
     amber: {
-        iconActive: 'border-amber-200 bg-amber-50 text-amber-700',
-        iconInactive: 'border-amber-100 bg-amber-50 text-amber-600',
-        badgeActive: 'bg-amber-500/15 text-amber-600',
-        badgeInactive: 'bg-amber-50 text-amber-600',
+        iconActive: 'tabs-icon tabs-icon--amber-active',
+        iconInactive: 'tabs-icon tabs-icon--amber',
+        badgeActive: 'tabs-badge tabs-badge--amber-active',
+        badgeInactive: 'tabs-badge tabs-badge--amber',
         buttonRing: 'ring-amber-50 border-amber-100',
     },
     rose: {
-        iconActive: 'border-rose-200 bg-rose-50 text-rose-700',
-        iconInactive: 'border-rose-100 bg-rose-50 text-rose-500',
-        badgeActive: 'bg-rose-500/15 text-rose-600',
-        badgeInactive: 'bg-rose-50 text-rose-600',
+        iconActive: 'tabs-icon tabs-icon--rose-active',
+        iconInactive: 'tabs-icon tabs-icon--rose',
+        badgeActive: 'tabs-badge tabs-badge--rose-active',
+        badgeInactive: 'tabs-badge tabs-badge--rose',
         buttonRing: 'ring-rose-50 border-rose-100',
     },
     default: {
-        iconActive: 'border-slate-200 bg-slate-50 text-slate-700',
-        iconInactive: 'border-slate-200 bg-slate-50 text-slate-500',
-        badgeActive: 'bg-slate-900/10 text-slate-700',
-        badgeInactive: 'bg-slate-100 text-slate-600',
+        iconActive: 'tabs-icon tabs-icon--slate-active',
+        iconInactive: 'tabs-icon tabs-icon--slate',
+        badgeActive: 'tabs-badge tabs-badge--slate-active',
+        badgeInactive: 'tabs-badge tabs-badge--slate',
         buttonRing: 'ring-slate-100 border-slate-200',
     },
 };
@@ -143,3 +143,115 @@ const select = (key) => {
     emit('update:modelValue', key);
 };
 </script>
+
+<style scoped>
+.tabs-badge {
+    min-width: 2rem;
+    min-height: 1.8rem;
+    border-radius: 999px;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.tabs-badge--emerald {
+    background: rgba(16, 185, 129, 0.08);
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.25);
+}
+.tabs-badge--emerald-active {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+    border-color: rgba(13, 148, 136, 0.6);
+}
+.tabs-badge--amber {
+    background: rgba(251, 191, 36, 0.08);
+    color: #b45309;
+    border-color: rgba(251, 191, 36, 0.3);
+}
+.tabs-badge--amber-active {
+    background: linear-gradient(135deg, #fde047, #fb923c);
+    color: #7c2d12;
+    border-color: rgba(251, 191, 36, 0.45);
+}
+.tabs-badge--rose {
+    background: rgba(251, 113, 133, 0.08);
+    color: #be185d;
+    border-color: rgba(251, 113, 133, 0.3);
+}
+.tabs-badge--rose-active {
+    background: linear-gradient(135deg, #f43f5e, #fb7185);
+    color: white;
+    border-color: rgba(244, 63, 94, 0.45);
+}
+.tabs-badge--slate {
+    background: rgba(148, 163, 184, 0.12);
+    color: #475569;
+    border-color: rgba(148, 163, 184, 0.35);
+}
+.tabs-badge--slate-active {
+    background: linear-gradient(135deg, #94a3b8, #818cf8);
+    color: white;
+    border-color: rgba(99, 102, 241, 0.4);
+}
+.tab-icon-base {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 1.2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid transparent;
+    transition: transform 0.15s ease;
+}
+.tabs-icon {
+    box-shadow:
+        inset 0 1px 4px rgba(255, 255, 255, 0.45),
+        0 10px 18px rgba(15, 23, 42, 0.12);
+}
+.tabs-icon--emerald {
+    background: linear-gradient(135deg, rgba(209, 250, 229, 0.9), rgba(16, 185, 129, 0.2));
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+.tabs-icon--emerald-active {
+    background: linear-gradient(135deg, #0ea5e9, #10b981, #34d399);
+    color: white;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+.tabs-icon--amber {
+    background: linear-gradient(135deg, rgba(254, 240, 138, 0.95), rgba(251, 191, 36, 0.2));
+    color: #b45309;
+    border-color: rgba(251, 191, 36, 0.3);
+}
+.tabs-icon--amber-active {
+    background: linear-gradient(135deg, #fde047, #fbbf24, #fb923c);
+    color: #7c2d12;
+    border-color: rgba(251, 191, 36, 0.4);
+}
+.tabs-icon--rose {
+    background: linear-gradient(135deg, rgba(254, 226, 226, 0.9), rgba(251, 113, 133, 0.25));
+    color: #be185d;
+    border-color: rgba(251, 113, 133, 0.3);
+}
+.tabs-icon--rose-active {
+    background: linear-gradient(135deg, #f43f5e, #ec4899, #fb7185);
+    color: white;
+    border-color: rgba(244, 63, 94, 0.4);
+}
+.tabs-icon--slate {
+    background: linear-gradient(135deg, rgba(226, 232, 240, 0.9), rgba(148, 163, 184, 0.25));
+    color: #475569;
+    border-color: rgba(148, 163, 184, 0.35);
+}
+.tabs-icon--slate-active {
+    background: linear-gradient(135deg, #94a3b8, #818cf8, #67e8f9);
+    color: white;
+    border-color: rgba(99, 102, 241, 0.35);
+}
+</style>

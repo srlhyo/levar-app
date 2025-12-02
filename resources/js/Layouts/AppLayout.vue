@@ -1,71 +1,255 @@
 <template>
     <div class="min-h-screen bg-slate-50 text-slate-900 pt-[max(env(safe-area-inset-top),16px)]">
         <main class="mx-auto max-w-3xl px-4 pb-8">
-            <header class="space-y-3 text-left">
-                <div class="flex items-start justify-between gap-3 sm:items-center sm:gap-4">
-                    <button
-                        v-if="!isHome"
-                        type="button"
-                        aria-label="Voltar"
-                        class="inline-flex items-center gap-2 rounded-2xl bg-white/80 px-3 py-2 text-slate-700 shadow-sm ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/40"
-                        @click="goHome"
+            <header>
+                <template v-if="isHome || isDecidir || isPick || isResumo || isCatalog">
+                    <div
+                        :class="[
+                            'home-header-card',
+                            isDecidir ? 'home-header-card--decidir' : '',
+                            isPick ? 'home-header-card--pick' : '',
+                            isResumo ? 'home-header-card--resumo' : '',
+                            isCatalog ? 'home-header-card--catalog' : '',
+                        ]"
                     >
-                        <ArrowLeft class="h-4 w-4" />
-                        <span class="text-sm font-medium">Voltar</span>
-                    </button>
-
-                    <div class="space-y-2">
-                        <div class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                            Mudança UK → Brasil
-                        </div>
-                        <h1 class="text-2xl font-bold text-slate-800 sm:text-3xl">
-                            <slot name="title" />
-                        </h1>
-                        <p v-if="hasSubtitle" class="text-base leading-relaxed text-slate-600 sm:text-lg">
-                            <slot name="subtitle" />
-                        </p>
-                    </div>
-
-                    <div v-if="currentUser" ref="accountMenuRef" class="relative flex-shrink-0">
-                        <button
-                            type="button"
-                            class="inline-flex items-center gap-2 rounded-2xl bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/40"
-                            @click.stop="toggleAccountMenu"
-                        >
-                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-semibold">
-                                {{ userInitials }}
-                            </span>
-                            <div class="text-left leading-tight hidden sm:block">
-                                <p class="font-semibold">{{ currentUser.name }}</p>
-                                <p class="text-xs text-slate-500">{{ currentUser.email }}</p>
-                            </div>
-                        </button>
-
-                        <transition name="fade">
-                            <div
-                                v-if="showAccountMenu"
-                                class="absolute right-0 z-50 mt-3 w-60 rounded-3xl border border-slate-200 bg-white/95 p-4 text-sm text-slate-700 shadow-xl backdrop-blur"
+                        <div v-if="isDecidir || isPick || isResumo || isCatalog" class="mb-3 flex items-center justify-between gap-3">
+                            <button
+                                type="button"
+                                aria-label="Voltar para início"
+                                class="decidir-back-button"
+                                :class="{
+                                    'decidir-back-button--pick': isPick && !isDecidir,
+                                    'decidir-back-button--resumo': isResumo && !isDecidir && !isPick,
+                                    'decidir-back-button--catalog': isCatalog && !isDecidir && !isPick && !isResumo,
+                                }"
+                                @click="goHome"
                             >
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Conta</p>
-                                <p class="mt-1 text-base font-semibold text-slate-900">{{ currentUser.name }}</p>
-                                <p class="text-xs text-slate-500">{{ currentUser.email }}</p>
+                                <ArrowLeft class="h-4 w-4" />
+                                <span>Voltar</span>
+                            </button>
+                        <div v-if="currentUser" ref="accountMenuRef" class="relative">
+                            <button
+                                type="button"
+                                class="profile-chip"
+                                :class="{
+                                    'profile-chip--warm': isPick,
+                                    'profile-chip--cool': (isResumo && !isPick) || isCatalog,
+                                }"
+                                @click.stop="toggleAccountMenu"
+                            >
+                                <span class="profile-chip__icon-wrap">
+                                <TileIcon3D :tone="profileChipTone" class="profile-chip__icon">
+                                    <span class="profile-chip__initials">{{ userInitials }}</span>
+                                </TileIcon3D>
+                                </span>
+                                    <span class="profile-chip__text hidden text-left leading-tight sm:block">
+                                        <span class="block text-sm font-semibold text-slate-800">{{ currentUser.name }}</span>
+                                        <span class="text-xs text-slate-400">{{ currentUser.email }}</span>
+                                    </span>
+                                </button>
 
+                                <transition name="fade">
+                                    <div
+                                        v-if="showAccountMenu"
+                                        class="absolute right-0 z-50 mt-3 w-60 rounded-3xl border border-slate-200 bg-white/95 p-4 text-sm text-slate-700 shadow-xl backdrop-blur"
+                                    >
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Conta</p>
+                                        <p class="mt-1 text-base font-semibold text-slate-900">{{ currentUser.name }}</p>
+                                        <p class="text-xs text-slate-500">{{ currentUser.email }}</p>
+
+                                        <button
+                                            type="button"
+                                            class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+                                            @click="logout"
+                                        >
+                                            Sair do EasyTrip
+                                        </button>
+                                    </div>
+                                </transition>
+                            </div>
+                        </div>
+                        <div
+                            v-if="isDecidir || isPick || isResumo || isCatalog"
+                            class="inline-flex items-center gap-2 rounded-full bg-slate-100/90 px-3 py-1 text-xs font-semibold text-slate-600"
+                        >
+                            <span aria-hidden="true">🌍</span>
+                            <span>Mudança UK → Brasil</span>
+                        </div>
+                        <div v-else class="flex items-start justify-between gap-3">
+                            <div class="inline-flex items-center gap-2 rounded-full bg-slate-100/90 px-3 py-1 text-xs font-semibold text-slate-600">
+                                <span aria-hidden="true">🌍</span>
+                                <span>Mudança UK → Brasil</span>
+                            </div>
+                            <div v-if="currentUser" ref="accountMenuRef" class="relative">
+                                <button type="button" class="profile-chip" @click.stop="toggleAccountMenu">
+                                    <span class="profile-chip__icon-wrap">
+                                        <TileIcon3D tone="indigo" class="profile-chip__icon">
+                                            <span class="profile-chip__initials">{{ userInitials }}</span>
+                                        </TileIcon3D>
+                                    </span>
+                                    <span class="profile-chip__text hidden text-left leading-tight sm:block">
+                                        <span class="block text-sm font-semibold text-slate-800">{{ currentUser.name }}</span>
+                                        <span class="text-xs text-slate-400">{{ currentUser.email }}</span>
+                                    </span>
+                                </button>
+
+                                <transition name="fade">
+                                    <div
+                                        v-if="showAccountMenu"
+                                        class="absolute right-0 z-50 mt-3 w-60 rounded-3xl border border-slate-200 bg-white/95 p-4 text-sm text-slate-700 shadow-xl backdrop-blur"
+                                    >
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Conta</p>
+                                        <p class="mt-1 text-base font-semibold text-slate-900">{{ currentUser.name }}</p>
+                                        <p class="text-xs text-slate-500">{{ currentUser.email }}</p>
+
+                                        <button
+                                            type="button"
+                                            class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+                                            @click="logout"
+                                        >
+                                            Sair do EasyTrip
+                                        </button>
+                                    </div>
+                                </transition>
+                            </div>
+                        </div>
+                        <div class="mt-4 space-y-1">
+                            <div v-if="isDecidir" class="flex items-start gap-3">
+                                <TileIcon3D tone="indigo" class="decidir-header-icon">
+                                    <Sparkles class="h-5 w-5" />
+                                </TileIcon3D>
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-semibold uppercase tracking-[0.4em] text-indigo-400">Etapa 02 • Decidir</p>
+                                    <h1 class="text-3xl font-semibold text-slate-900 sm:text-[2rem]">
+                                        <slot name="title" />
+                                    </h1>
+                                    <p v-if="hasSubtitle" class="text-base text-slate-600 sm:text-lg">
+                                        <slot name="subtitle" />
+                                    </p>
+                                </div>
+                            </div>
+                            <div v-else-if="isPick" class="flex items-start gap-3">
+                                <TileIcon3D tone="amber" class="pick-header-icon">
+                                    <Package class="h-5 w-5" />
+                                </TileIcon3D>
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-semibold uppercase tracking-[0.4em] text-amber-400">Etapa 03 • Embalar</p>
+                                    <h1 class="text-3xl font-semibold text-slate-900 sm:text-[2rem]">
+                                        <slot name="title" />
+                                    </h1>
+                                    <p v-if="hasSubtitle" class="text-base text-slate-600 sm:text-lg">
+                                        <slot name="subtitle" />
+                                    </p>
+                                </div>
+                            </div>
+                            <div v-else-if="isResumo" class="flex items-start gap-3">
+                                <TileIcon3D tone="slate" class="resumo-header-icon">
+                                    <Layers3 class="h-5 w-5" />
+                                </TileIcon3D>
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-400">Etapa 04 • Resumo</p>
+                                    <h1 class="text-3xl font-semibold text-slate-900 sm:text-[2rem]">
+                                        <slot name="title" />
+                                    </h1>
+                                    <p v-if="hasSubtitle" class="text-base text-slate-600 sm:text-lg">
+                                        <slot name="subtitle" />
+                                    </p>
+                                </div>
+                            </div>
+                            <div v-else-if="isCatalog" class="flex items-start gap-3">
+                                <TileIcon3D tone="emerald" class="catalog-header-icon">
+                                    <Camera class="h-5 w-5" />
+                                </TileIcon3D>
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-semibold uppercase tracking-[0.4em] text-emerald-400">Etapa 01 • Catalogar</p>
+                                    <h1 class="text-3xl font-semibold text-slate-900 sm:text-[2rem]">
+                                        <slot name="title" />
+                                    </h1>
+                                    <p v-if="hasSubtitle" class="text-base text-slate-600 sm:text-lg">
+                                        <slot name="subtitle" />
+                                    </p>
+                                </div>
+                            </div>
+                            <template v-else>
+                                <h1 class="text-3xl font-semibold text-slate-900 sm:text-[2rem]">
+                                    <slot name="title" />
+                                </h1>
+                                <p v-if="hasSubtitle" class="text-base text-slate-600 sm:text-lg">
+                                    <slot name="subtitle" />
+                                </p>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="space-y-3 text-left">
+                        <div class="flex items-start justify-between gap-3 sm:items-center sm:gap-4">
+                            <button
+                                type="button"
+                                aria-label="Voltar"
+                                class="inline-flex items-center gap-2 rounded-2xl bg-white/80 px-3 py-2 text-slate-700 shadow-sm ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/40"
+                                @click="goHome"
+                            >
+                                <ArrowLeft class="h-4 w-4" />
+                                <span class="text-sm font-medium">Voltar</span>
+                            </button>
+
+                            <div class="space-y-2 text-left">
+                                <div class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                                    Mudança UK → Brasil
+                                </div>
+                                <h1 class="text-2xl font-bold text-slate-800 sm:text-3xl">
+                                    <slot name="title" />
+                                </h1>
+                                <p v-if="hasSubtitle" class="text-base leading-relaxed text-slate-600 sm:text-lg">
+                                    <slot name="subtitle" />
+                                </p>
+                            </div>
+
+                            <div v-if="currentUser" ref="accountMenuRef" class="relative flex-shrink-0">
                                 <button
                                     type="button"
-                                    class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
-                                    @click="logout"
+                                    class="inline-flex items-center gap-2 rounded-2xl bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-black/5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/40"
+                                    @click.stop="toggleAccountMenu"
                                 >
-                                    Sair do EasyTrip
+                                    <span class="profile-chip__icon-wrap profile-chip__icon-wrap--compact">
+                                        <TileIcon3D :tone="profileChipTone" class="profile-chip__icon profile-chip__icon--compact">
+                                            <span class="profile-chip__initials">{{ userInitials }}</span>
+                                        </TileIcon3D>
+                                    </span>
+                                    <div class="profile-chip__text text-left leading-tight hidden sm:block">
+                                        <p class="font-semibold">{{ currentUser.name }}</p>
+                                        <p class="text-xs text-slate-500">{{ currentUser.email }}</p>
+                                    </div>
                                 </button>
-                            </div>
-                        </transition>
-                    </div>
-                </div>
 
-                <div class="border-t border-slate-200/80 shadow-[0_1px_0_rgba(0,0,0,0.02)]"></div>
+                                <transition name="fade">
+                                    <div
+                                        v-if="showAccountMenu"
+                                        class="absolute right-0 z-50 mt-3 w-60 rounded-3xl border border-slate-200 bg-white/95 p-4 text-sm text-slate-700 shadow-xl backdrop-blur"
+                                    >
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Conta</p>
+                                        <p class="mt-1 text-base font-semibold text-slate-900">{{ currentUser.name }}</p>
+                                        <p class="text-xs text-slate-500">{{ currentUser.email }}</p>
+
+                                        <button
+                                            type="button"
+                                            class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+                                            @click="logout"
+                                        >
+                                            Sair do EasyTrip
+                                        </button>
+                                    </div>
+                                </transition>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-200/80 shadow-[0_1px_0_rgba(0,0,0,0.02)]"></div>
+                    </div>
+                </template>
             </header>
 
-            <section class="mt-6 space-y-6 sm:space-y-8">
+            <section :class="isHome ? 'mt-6 space-y-6 sm:space-y-8' : 'mt-6 space-y-6 sm:space-y-8'">
                 <slot />
             </section>
         </main>
@@ -265,12 +449,13 @@
 
 <script setup>
 import { computed, onMounted, onBeforeUnmount, provide, ref, useSlots, watch } from 'vue';
-import { ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft, Camera, Layers3, Package, Sparkles } from 'lucide-vue-next';
 import { router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import ToastHub from '@/Components/ToastHub.vue';
 import OverlayModal from '@/Components/OverlayModal.vue';
 import ScrollTopButton from '@/Components/ScrollTopButton.vue';
+import TileIcon3D from '@/Components/home/TileIcon3D.vue';
 
 const page = usePage();
 const slots = useSlots();
@@ -356,7 +541,18 @@ const instructionSteps = [
 ];
 
 const isHome = computed(() => page.component === 'Home');
+const isDecidir = computed(() => page.component === 'Decidir/Index');
+const isPick = computed(() => page.component === 'Pick/Index');
+const isResumo = computed(() => page.component === 'Resumo/Index');
+const isCatalog = computed(() => page.component === 'Catalogar/Index');
+const profileChipTone = computed(() => {
+    if (isPick.value) return 'amber';
+    if (isResumo.value) return 'slate';
+    if (isCatalog.value) return 'emerald';
+    return 'indigo';
+});
 const hasSubtitle = computed(() => !!slots.subtitle);
+const onboardingModalsEnabled = computed(() => Boolean(page.props.ui?.onboarding_modals_enabled ?? true));
 
 const goHome = () => {
     router.visit(route('home'));
@@ -441,7 +637,7 @@ const dismissInstructions = () => {
 watch(
     () => page.props.flash?.show_onboarding,
     (value) => {
-        if (value) {
+        if (value && onboardingModalsEnabled.value) {
             startWelcomeSequence();
         }
     },
@@ -466,6 +662,343 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.home-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    border-radius: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    box-shadow: 0 35px 70px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(12px);
+}
+.profile-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: transparent;
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.09);
+    transition: transform 0.18s ease;
+}
+.profile-chip::before,
+.profile-chip::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -2;
+    transition: opacity 0.3s ease;
+}
+.profile-chip::before {
+    background-image: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.5), transparent 48%);
+    opacity: 0.7;
+}
+.profile-chip::after {
+    background-image: linear-gradient(130deg, rgba(209, 213, 219, 0.95), rgba(191, 219, 254, 0.9), rgba(229, 231, 235, 0.95));
+    background-size: 180% 180%;
+    animation: profileChipGradient 32s ease infinite;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.75),
+        inset 0 -1px 0 rgba(15, 23, 42, 0.18);
+    opacity: 0.88;
+}
+
+.profile-chip:active {
+    transform: scale(0.97);
+}
+.profile-chip__text {
+    color: #0f172a;
+}
+.profile-chip--warm {
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 15px 35px rgba(249, 115, 22, 0.15);
+}
+.profile-chip--warm .profile-chip__icon-wrap {
+    background:
+        linear-gradient(145deg, rgba(255, 237, 213, 0.8), rgba(251, 191, 36, 0.6)),
+        radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.55), transparent 60%);
+}
+.profile-chip--cool {
+    border-color: rgba(148, 163, 184, 0.35);
+    box-shadow: 0 15px 35px rgba(148, 163, 184, 0.18);
+}
+.profile-chip--cool .profile-chip__icon-wrap {
+    background:
+        linear-gradient(145deg, rgba(241, 245, 249, 0.85), rgba(148, 163, 184, 0.6)),
+        radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.55), transparent 60%);
+}
+
+.profile-chip__icon-wrap {
+    display: inline-flex;
+    padding: 0.16rem;
+    border-radius: 999px;
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, 0.4), rgba(248, 250, 252, 0.6)),
+        radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.55), transparent 60%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.85),
+        0 6px 16px rgba(15, 23, 42, 0.12);
+}
+.profile-chip__icon-wrap--compact {
+    padding: 0.12rem;
+}
+.profile-chip__icon {
+    --tile-icon-size: 2rem;
+}
+.profile-chip__icon--compact {
+    --tile-icon-size: 1.85rem;
+}
+.profile-chip__initials {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: white;
+}
+.profile-chip:hover::after {
+    opacity: 1;
+}
+.profile-chip:active::after {
+    opacity: 0.85;
+}
+
+@keyframes profileChipGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+.home-header-card {
+    border-radius: 1.75rem;
+    padding: 1.75rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(10px);
+}
+.home-header-card--decidir {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 60%), rgba(255, 255, 255, 0.95);
+}
+.home-header-card--decidir::before,
+.home-header-card--decidir::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.home-header-card--decidir::before {
+    background: radial-gradient(circle at 20% -10%, rgba(236, 233, 255, 0.9), transparent 55%);
+    opacity: 0.8;
+}
+.home-header-card--decidir::after {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(14, 165, 233, 0.12));
+    animation: decidirAurora 28s ease infinite;
+}
+.home-header-card--decidir > * {
+    position: relative;
+}
+.decidir-header-icon {
+    --tile-icon-size: 3.1rem;
+}
+.home-header-card--pick {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(circle at top left, rgba(251, 191, 36, 0.15), transparent 60%), rgba(255, 255, 255, 0.95);
+}
+.home-header-card--pick::before,
+.home-header-card--pick::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.home-header-card--pick::before {
+    background: radial-gradient(circle at 80% -20%, rgba(254, 226, 226, 0.85), transparent 55%);
+    opacity: 0.9;
+}
+.home-header-card--pick::after {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.14), rgba(249, 115, 22, 0.15), rgba(236, 72, 153, 0.16));
+    animation: pickAurora 32s ease infinite;
+}
+.home-header-card--pick > * {
+    position: relative;
+}
+.home-header-card--resumo {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(circle at top left, rgba(191, 219, 254, 0.2), transparent 55%), rgba(255, 255, 255, 0.95);
+}
+.home-header-card--resumo::before,
+.home-header-card--resumo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.home-header-card--resumo::before {
+    background: radial-gradient(circle at 90% -20%, rgba(224, 231, 255, 0.9), transparent 55%);
+    opacity: 0.85;
+}
+.home-header-card--resumo::after {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(79, 70, 229, 0.14));
+    animation: resumoAurora 28s ease infinite;
+}
+.home-header-card--resumo > * {
+    position: relative;
+}
+.resumo-header-icon {
+    --tile-icon-size: 3.1rem;
+    animation: floatIcon 11s ease-in-out infinite;
+}
+.home-header-card--catalog {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 55%), rgba(255, 255, 255, 0.96);
+}
+.home-header-card--catalog::before,
+.home-header-card--catalog::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.home-header-card--catalog::before {
+    background: radial-gradient(circle at 85% -15%, rgba(167, 243, 208, 0.9), transparent 55%);
+    opacity: 0.85;
+}
+.home-header-card--catalog::after {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(45, 212, 191, 0.16), rgba(6, 182, 212, 0.14));
+    animation: catalogAurora 30s ease infinite;
+}
+.home-header-card--catalog > * {
+    position: relative;
+}
+.catalog-header-icon {
+    --tile-icon-size: 3.1rem;
+    animation: floatIcon 9s ease-in-out infinite;
+}
+.pick-header-icon {
+    --tile-icon-size: 3.1rem;
+    animation: floatIcon 10s ease-in-out infinite;
+}
+.decidir-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.decidir-back-button:active {
+    transform: scale(0.97);
+}
+.decidir-back-button--pick {
+    color: #9a3412;
+    border-color: rgba(249, 115, 22, 0.25);
+    background: rgba(255, 247, 237, 0.9);
+    box-shadow: 0 12px 25px rgba(249, 115, 22, 0.18);
+}
+.decidir-back-button--resumo {
+    color: #0f172a;
+    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(226, 232, 240, 0.9);
+    box-shadow: 0 12px 25px rgba(59, 130, 246, 0.16);
+}
+.decidir-back-button--catalog {
+    color: #065f46;
+    border-color: rgba(16, 185, 129, 0.35);
+    background: rgba(222, 247, 236, 0.95);
+    box-shadow: 0 12px 25px rgba(16, 185, 129, 0.18);
+}
+@keyframes catalogAurora {
+    0% {
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        opacity: 0.9;
+        transform: translate3d(-12px, 8px, 0);
+    }
+    100% {
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes pickAurora {
+    0% {
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        opacity: 0.85;
+        transform: translate3d(10px, -12px, 0);
+    }
+    100% {
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes floatIcon {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+@keyframes decidirAurora {
+    0% {
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        opacity: 0.85;
+        transform: translate3d(-10px, -8px, 0);
+    }
+    100% {
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes resumoAurora {
+    0% {
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        opacity: 0.85;
+        transform: translate3d(12px, -10px, 0);
+    }
+    100% {
+        opacity: 0.55;
+        transform: translate3d(0, 0, 0);
+    }
+}
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.2s ease;
