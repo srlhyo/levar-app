@@ -248,7 +248,10 @@
                         :key="action.label"
                         type="button"
                         class="resumo-status-card__button"
-                        :class="statusBanner.tone === 'green' ? 'resumo-status-card__button--warm' : ''"
+                        :class="{
+                            'resumo-status-card__button--warm': ['green', 'yellow', 'amber'].includes(statusBanner.tone),
+                            'resumo-status-card__button--cool': statusBanner.tone === 'slate',
+                        }"
                         @click="action.handler?.()"
                     >
                         {{ action.label }}
@@ -2084,15 +2087,29 @@ onBeforeUnmount(() => {
     color: #0f172a;
 }
 .resumo-status-card {
-    margin-top: 1.5rem;
-    border-radius: 1.75rem;
-    padding: 1.5rem;
+    margin-top: 2rem;
+    border-radius: 1.9rem;
+    padding: 1.75rem;
     display: flex;
-    gap: 1rem;
+    gap: 1.25rem;
     align-items: flex-start;
-    border: 1px solid rgba(148, 163, 184, 0.3);
+    border: 1px solid rgba(148, 163, 184, 0.28);
     background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 25px 50px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 30px 55px rgba(15, 23, 42, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+.resumo-status-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 15% 10%, rgba(222, 231, 255, 0.85), transparent 60%);
+    pointer-events: none;
+}
+.resumo-status-card > * {
+    position: relative;
+    z-index: 1;
 }
 .resumo-status-card--emerald {
     border-color: rgba(16, 185, 129, 0.25);
@@ -2106,8 +2123,13 @@ onBeforeUnmount(() => {
     border-color: rgba(244, 114, 182, 0.25);
     background: linear-gradient(120deg, rgba(244, 114, 182, 0.12), rgba(255, 255, 255, 0.94));
 }
+.resumo-status-card--slate {
+    border-color: rgba(99, 102, 241, 0.25);
+    background: linear-gradient(135deg, rgba(226, 232, 255, 0.4), rgba(255, 255, 255, 0.96));
+}
 .resumo-status-card__icon {
     --tile-icon-size: 3rem;
+    animation: resumoFloat 10s ease-in-out infinite;
 }
 .resumo-status-card__body {
     flex: 1;
@@ -2177,6 +2199,44 @@ onBeforeUnmount(() => {
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.8),
         0 24px 45px rgba(249, 115, 22, 0.35);
+}
+.resumo-status-card__button--cool {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(130deg, #e0f2fe, #38bdf8, #6366f1, #8b5cf6);
+    background-size: 220% 220%;
+    color: #0f172a;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 22px 40px rgba(79, 70, 229, 0.32);
+    animation: resumoCoolShift 9s ease-in-out infinite;
+}
+.resumo-status-card__button--cool::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.8), transparent 55%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0.55;
+}
+.resumo-status-card__button--cool::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    transform: translateX(-120%);
+    animation: resumoCoolShimmer 4s ease infinite;
+    pointer-events: none;
+}
+.resumo-status-card__button--cool:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 28px 50px rgba(79, 70, 229, 0.38);
 }
 .resumo-panel-soft__cta {
     display: flex;

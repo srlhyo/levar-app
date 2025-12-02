@@ -1499,6 +1499,8 @@ watch(photoQueue, (queue) => {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
 .catalog-upload-dropzone {
     width: 100%;
