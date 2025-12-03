@@ -2165,24 +2165,26 @@ onBeforeUnmount(() => {
 .resumo-status-card__button--warm {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(130deg, #fef3c7, #fbbf24, #f97316, #fb7185);
-    background-size: 220% 220%;
+    background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(130deg, #fef3c7, #fbbf24, #f97316, #fb7185) border-box;
     color: #78350f;
-    border: 1px solid rgba(251, 191, 36, 0.4);
+    border: 1px solid transparent;
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.7),
         0 18px 35px rgba(249, 115, 22, 0.3);
-    animation: resumoWarmShift 8s ease-in-out infinite;
+    isolation: isolate;
 }
 .resumo-status-card__button--warm::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.8), transparent 55%);
-    opacity: 0.6;
+    background: linear-gradient(130deg, #fef3c7, #fbbf24, #f97316, #fb7185);
+    background-size: 220% 220%;
     pointer-events: none;
-    mix-blend-mode: screen;
+    animation: resumoWarmShift 8s ease-in-out infinite;
+    z-index: -1;
 }
 .resumo-status-card__button--warm::after {
     content: '';
@@ -2193,6 +2195,7 @@ onBeforeUnmount(() => {
     transform: translateX(-100%);
     animation: resumoWarmShimmer 3.5s ease infinite;
     pointer-events: none;
+    z-index: -1;
 }
 .resumo-status-card__button--warm:hover {
     transform: translateY(-2px);
@@ -2203,24 +2206,26 @@ onBeforeUnmount(() => {
 .resumo-status-card__button--cool {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(130deg, #e0f2fe, #38bdf8, #6366f1, #8b5cf6);
-    background-size: 220% 220%;
+    background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(130deg, #e0f2fe, #38bdf8, #6366f1, #8b5cf6) border-box;
     color: #0f172a;
-    border: 1px solid rgba(99, 102, 241, 0.35);
+    border: 1px solid transparent;
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.7),
         0 22px 40px rgba(79, 70, 229, 0.32);
-    animation: resumoCoolShift 9s ease-in-out infinite;
+    isolation: isolate;
 }
 .resumo-status-card__button--cool::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.8), transparent 55%);
+    background: linear-gradient(130deg, #e0f2fe, #38bdf8, #6366f1, #8b5cf6);
+    background-size: 220% 220%;
     pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: 0.55;
+    animation: resumoCoolShift 9s ease-in-out infinite;
+    z-index: -1;
 }
 .resumo-status-card__button--cool::after {
     content: '';
@@ -2231,6 +2236,7 @@ onBeforeUnmount(() => {
     transform: translateX(-120%);
     animation: resumoCoolShimmer 4s ease infinite;
     pointer-events: none;
+    z-index: -1;
 }
 .resumo-status-card__button--cool:hover {
     transform: translateY(-1px);
@@ -2260,6 +2266,7 @@ onBeforeUnmount(() => {
     justify-content: center;
     gap: 0.4rem;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+    isolation: isolate;
 }
 .resumo-cta--ghost {
     background: rgba(248, 250, 252, 0.9);
@@ -2273,24 +2280,24 @@ onBeforeUnmount(() => {
 .resumo-cta--warm {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(130deg, #fef3c7, #fbbf24, #f97316, #fb7185);
-    background-size: 220% 220%;
-    color: #78350f;
-    border: 1px solid rgba(251, 191, 36, 0.4);
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid rgba(251, 191, 36, 0.5);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.7),
         0 25px 45px rgba(249, 115, 22, 0.35);
-    animation: resumoWarmShift 8s ease-in-out infinite;
+    text-shadow: 0 2px 6px rgba(120, 53, 15, 0.45);
 }
 .resumo-cta--warm::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.8), transparent 55%);
-    opacity: 0.6;
+    background: linear-gradient(130deg, #fef3c7, #fbbf24, #f97316, #fb7185);
+    background-size: 220% 220%;
     pointer-events: none;
-    mix-blend-mode: screen;
+    animation: resumoWarmShift 8s ease-in-out infinite;
+    z-index: -1;
 }
 .resumo-cta--warm::after {
     content: '';
@@ -2301,6 +2308,8 @@ onBeforeUnmount(() => {
     transform: translateX(-100%);
     animation: resumoWarmShimmer 3.5s ease infinite;
     pointer-events: none;
+    z-index: -1;
+    z-index: -1;
 }
 .resumo-cta--warm:hover {
     transform: translateY(-1px);
@@ -2309,31 +2318,44 @@ onBeforeUnmount(() => {
         0 32px 55px rgba(249, 115, 22, 0.4);
 }
 .resumo-cta--primary {
-    background: linear-gradient(120deg, #10b981, #06b6d4);
-    color: white;
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid rgba(6, 182, 212, 0.5);
     box-shadow: 0 20px 40px rgba(6, 182, 212, 0.25);
+    text-shadow: 0 2px 6px rgba(8, 145, 178, 0.4);
+}
+.resumo-cta--primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, #10b981, #06b6d4);
+    pointer-events: none;
+    z-index: -1;
 }
 .resumo-cta--cool {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(130deg, #e0f2fe, #38bdf8, #6366f1, #8b5cf6);
-    background-size: 220% 220%;
-    color: #0f172a;
-    border: 1px solid rgba(99, 102, 241, 0.35);
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid rgba(99, 102, 241, 0.5);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.7),
         0 25px 45px rgba(79, 70, 229, 0.32);
-    animation: resumoCoolShift 9s ease-in-out infinite;
+    text-shadow: 0 2px 6px rgba(30, 41, 59, 0.45);
 }
 .resumo-cta--cool::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.9), transparent 60%);
+    background: linear-gradient(130deg, #e0f2fe, #38bdf8, #6366f1, #8b5cf6);
+    background-size: 220% 220%;
     pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: 0.55;
+    animation: resumoCoolShift 9s ease-in-out infinite;
+    z-index: -1;
 }
 .resumo-cta--cool::after {
     content: '';
@@ -2344,6 +2366,8 @@ onBeforeUnmount(() => {
     transform: translateX(-120%);
     animation: resumoCoolShimmer 4s ease infinite;
     pointer-events: none;
+    z-index: -1;
+    z-index: -1;
 }
 .resumo-cta--cool:hover {
     transform: translateY(-1px);
