@@ -17,7 +17,7 @@
                 </TileIcon3D>
                 <div>
                     <p class="auth-eyebrow">Etapa 00 • Bem-vindo</p>
-                    <h1 class="auth-hero__title">NAo Entrar no EasyTrip</h1>
+                    <h1 class="auth-hero__title">Entrar no EasyTrip</h1>
                     <p class="auth-hero__subtitle">Acesse com seu email e continue organizando a mudança com calma.</p>
                 </div>
             </div>
